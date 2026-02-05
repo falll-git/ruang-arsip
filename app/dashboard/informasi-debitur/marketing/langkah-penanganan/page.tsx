@@ -1,0 +1,292 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { ClipboardList, Plus, X } from "lucide-react";
+import {
+  dummyDebiturList,
+  dummyLangkahPenanganan,
+  formatCurrency,
+  getKolektibilitasColor,
+} from "@/lib/data";
+import type { LangkahPenanganan } from "@/lib/types/modul3";
+import { useAppToast } from "@/components/ui/AppToastProvider";
+import FeatureHeader from "@/components/ui/FeatureHeader";
+import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+
+export default function LangkahPenangananPage() {
+  const [data, setData] = useState<LangkahPenanganan[]>([
+    ...dummyLangkahPenanganan,
+  ]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedDebitur, setSelectedDebitur] = useState("");
+  const [form, setForm] = useState({
+    langkah: "",
+    hasilPenanganan: "",
+  });
+  const { showToast } = useAppToast();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDebitur || !form.langkah || !form.hasilPenanganan) {
+      showToast("Semua field harus diisi!", "error");
+      return;
+    }
+
+    const newItem: LangkahPenanganan = {
+      id: `LP${Date.now()}`,
+      debiturId: selectedDebitur,
+      tanggal: todayIsoDate(),
+      langkah: form.langkah,
+      hasilPenanganan: form.hasilPenanganan,
+      status: "Pending",
+      createdBy: "User",
+    };
+
+    setData([newItem, ...data]);
+    setIsModalOpen(false);
+    setForm({ langkah: "", hasilPenanganan: "" });
+    setSelectedDebitur("");
+    showToast("Langkah penanganan berhasil ditambahkan!", "success");
+  };
+
+  const getDebiturName = (id: string) => {
+    const debitur = dummyDebiturList.find((d) => d.id === id);
+    return debitur ? debitur.namaNasabah : id;
+  };
+
+  const getDebiturKol = (id: string) => {
+    const debitur = dummyDebiturList.find((d) => d.id === id);
+    return debitur?.kolektibilitas || "1";
+  };
+
+  const KolBadge = ({ kol }: { kol: string }) => {
+    const color = getKolektibilitasColor(kol);
+    return (
+      <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-900">
+        <span
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: color }}
+        />
+        Kol {kol}
+      </span>
+    );
+  };
+
+  const StatusBadge = ({ status }: { status: string }) => {
+    const colors: Record<string, string> = {
+      Pending: "#f59e0b",
+      Proses: "#3b82f6",
+      Selesai: "#10b981",
+    };
+    const color = colors[status] || "#6b7280";
+    return (
+      <span
+        className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
+        style={{ backgroundColor: `${color}20`, color }}
+      >
+        {status}
+      </span>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="bg-white rounded-xl p-6 space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <FeatureHeader
+        title="Langkah Penanganan"
+        subtitle="Dokumentasi langkah-langkah penanganan debitur bermasalah"
+        icon={<ClipboardList />}
+        actions={
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn btn-primary"
+            title="Tambah Langkah"
+          >
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            Tambah Langkah
+          </button>
+        }
+      />
+
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+      >
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Tanggal
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Debitur
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Langkah
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Hasil
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {data.map((item) => (
+              <tr
+                key={item.id}
+                className="hover:bg-blue-50/30 transition-colors"
+              >
+                <td className="px-5 py-4 text-sm text-gray-600 text-center">
+                  {formatDateDisplay(item.tanggal)}
+                </td>
+                <td className="px-5 py-4 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-medium text-gray-900">
+                      {getDebiturName(item.debiturId)}
+                    </span>
+                    <KolBadge kol={getDebiturKol(item.debiturId)} />
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-700 font-medium text-center">
+                  {item.langkah}
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-600 text-center">
+                  {item.hasilPenanganan}
+                </td>
+                <td className="px-5 py-4 text-center">
+                  <StatusBadge status={item.status} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {isModalOpen && (
+        <div
+          data-dashboard-overlay="true"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setIsModalOpen(false)}
+          />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">
+                Tambah Langkah Penanganan
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5" aria-hidden="true" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Pilih Debitur
+                </label>
+                <select
+                  value={selectedDebitur}
+                  onChange={(e) => setSelectedDebitur(e.target.value)}
+                  className="select"
+                  required
+                >
+                  <option value="">-- Pilih Debitur --</option>
+                  {dummyDebiturList
+                    .filter((d) => parseInt(d.kolektibilitas) >= 2)
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.namaNasabah} - Kol {d.kolektibilitas} (
+                        {formatCurrency(d.osPokok)})
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Langkah Penanganan
+                </label>
+                <select
+                  value={form.langkah}
+                  onChange={(e) =>
+                    setForm({ ...form, langkah: e.target.value })
+                  }
+                  className="select"
+                  required
+                >
+                  <option value="">-- Pilih Langkah --</option>
+                  <option value="Penagihan via telepon">
+                    Penagihan via telepon
+                  </option>
+                  <option value="Kunjungan langsung">Kunjungan langsung</option>
+                  <option value="Pengiriman Surat Peringatan">
+                    Pengiriman Surat Peringatan
+                  </option>
+                  <option value="Negosiasi restrukturisasi">
+                    Negosiasi restrukturisasi
+                  </option>
+                  <option value="Somasi hukum">Somasi hukum</option>
+                  <option value="Lelang jaminan">Lelang jaminan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hasil Penanganan
+                </label>
+                <textarea
+                  value={form.hasilPenanganan}
+                  onChange={(e) =>
+                    setForm({ ...form, hasilPenanganan: e.target.value })
+                  }
+                  rows={3}
+                  className="textarea resize-none"
+                  placeholder="Jelaskan hasil dari langkah penanganan..."
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:opacity-90"
+                  style={{ backgroundColor: "#157ec3" }}
+                >
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
