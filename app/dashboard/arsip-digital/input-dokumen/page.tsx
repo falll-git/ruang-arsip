@@ -40,7 +40,7 @@ export default function InputDokumenPage() {
         id: j.id,
         kode: j.kode,
         nama: j.nama,
-        prefix: j.prefix,
+        keterangan: j.keterangan,
       }));
   }, [jenisDokumen]);
 
@@ -56,7 +56,7 @@ export default function InputDokumenPage() {
     // Format: PREFIX-YYYYMM-SEQUENCE (e.g., PRH-202601-0001)
     const periode = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    const prefix = jenis.prefix;
+    const prefix = jenis.kode.replace(/\s+/g, "-").toUpperCase();
     const re = new RegExp(`^${prefix}-${periode}-(\\d{4})$`);
 
     const lastSequence = dummyDokumen.reduce((max, d) => {
@@ -158,7 +158,7 @@ export default function InputDokumenPage() {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div>
                   <label
                     htmlFor="tempatPenyimpanan"
@@ -186,6 +186,28 @@ export default function InputDokumenPage() {
 
                 <div>
                   <label
+                    htmlFor="restrict"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Dokumen Restrict
+                  </label>
+                  <select
+                    id="restrict"
+                    name="restrict"
+                    value={formData.restrict}
+                    onChange={handleChange}
+                    className="select"
+                  >
+                    <option value="Tidak">Tidak</option>
+                    <option value="Ya">Ya</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pilih &quot;Ya&quot; jika dokumen bersifat restricted.
+                  </p>
+                </div>
+
+                <div>
+                  <label
                     htmlFor="jenisDokumen"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
@@ -202,32 +224,10 @@ export default function InputDokumenPage() {
                     <option value="">-- Pilih Jenis Dokumen --</option>
                     {jenisDokumenList.map((item) => (
                       <option key={item.id} value={item.kode}>
-                        {item.nama} ({item.prefix})
+                        {item.nama} ({item.kode})
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="restrict"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Restrict
-                  </label>
-                  <select
-                    id="restrict"
-                    name="restrict"
-                    value={formData.restrict}
-                    onChange={handleChange}
-                    className="select"
-                  >
-                    <option value="Ya">Ya</option>
-                    <option value="Tidak">Tidak</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Pilih &quot;Ya&quot; jika dokumen bersifat restricted.
-                  </p>
                 </div>
               </div>
             </section>

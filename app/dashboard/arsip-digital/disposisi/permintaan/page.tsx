@@ -19,7 +19,7 @@ const permintaanList = dummyDisposisi
       id: d.id,
       kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
       namaDokumen: dokumen?.namaDokumen ?? "-",
-      detail: dokumen?.detail ?? "-",
+      detail: d.detail || dokumen?.detail || "-",
       pemohon: d.pemohon,
       tglPengajuan: d.tglPengajuan,
       alasan: d.alasanPengajuan,
@@ -134,7 +134,7 @@ export default function PermintaanDisposisiPage() {
                     Nama Dokumen
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Detail Dokumen
+                    Detail
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Pemohon
@@ -170,7 +170,10 @@ export default function PermintaanDisposisiPage() {
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">
                       {item.namaDokumen}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td
+                      className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"
+                      title={item.detail}
+                    >
                       {item.detail}
                     </td>
                     <td className="px-6 py-4">

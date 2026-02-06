@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Calendar,
   CheckCircle2,
+  Eye,
   FileText,
   History,
   Send,
@@ -11,7 +12,11 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { dummyDisposisi, dummyDokumen } from "@/lib/data";
+import {
+  dummyDisposisi,
+  dummyDokumen,
+  dummyTempatPenyimpanan,
+} from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 
 interface HistorisItem {
@@ -19,6 +24,10 @@ interface HistorisItem {
   kode: string;
   namaDokumen: string;
   detail: string;
+  jenisDokumen: string;
+  tglInput: string;
+  userInput: string;
+  tempatPenyimpanan: string;
   pemilik?: string;
   pemohon?: string;
   tglPengajuan: string;
@@ -33,11 +42,24 @@ const completedDisposisi = dummyDisposisi.filter(
 
 const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
   const dokumen = dummyDokumen.find((doc) => doc.id === d.dokumenId);
+  const lokasi =
+    dokumen?.tempatPenyimpanan ||
+    (dokumen?.tempatPenyimpananId
+      ? dummyTempatPenyimpanan.find(
+          (t) => t.id === dokumen.tempatPenyimpananId,
+        )?.kodeLemari
+      : undefined) ||
+    "-";
+  const detail = d.detail || dokumen?.detail || "-";
   return {
     id: d.id,
     kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
     namaDokumen: dokumen?.namaDokumen ?? "-",
-    detail: dokumen?.detail ?? "-",
+    jenisDokumen: dokumen?.jenisDokumen ?? "-",
+    detail,
+    tglInput: dokumen?.tglInput ?? "-",
+    userInput: dokumen?.userInput ?? "-",
+    tempatPenyimpanan: lokasi,
     pemilik: d.pemilik,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
@@ -48,11 +70,24 @@ const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
 
 const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
   const dokumen = dummyDokumen.find((doc) => doc.id === d.dokumenId);
+  const lokasi =
+    dokumen?.tempatPenyimpanan ||
+    (dokumen?.tempatPenyimpananId
+      ? dummyTempatPenyimpanan.find(
+          (t) => t.id === dokumen.tempatPenyimpananId,
+        )?.kodeLemari
+      : undefined) ||
+    "-";
+  const detail = d.detail || dokumen?.detail || "-";
   return {
     id: d.id,
     kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
     namaDokumen: dokumen?.namaDokumen ?? "-",
-    detail: dokumen?.detail ?? "-",
+    jenisDokumen: dokumen?.jenisDokumen ?? "-",
+    detail,
+    tglInput: dokumen?.tglInput ?? "-",
+    userInput: dokumen?.userInput ?? "-",
+    tempatPenyimpanan: lokasi,
     pemohon: d.pemohon,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
@@ -68,6 +103,10 @@ export default function HistorisDisposisiPage() {
   const [selectedItem, setSelectedItem] = useState<HistorisItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<HistorisItem | null>(null);
+  const viewingDocApproved = Boolean(
+    viewingDoc &&
+      ["approved", "disetujui"].includes(viewingDoc.status.toLowerCase()),
+  );
 
   const data =
     activeTab === "permohonan" ? historisPermohonan : historisPersetujuan;
@@ -175,76 +214,85 @@ export default function HistorisDisposisiPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {data.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-50/50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm text-gray-500">{idx + 1}</td>
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium">
-                      {item.kode}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                    {item.namaDokumen}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {activeTab === "permohonan"
-                        ? item.pemilik || "-"
-                        : item.pemohon || "-"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.tglPengajuan}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.tglAksi}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+              {data.map((item, idx) => {
+                const statusNormalized = item.status.toLowerCase();
+                const isApproved =
+                  statusNormalized === "approved" ||
+                  statusNormalized === "disetujui";
+                return (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium">
+                        {item.kode}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                      {item.namaDokumen}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        {activeTab === "permohonan"
+                          ? item.pemilik || "-"
+                          : item.pemohon || "-"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {item.tglPengajuan}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {item.tglAksi}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
                         ${
-                          item.status === "Approved"
+                          isApproved
                             ? "bg-green-50 text-green-700 border-green-200"
                             : "bg-red-50 text-red-700 border-red-200"
                         }`}
-                    >
-                      {item.status === "Approved" ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Approved
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3.5 h-3.5" /> Rejected
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setShowDetail(true);
-                        }}
-                        className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        Detail
-                      </button>
-                      {item.status === "Approved" && (
+                        {isApproved ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Disetujui
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5" /> Ditolak
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => setViewingDoc(item)}
-                          className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setShowDetail(true);
+                          }}
+                          className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          View Dokumen
+                          Detail
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {isApproved && (
+                          <button
+                            onClick={() => setViewingDoc(item)}
+                            className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors inline-flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span className="hidden sm:inline">View Dokumen</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -408,7 +456,7 @@ export default function HistorisDisposisiPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
@@ -416,6 +464,14 @@ export default function HistorisDisposisiPage() {
                   </label>
                   <p className="font-bold text-primary-600 mt-1">
                     {viewingDoc.kode}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Jenis Dokumen
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {viewingDoc.jenisDokumen}
                   </p>
                 </div>
                 <div>
@@ -430,8 +486,36 @@ export default function HistorisDisposisiPage() {
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
                     Detail Dokumen
                   </label>
-                  <p className="text-sm text-gray-800 mt-1">
+                  <p className="text-sm text-gray-800 mt-1 break-words">
                     {viewingDoc.detail}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tanggal Input
+                  </label>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>{viewingDoc.tglInput}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    User Input
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-medium text-gray-800">
+                      {viewingDoc.userInput}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tempat Penyimpanan
+                  </label>
+                  <p className="mt-1 inline-flex items-center px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-800">
+                    {viewingDoc.tempatPenyimpanan}
                   </p>
                 </div>
                 <div>
@@ -442,14 +526,12 @@ export default function HistorisDisposisiPage() {
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
                         ${
-                          viewingDoc.status === "Approved"
+                          viewingDocApproved
                             ? "bg-green-50 text-green-700 border-green-200"
                             : "bg-red-50 text-red-700 border-red-200"
                         }`}
                     >
-                      {viewingDoc.status === "Approved"
-                        ? "Disetujui"
-                        : "Ditolak"}
+                      {viewingDocApproved ? "Disetujui" : "Ditolak"}
                     </span>
                   </div>
                 </div>
@@ -474,6 +556,26 @@ export default function HistorisDisposisiPage() {
               </div>
 
               <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      Preview / Link PDF
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Tampilkan dokumen atau buka di tab baru jika tersedia.
+                    </p>
+                  </div>
+                  {viewingDoc.fileUrl && (
+                    <a
+                      href={viewingDoc.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-semibold text-primary-700 hover:text-primary-800"
+                    >
+                      Buka Tab
+                    </a>
+                  )}
+                </div>
                 {viewingDoc.fileUrl ? (
                   <iframe
                     src={viewingDoc.fileUrl}

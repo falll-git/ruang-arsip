@@ -18,16 +18,14 @@ import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigit
 type FormState = {
   kode: string;
   nama: string;
-  prefix: string;
-  isRestricted: boolean;
+  keterangan: string;
   status: "Aktif" | "Nonaktif";
 };
 
 const EMPTY_FORM: FormState = {
   kode: "",
   nama: "",
-  prefix: "",
-  isRestricted: false,
+  keterangan: "",
   status: "Aktif",
 };
 
@@ -54,8 +52,7 @@ export default function SetupJenisDokumenPage() {
     setForm({
       kode: item.kode,
       nama: item.nama,
-      prefix: item.prefix,
-      isRestricted: item.isRestricted,
+      keterangan: item.keterangan,
       status: item.status,
     });
     setIsModalOpen(true);
@@ -81,9 +78,9 @@ export default function SetupJenisDokumenPage() {
   const handleSave = () => {
     const kode = form.kode.trim().toUpperCase();
     const nama = form.nama.trim();
-    const prefix = form.prefix.trim().toUpperCase();
+    const keterangan = form.keterangan.trim();
 
-    if (!kode || !nama || !prefix) {
+    if (!kode || !nama || !keterangan) {
       showToast("Mohon lengkapi semua field", "warning");
       return;
     }
@@ -96,8 +93,7 @@ export default function SetupJenisDokumenPage() {
                 ...j,
                 kode,
                 nama,
-                prefix,
-                isRestricted: form.isRestricted,
+                keterangan,
                 status: form.status,
               }
             : j,
@@ -111,8 +107,7 @@ export default function SetupJenisDokumenPage() {
           id: nextId,
           kode,
           nama,
-          prefix,
-          isRestricted: form.isRestricted,
+          keterangan,
           status: form.status,
         },
       ];
@@ -151,6 +146,7 @@ export default function SetupJenisDokumenPage() {
           <table>
             <thead>
               <tr>
+                <th>No</th>
                 <th>Kode</th>
                 <th>Nama Jenis Dokumen</th>
                 <th>Keterangan</th>
@@ -158,8 +154,9 @@ export default function SetupJenisDokumenPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((j) => (
+              {filtered.map((j, idx) => (
                 <tr key={j.id}>
+                  <td className="text-sm text-gray-600">{idx + 1}</td>
                   <td>
                     <span className="font-mono text-sm px-2 py-1 rounded bg-gray-100 border border-gray-200">
                       {j.kode}
@@ -182,8 +179,8 @@ export default function SetupJenisDokumenPage() {
                     </div>
                   </td>
                   <td>
-                    <div className="text-sm text-gray-700">
-                      {j.prefix || "-"}
+                <div className="text-sm text-gray-700">
+                      {j.keterangan || "-"}
                     </div>
                   </td>
                   <td className="text-right">
@@ -215,7 +212,7 @@ export default function SetupJenisDokumenPage() {
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center py-10 text-gray-500">
+                  <td colSpan={5} className="text-center py-10 text-gray-500">
                     Tidak ada data jenis dokumen.
                   </td>
                 </tr>
@@ -247,7 +244,7 @@ export default function SetupJenisDokumenPage() {
                   {editingId ? "Edit Jenis Dokumen" : "Tambah Jenis Dokumen"}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Tentukan kode dan prefix dokumen.
+                  Tentukan kode, nama, dan keterangan dokumen.
                 </p>
               </div>
               <button
@@ -288,34 +285,16 @@ export default function SetupJenisDokumenPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Keterangan / Prefix Kode Dokumen
+                  Keterangan
                 </label>
                 <input
-                  value={form.prefix}
+                  value={form.keterangan}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, prefix: e.target.value }))
+                    setForm((p) => ({ ...p, keterangan: e.target.value }))
                   }
-                  placeholder="PRH"
+                  placeholder="Dokumen perusahaan"
                   className="input"
                 />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm((p) => ({
-                      ...p,
-                      status: e.target.value === "Aktif" ? "Aktif" : "Nonaktif",
-                    }))
-                  }
-                  className="select"
-                >
-                  <option value="Aktif">Aktif</option>
-                  <option value="Nonaktif">Nonaktif</option>
-                </select>
               </div>
             </div>
 

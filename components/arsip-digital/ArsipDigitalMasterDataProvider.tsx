@@ -49,8 +49,7 @@ function isValidJenis(value: unknown): value is JenisDokumen[] {
       typeof (j as { id?: unknown }).id === "number" &&
       typeof (j as { kode?: unknown }).kode === "string" &&
       typeof (j as { nama?: unknown }).nama === "string" &&
-      typeof (j as { prefix?: unknown }).prefix === "string" &&
-      typeof (j as { isRestricted?: unknown }).isRestricted === "boolean" &&
+      typeof (j as { keterangan?: unknown }).keterangan === "string" &&
       ((j as { status?: unknown }).status === "Aktif" ||
         (j as { status?: unknown }).status === "Nonaktif"),
   );

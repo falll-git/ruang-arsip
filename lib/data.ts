@@ -39,8 +39,7 @@ export interface JenisDokumen {
   id: number;
   kode: string;
   nama: string;
-  prefix: string;
-  isRestricted: boolean;
+  keterangan: string;
   status: "Aktif" | "Nonaktif";
 }
 
@@ -52,17 +51,21 @@ export interface Dokumen {
   detail: string;
   tglInput: string;
   userInput: string;
-  tempatPenyimpananId: number;
+  tempatPenyimpanan?: string;
+  tempatPenyimpananId?: number;
   statusPinjam: "Tersedia" | "Dipinjam" | "Dalam Proses" | "Diajukan";
+  statusPeminjaman?: "Tersedia" | "Dipinjam" | "Dalam Proses" | "Diajukan";
   noKontrak?: string | null;
   debiturId?: string | null;
   levelAkses: DataAccessLevel;
+  restrict: boolean;
   fileUrl?: string;
 }
 
 export interface Disposisi {
   id: number;
   dokumenId: number;
+  detail: string;
   pemohon: string;
   pemilik: string;
   tglPengajuan: string;
@@ -76,6 +79,7 @@ export interface Disposisi {
 export interface Peminjaman {
   id: number;
   dokumenId: number;
+  detail: string;
   peminjam: string;
   tglPinjam: string;
   tglKembali: string;
@@ -169,34 +173,30 @@ export const dummyTempatPenyimpanan: TempatPenyimpanan[] = [
 export const dummyJenisDokumen: JenisDokumen[] = [
   {
     id: 1,
-    kode: "PRH",
+    kode: "JD-001",
     nama: "Perusahaan",
-    prefix: "PRH",
-    isRestricted: false,
+    keterangan: "Dokumen perusahaan",
     status: "Aktif",
   },
   {
     id: 2,
-    kode: "PMB",
+    kode: "JD-002",
     nama: "Pembiayaan",
-    prefix: "PMB",
-    isRestricted: true,
+    keterangan: "Dokumen pembiayaan nasabah",
     status: "Aktif",
   },
   {
     id: 3,
-    kode: "KRY",
+    kode: "JD-003",
     nama: "Karyawan",
-    prefix: "KRY",
-    isRestricted: true,
+    keterangan: "Dokumen kepegawaian",
     status: "Aktif",
   },
   {
     id: 4,
-    kode: "VCH",
+    kode: "JD-004",
     nama: "Voucher",
-    prefix: "VCH",
-    isRestricted: false,
+    keterangan: "Dokumen voucher transaksi",
     status: "Aktif",
   },
 ];
@@ -210,22 +210,28 @@ export const dummyDokumen: Dokumen[] = [
     detail: "Akta Pendirian Awal Tahun 1992",
     tglInput: "21-01-2026",
     userInput: "FAISAL",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "NON_RESTRICT",
-    fileUrl: "/documents/contoh-dok.pdf",
+    restrict: false,
+    fileUrl: "/docs/akta.pdf",
   },
   {
     id: 2,
     kode: "A010254",
     jenisDokumen: "Pembiayaan",
     namaDokumen: "Dokumen Akad",
-    detail: "Doumen Akad An. Fulan",
+    detail: "Dokumen Akad An. Fulan",
     tglInput: "21-01-2026",
     userInput: "ANNAS",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "RESTRICT",
+    restrict: true,
     fileUrl: "/documents/contoh-dok.pdf",
   },
   {
@@ -236,9 +242,12 @@ export const dummyDokumen: Dokumen[] = [
     detail: "SK Pengangkatan An. Burhan",
     tglInput: "21-01-2026",
     userInput: "ANGGITA",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "RESTRICT",
+    restrict: true,
     fileUrl: "/documents/contoh-dok.pdf",
   },
   {
@@ -249,9 +258,12 @@ export const dummyDokumen: Dokumen[] = [
     detail: "Dokumen Taksasi An. Fulan",
     tglInput: "21-01-2026",
     userInput: "ANNAS",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "RESTRICT",
+    restrict: true,
     fileUrl: "/documents/contoh-dok.pdf",
   },
   {
@@ -262,9 +274,12 @@ export const dummyDokumen: Dokumen[] = [
     detail: "Voucher Juni 2025 Kantor Pusat",
     tglInput: "21-01-2026",
     userInput: "BURHAN",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "NON_RESTRICT",
+    restrict: false,
     fileUrl: "/documents/contoh-dok.pdf",
   },
   {
@@ -275,9 +290,12 @@ export const dummyDokumen: Dokumen[] = [
     detail: "Voucher Juni 2025 Kantor Kas KST",
     tglInput: "21-01-2026",
     userInput: "BURHAN",
+    tempatPenyimpanan: "L-001",
     tempatPenyimpananId: 3,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "NON_RESTRICT",
+    restrict: false,
     fileUrl: "/documents/contoh-dok.pdf",
   },
   {
@@ -288,9 +306,12 @@ export const dummyDokumen: Dokumen[] = [
     detail: "NPWP dan NIB",
     tglInput: "21-01-2026",
     userInput: "ANNAS",
+    tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
     levelAkses: "RESTRICT",
+    restrict: true,
     fileUrl: "/documents/contoh-dok.pdf",
   },
 ];
@@ -299,11 +320,12 @@ export const dummyDisposisi: Disposisi[] = [
   {
     id: 1,
     dokumenId: 2,
-    pemohon: "BURHAN",
+    detail: "Dokumen Akad An. Fulan",
+    pemohon: "ANGGI",
     pemilik: "ANNAS",
     tglPengajuan: "22-01-2026",
     status: "Pending",
-    alasanPengajuan: "Audit Internal",
+    alasanPengajuan: "Untuk keperluan audit",
     tglExpired: null,
     tglAksi: null,
     alasanAksi: null,
@@ -311,6 +333,7 @@ export const dummyDisposisi: Disposisi[] = [
   {
     id: 2,
     dokumenId: 3,
+    detail: "SK Pengangkatan An. Burhan",
     pemohon: "ANNAS",
     pemilik: "ANGGITA",
     tglPengajuan: "22-01-2026",
@@ -325,22 +348,24 @@ export const dummyDisposisi: Disposisi[] = [
 export const dummyPeminjaman: Peminjaman[] = [
   {
     id: 1,
-    dokumenId: 1,
-    peminjam: "ANNAS",
-    tglPinjam: "23-01-2026",
-    tglKembali: "30-01-2026",
+    dokumenId: 2,
+    detail: "Dokumen Akad An. Fulan",
+    peminjam: "ANGGI",
+    tglPinjam: "22-01-2026",
+    tglKembali: "29-01-2026",
     tglPengembalian: null,
-    status: "Pending",
-    alasan: "Keperluan Notaris",
-    approver: null,
-    tglApprove: null,
-    jamApprove: null,
-    alasanApprove: null,
-    tglPenyerahan: null,
+    status: "Dipinjam",
+    alasan: "Keperluan verifikasi data nasabah",
+    approver: "ANNAS",
+    tglApprove: "22-01-2026",
+    jamApprove: "09:00",
+    alasanApprove: "Disetujui",
+    tglPenyerahan: "22-01-2026",
   },
   {
     id: 2,
     dokumenId: 6,
+    detail: "Voucher Juni 2025 Kantor Kas KST",
     peminjam: "BURHAN",
     tglPinjam: "20-01-2026",
     tglKembali: "23-01-2026",

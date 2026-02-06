@@ -197,8 +197,8 @@ export default function RequestPeminjamanPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
                   Nama Dokumen
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
-                  Detail Dokumen
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
+                  Detail
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Lokasi
@@ -243,7 +243,10 @@ export default function RequestPeminjamanPage() {
                   <td className="px-6 py-4 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td
+                    className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"
+                    title={doc.detail}
+                  >
                     {doc.detail}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -72,6 +72,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const [isDesktop, setIsDesktop] = useState(false);
   const routeDecision = getDashboardRouteDecision(pathname, role);
   const lastScrollYRef = useRef(0);
   const scrollTickingRef = useRef(false);
@@ -101,6 +102,25 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => pathname === path;
   const isActiveGroup = (paths: string[]) =>
     paths.some((p) => pathname.includes(p));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    const updateMatch = () => setIsDesktop(media.matches);
+    updateMatch();
+    media.addEventListener("change", updateMatch);
+    return () => media.removeEventListener("change", updateMatch);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => {
+      if (window.innerWidth < 640) setSidebarOpen(false);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -230,6 +250,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return <PageLoader />;
   }
 
+  const sidebarWidth = isDesktop ? (sidebarOpen ? 280 : 80) : 280;
+  const shouldOffsetMain =
+    isDesktop && !isPreviewOpen && !isFocusMode && !isOverlayOpen;
+  const mainStyle: CSSProperties = {
+    marginLeft: shouldOffsetMain ? `${sidebarWidth}px` : "0px",
+    width: shouldOffsetMain ? `calc(100% - ${sidebarWidth}px)` : "100%",
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -249,7 +277,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           mobileMenuOpen ? "flex" : "hidden"
         } lg:flex`}
         style={{
-          width: sidebarOpen ? "280px" : "80px",
+          width: `${sidebarWidth}px`,
           background:
             "linear-gradient(180deg, #157ec3 0%, #0f5f96 50%, #0d5a8f 100%)",
           boxShadow: "4px 0 30px rgba(21, 126, 195, 0.2)",
@@ -1012,13 +1040,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main
-        className="transition-all duration-300 lg:ml-70"
-        style={{
-          marginLeft:
-            isPreviewOpen || isFocusMode || isOverlayOpen ? "0" : undefined,
-        }}
-      >
+      <main className="transition-all duration-300" style={mainStyle}>
         <header
           className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${
             headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
