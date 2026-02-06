@@ -41,7 +41,7 @@ type DokumenRow = {
   tglInput: string;
   userInput: string;
   statusPinjam: string;
-  tempatPenyimpananId: number;
+  tempatPenyimpananId: number | null;
   kodeKantor: string;
   namaKantor: string;
   kodeLemari: string;
@@ -64,9 +64,10 @@ export default function ListDokumenPage() {
 
   const allDokumen = useMemo<DokumenRow[]>(() => {
     return dummyDokumen.map((d) => {
-      const tempat = tempatPenyimpanan.find(
-        (t) => t.id === d.tempatPenyimpananId,
-      );
+      const tempat =
+        d.tempatPenyimpananId != null
+          ? tempatPenyimpanan.find((t) => t.id === d.tempatPenyimpananId)
+          : undefined;
 
       return {
         id: d.id,
@@ -77,7 +78,7 @@ export default function ListDokumenPage() {
         tglInput: d.tglInput,
         userInput: d.userInput,
         statusPinjam: d.statusPinjam,
-        tempatPenyimpananId: d.tempatPenyimpananId,
+        tempatPenyimpananId: d.tempatPenyimpananId ?? null,
         kodeKantor: tempat?.kodeKantor ?? "-",
         namaKantor: tempat?.namaKantor ?? "-",
         kodeLemari: tempat?.kodeLemari ?? "-",

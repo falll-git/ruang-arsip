@@ -53,7 +53,9 @@ export default function TempatPenyimpananPage() {
     });
 
     accessibleDokumen.forEach((d) => {
-      const bucket = grouped[d.tempatPenyimpananId];
+      const tempatId = d.tempatPenyimpananId ?? null;
+      if (!tempatId) return;
+      const bucket = grouped[tempatId];
       if (!bucket) return;
       bucket.push({
         id: d.id,

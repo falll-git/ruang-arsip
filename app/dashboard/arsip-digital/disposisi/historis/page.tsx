@@ -45,9 +45,8 @@ const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
   const lokasi =
     dokumen?.tempatPenyimpanan ||
     (dokumen?.tempatPenyimpananId
-      ? dummyTempatPenyimpanan.find(
-          (t) => t.id === dokumen.tempatPenyimpananId,
-        )?.kodeLemari
+      ? dummyTempatPenyimpanan.find((t) => t.id === dokumen.tempatPenyimpananId)
+          ?.kodeLemari
       : undefined) ||
     "-";
   const detail = d.detail || dokumen?.detail || "-";
@@ -73,9 +72,8 @@ const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
   const lokasi =
     dokumen?.tempatPenyimpanan ||
     (dokumen?.tempatPenyimpananId
-      ? dummyTempatPenyimpanan.find(
-          (t) => t.id === dokumen.tempatPenyimpananId,
-        )?.kodeLemari
+      ? dummyTempatPenyimpanan.find((t) => t.id === dokumen.tempatPenyimpananId)
+          ?.kodeLemari
       : undefined) ||
     "-";
   const detail = d.detail || dokumen?.detail || "-";
@@ -105,7 +103,7 @@ export default function HistorisDisposisiPage() {
   const [viewingDoc, setViewingDoc] = useState<HistorisItem | null>(null);
   const viewingDocApproved = Boolean(
     viewingDoc &&
-      ["approved", "disetujui"].includes(viewingDoc.status.toLowerCase()),
+    ["approved", "disetujui"].includes(viewingDoc.status.toLowerCase()),
   );
 
   const data =
@@ -285,7 +283,9 @@ export default function HistorisDisposisiPage() {
                             className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors inline-flex items-center gap-2"
                           >
                             <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">View Dokumen</span>
+                            <span className="hidden sm:inline">
+                              View Dokumen
+                            </span>
                           </button>
                         )}
                       </div>
@@ -486,7 +486,7 @@ export default function HistorisDisposisiPage() {
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
                     Detail Dokumen
                   </label>
-                  <p className="text-sm text-gray-800 mt-1 break-words">
+                  <p className="text-sm text-gray-800 mt-1 wrap-break-word">
                     {viewingDoc.detail}
                   </p>
                 </div>
