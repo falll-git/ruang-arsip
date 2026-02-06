@@ -12,6 +12,7 @@ const dokumenList = dummyDokumen.map((d) => ({
   kode: d.kode,
   jenisDokumen: d.jenisDokumen,
   namaDokumen: d.namaDokumen,
+  detail: d.detail,
   pemilik: d.userInput,
 }));
 
@@ -147,6 +148,9 @@ export default function PengajuanDisposisiPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
                   Nama Dokumen
                 </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
+                  Detail Dokumen
+                </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Pemilik
                 </th>
@@ -185,6 +189,9 @@ export default function PengajuanDisposisiPage() {
                   </td>
                   <td className="px-6 py-4 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {doc.detail}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -262,9 +269,12 @@ export default function PengajuanDisposisiPage() {
                             {doc.kode}
                           </span>
                           <span className="text-xs text-gray-500">
-                            • Pemilik: {doc.pemilik}
+                            &bull; Pemilik: {doc.pemilik}
                           </span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Detail: {doc.detail}
+                        </p>
                       </div>
                     </div>
                   ))}

@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import {
+  Calendar,
   CheckCircle2,
+  FileText,
   History,
   Send,
+  User,
   X,
   XCircle,
-  User,
-  Calendar,
 } from "lucide-react";
 import { dummyDisposisi, dummyDokumen } from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
@@ -17,11 +18,13 @@ interface HistorisItem {
   id: number;
   kode: string;
   namaDokumen: string;
+  detail: string;
   pemilik?: string;
   pemohon?: string;
   tglPengajuan: string;
   status: string;
   tglAksi: string;
+  fileUrl?: string;
 }
 
 const completedDisposisi = dummyDisposisi.filter(
@@ -34,10 +37,12 @@ const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
     id: d.id,
     kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
     namaDokumen: dokumen?.namaDokumen ?? "-",
+    detail: dokumen?.detail ?? "-",
     pemilik: d.pemilik,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
     tglAksi: d.tglAksi || d.tglPengajuan,
+    fileUrl: dokumen?.fileUrl,
   };
 });
 
@@ -47,10 +52,12 @@ const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
     id: d.id,
     kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
     namaDokumen: dokumen?.namaDokumen ?? "-",
+    detail: dokumen?.detail ?? "-",
     pemohon: d.pemohon,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
     tglAksi: d.tglAksi || d.tglPengajuan,
+    fileUrl: dokumen?.fileUrl,
   };
 });
 
@@ -60,6 +67,7 @@ export default function HistorisDisposisiPage() {
   );
   const [selectedItem, setSelectedItem] = useState<HistorisItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<HistorisItem | null>(null);
 
   const data =
     activeTab === "permohonan" ? historisPermohonan : historisPersetujuan;
@@ -215,15 +223,25 @@ export default function HistorisDisposisiPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setShowDetail(true);
-                      }}
-                      className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Detail
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setShowDetail(true);
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Detail
+                      </button>
+                      {item.status === "Approved" && (
+                        <button
+                          onClick={() => setViewingDoc(item)}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          View Dokumen
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -354,6 +372,125 @@ export default function HistorisDisposisiPage() {
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
               <button
                 onClick={() => setShowDetail(false)}
+                className="btn btn-outline"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewingDoc && (
+        <div
+          data-dashboard-overlay="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+          onClick={() => setViewingDoc(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  View Dokumen
+                </h2>
+              </div>
+              <button
+                onClick={() => setViewingDoc(null)}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+              >
+                <X className="w-5 h-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Kode Dokumen
+                  </label>
+                  <p className="font-bold text-primary-600 mt-1">
+                    {viewingDoc.kode}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Nama Dokumen
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {viewingDoc.namaDokumen}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Detail Dokumen
+                  </label>
+                  <p className="text-sm text-gray-800 mt-1">
+                    {viewingDoc.detail}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Status
+                  </label>
+                  <div className="mt-1">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+                        ${
+                          viewingDoc.status === "Approved"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        }`}
+                    >
+                      {viewingDoc.status === "Approved"
+                        ? "Disetujui"
+                        : "Ditolak"}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tanggal Pengajuan
+                  </label>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>{viewingDoc.tglPengajuan}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tanggal Aksi
+                  </label>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>{viewingDoc.tglAksi}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                {viewingDoc.fileUrl ? (
+                  <iframe
+                    src={viewingDoc.fileUrl}
+                    title={`Preview ${viewingDoc.namaDokumen}`}
+                    className="w-full h-96 bg-white"
+                  />
+                ) : (
+                  <div className="p-6 text-center text-gray-500">
+                    File dokumen tidak tersedia.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setViewingDoc(null)}
                 className="btn btn-outline"
               >
                 Tutup

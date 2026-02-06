@@ -19,6 +19,7 @@ const permintaanList = dummyDisposisi
       id: d.id,
       kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
       namaDokumen: dokumen?.namaDokumen ?? "-",
+      detail: dokumen?.detail ?? "-",
       pemohon: d.pemohon,
       tglPengajuan: d.tglPengajuan,
       alasan: d.alasanPengajuan,
@@ -133,6 +134,9 @@ export default function PermintaanDisposisiPage() {
                     Nama Dokumen
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Detail Dokumen
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Pemohon
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -165,6 +169,9 @@ export default function PermintaanDisposisiPage() {
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">
                       {item.namaDokumen}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {item.detail}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -259,6 +266,14 @@ export default function PermintaanDisposisiPage() {
                   </label>
                   <p className="font-medium text-gray-800 mt-1">
                     {selectedItem?.namaDokumen}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Detail Dokumen
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1 text-sm">
+                    {selectedItem?.detail ?? "-"}
                   </p>
                 </div>
                 <div>

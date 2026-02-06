@@ -15,6 +15,7 @@ export default function InputDokumenPage() {
     jenisDokumenKode: "",
     namaDokumen: "",
     keterangan: "",
+    restrict: "Tidak",
   }));
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,6 +132,7 @@ export default function InputDokumenPage() {
         jenisDokumenKode: "",
         namaDokumen: "",
         keterangan: "",
+        restrict: "Tidak",
       });
       setFile(null);
     }, 1500);
@@ -204,6 +206,28 @@ export default function InputDokumenPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="restrict"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Restrict
+                  </label>
+                  <select
+                    id="restrict"
+                    name="restrict"
+                    value={formData.restrict}
+                    onChange={handleChange}
+                    className="select"
+                  >
+                    <option value="Ya">Ya</option>
+                    <option value="Tidak">Tidak</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pilih &quot;Ya&quot; jika dokumen bersifat restricted.
+                  </p>
                 </div>
               </div>
             </section>
@@ -370,6 +394,7 @@ export default function InputDokumenPage() {
                     jenisDokumenKode: "",
                     namaDokumen: "",
                     keterangan: "",
+                    restrict: "Tidak",
                   });
                   setFile(null);
                 }}

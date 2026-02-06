@@ -3,14 +3,11 @@
 import { useMemo, useState } from "react";
 import {
   Edit2,
-  Filter,
-  Lock,
   Plus,
   Save,
   Shield,
   ToggleLeft,
   ToggleRight,
-  Unlock,
   X,
 } from "lucide-react";
 
@@ -38,18 +35,11 @@ export default function SetupJenisDokumenPage() {
   const { showToast } = useAppToast();
   const { jenisDokumen, setJenisDokumen } = useArsipDigitalMasterData();
 
-  const [filterAccess, setFilterAccess] = useState<
-    "SEMUA" | "RESTRICT" | "NON_RESTRICT"
-  >("SEMUA");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  const filtered = useMemo(() => {
-    if (filterAccess === "SEMUA") return jenisDokumen;
-    const wantRestricted = filterAccess === "RESTRICT";
-    return jenisDokumen.filter((j) => j.isRestricted === wantRestricted);
-  }, [filterAccess, jenisDokumen]);
+  const filtered = useMemo(() => jenisDokumen, [jenisDokumen]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -139,7 +129,7 @@ export default function SetupJenisDokumenPage() {
     <div className="max-w-7xl mx-auto animate-fade-in">
       <FeatureHeader
         title="Setup Jenis Dokumen"
-        subtitle="Kelola master jenis dokumen dan level aksesnya."
+        subtitle="Kelola master jenis dokumen."
         icon={<Shield />}
         actions={
           <button onClick={openCreate} className="btn btn-primary">
@@ -150,33 +140,9 @@ export default function SetupJenisDokumenPage() {
       />
 
       <div className="card p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="relative w-full md:w-72">
-            <Filter
-              className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              aria-hidden="true"
-            />
-            <select
-              value={filterAccess}
-              onChange={(e) =>
-                setFilterAccess(
-                  e.target.value === "RESTRICT"
-                    ? "RESTRICT"
-                    : e.target.value === "NON_RESTRICT"
-                      ? "NON_RESTRICT"
-                      : "SEMUA",
-                )
-              }
-              className="select input-with-icon"
-              title="Filter akses"
-            >
-              <option value="SEMUA">Semua Akses</option>
-              <option value="NON_RESTRICT">Non Restrict</option>
-              <option value="RESTRICT">Restrict</option>
-            </select>
-          </div>
+        <div className="flex items-center justify-between gap-4">
           <div className="text-sm text-gray-600">
-            Total:{" "}
+            Total Jenis Dokumen:{" "}
             <span className="font-bold text-gray-900">{filtered.length}</span>
           </div>
         </div>
@@ -185,53 +151,40 @@ export default function SetupJenisDokumenPage() {
           <table>
             <thead>
               <tr>
-                <th>No</th>
                 <th>Kode</th>
-                <th>Nama</th>
-                <th>Prefix</th>
-                <th>Akses</th>
-                <th>Status</th>
+                <th>Nama Jenis Dokumen</th>
+                <th>Keterangan</th>
                 <th className="text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((j, idx) => (
+              {filtered.map((j) => (
                 <tr key={j.id}>
-                  <td className="font-medium">{idx + 1}</td>
                   <td>
                     <span className="font-mono text-sm px-2 py-1 rounded bg-gray-100 border border-gray-200">
                       {j.kode}
                     </span>
                   </td>
-                  <td className="font-semibold text-gray-900">{j.nama}</td>
-                  <td className="font-mono text-sm">{j.prefix}</td>
                   <td>
-                    <span
-                      className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                        j.isRestricted
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : "bg-sky-50 text-sky-700 border border-sky-200"
-                      }`}
-                      title={j.isRestricted ? "Restrict" : "Non Restrict"}
-                    >
-                      {j.isRestricted ? (
-                        <Lock className="w-3.5 h-3.5" aria-hidden="true" />
-                      ) : (
-                        <Unlock className="w-3.5 h-3.5" aria-hidden="true" />
-                      )}
-                      {j.isRestricted ? "Restrict" : "Non Restrict"}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-900">
+                        {j.nama}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          j.status === "Aktif"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                        }`}
+                      >
+                        {j.status}
+                      </span>
+                    </div>
                   </td>
                   <td>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        j.status === "Aktif"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
-                    >
-                      {j.status}
-                    </span>
+                    <div className="text-sm text-gray-700">
+                      {j.prefix || "-"}
+                    </div>
                   </td>
                   <td className="text-right">
                     <div className="inline-flex items-center gap-2">
@@ -262,7 +215,7 @@ export default function SetupJenisDokumenPage() {
 
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-10 text-gray-500">
+                  <td colSpan={4} className="text-center py-10 text-gray-500">
                     Tidak ada data jenis dokumen.
                   </td>
                 </tr>
@@ -294,7 +247,7 @@ export default function SetupJenisDokumenPage() {
                   {editingId ? "Edit Jenis Dokumen" : "Tambah Jenis Dokumen"}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Tentukan kode, prefix, dan level akses.
+                  Tentukan kode dan prefix dokumen.
                 </p>
               </div>
               <button
@@ -335,7 +288,7 @@ export default function SetupJenisDokumenPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prefix Kode Dokumen
+                  Keterangan / Prefix Kode Dokumen
                 </label>
                 <input
                   value={form.prefix}
@@ -345,24 +298,6 @@ export default function SetupJenisDokumenPage() {
                   placeholder="PRH"
                   className="input"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Level Akses
-                </label>
-                <select
-                  value={form.isRestricted ? "RESTRICT" : "NON_RESTRICT"}
-                  onChange={(e) =>
-                    setForm((p) => ({
-                      ...p,
-                      isRestricted: e.target.value === "RESTRICT",
-                    }))
-                  }
-                  className="select"
-                >
-                  <option value="NON_RESTRICT">Non Restrict</option>
-                  <option value="RESTRICT">Restrict</option>
-                </select>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -37,6 +37,7 @@ export default function RequestPeminjamanPage() {
         kode: d.kode,
         jenisDokumen: d.jenisDokumen,
         namaDokumen: d.namaDokumen,
+        detail: d.detail,
         status: d.statusPinjam,
         lokasi: tempat
           ? `${tempat.namaKantor} - ${tempat.kodeLemari} (${tempat.rak})`
@@ -196,6 +197,9 @@ export default function RequestPeminjamanPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
                   Nama Dokumen
                 </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
+                  Detail Dokumen
+                </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Lokasi
                 </th>
@@ -238,6 +242,9 @@ export default function RequestPeminjamanPage() {
                   </td>
                   <td className="px-6 py-4 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {doc.detail}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {doc.lokasi}
@@ -308,6 +315,9 @@ export default function RequestPeminjamanPage() {
                         </div>
                         <p className="text-xs text-gray-500 truncate">
                           {doc.lokasi}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          Detail: {doc.detail}
                         </p>
                       </div>
                     </div>
