@@ -80,6 +80,25 @@
   }
 }
 
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile modal animation */
+@media (max-width: 1023px) {
+  .modal-content {
+    animation: slideInFromBottom 0.3s ease-out forwards;
+  }
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

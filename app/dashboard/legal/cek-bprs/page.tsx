@@ -414,7 +414,7 @@ export default function CekBPRSLainPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="p-3 bg-gray-50 rounded-xl">
                   <p className="text-xs text-gray-500">Nama Lengkap</p>
                   <p className="font-semibold text-gray-800">

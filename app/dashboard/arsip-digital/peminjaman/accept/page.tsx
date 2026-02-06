@@ -170,10 +170,9 @@ export default function AcceptPeminjamanPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                          ${
-                            item.tipe === "Peminjaman"
-                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : "bg-green-50 text-green-700 border-green-200"
+                          ${item.tipe === "Peminjaman"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-green-50 text-green-700 border-green-200"
                           }`}
                       >
                         {item.tipe}
@@ -350,7 +349,7 @@ export default function AcceptPeminjamanPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
                 className="btn btn-outline"

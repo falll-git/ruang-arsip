@@ -130,10 +130,10 @@ export default function TitipanAngsuranPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Sudah Diproses" as const,
-              tanggalProses: todayIsoDate(),
-            }
+            ...d,
+            status: "Sudah Diproses" as const,
+            tanggalProses: todayIsoDate(),
+          }
           : d,
       ),
     );
@@ -148,11 +148,11 @@ export default function TitipanAngsuranPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Dikembalikan" as const,
-              tanggalKembali: todayIsoDate(),
-              alasanKembali: formAlasanKembali,
-            }
+            ...d,
+            status: "Dikembalikan" as const,
+            tanggalKembali: todayIsoDate(),
+            alasanKembali: formAlasanKembali,
+          }
           : d,
       ),
     );
@@ -782,7 +782,7 @@ export default function TitipanAngsuranPage() {
               <h3 className="font-semibold text-gray-800 mb-3">
                 Pengembalian (Jika Ada)
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-500">
                     Tanggal Kembali

@@ -66,8 +66,8 @@ export default function LaporanSuratMasukPage() {
     const items = suratScope.filter((surat) => {
       const matchSearch = normalizedSearch
         ? surat.namaSurat.toLowerCase().includes(normalizedSearch) ||
-          surat.pengirim.toLowerCase().includes(normalizedSearch) ||
-          surat.perihal.toLowerCase().includes(normalizedSearch)
+        surat.pengirim.toLowerCase().includes(normalizedSearch) ||
+        surat.perihal.toLowerCase().includes(normalizedSearch)
         : true;
 
       const matchSifat = filterSifat === "Semua" || surat.sifat === filterSifat;
@@ -379,7 +379,7 @@ export default function LaporanSuratMasukPage() {
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                       Metadata
                     </h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <label className="text-xs text-gray-500 block mb-1">
                           Tanggal Terima

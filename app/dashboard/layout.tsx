@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Link2,
   List,
+  Menu,
   Settings,
   LogOut,
   Mail,
@@ -30,6 +31,7 @@ import {
   Send,
   Users,
   Wallet,
+  X,
 } from "lucide-react";
 import Notification from "@/components/Notification";
 import PageLoader from "@/components/ui/PageLoader";
@@ -65,6 +67,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const lastDeniedPathRef = useRef<string | null>(null);
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -227,8 +230,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         background: "linear-gradient(135deg, #f8fafc 0%, #e6f2fa 100%)",
       }}
     >
+      {/* Mobile Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       <aside
-        className="fixed left-0 top-0 z-50 h-screen transition-all duration-300 ease-in-out flex flex-col"
+        className={`fixed left-0 top-0 z-50 h-screen transition-all duration-300 ease-in-out flex-col ${mobileMenuOpen ? "flex" : "hidden"
+          } lg:flex`}
         style={{
           width: sidebarOpen ? "280px" : "80px",
           background:
@@ -249,7 +261,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             flexShrink: 0,
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
             {sidebarOpen ? (
               <div className="min-w-0 flex flex-col justify-center">
                 <h1 className="text-[15px] font-extrabold text-white tracking-wide leading-tight">
@@ -263,6 +275,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
             )}
+            {/* Mobile Close Button */}
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Tutup menu"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
           </div>
         </div>
 
@@ -987,29 +1007,35 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main
-        className="transition-all duration-300"
+        className="transition-all duration-300 lg:ml-[280px]"
         style={{
           marginLeft:
             isPreviewOpen || isFocusMode || isOverlayOpen
               ? "0"
-              : sidebarOpen
-                ? "280px"
-                : "80px",
+              : undefined,
         }}
       >
         <header
-          className={`px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${
-            headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
-              ? "top-0"
-              : "-top-24"
-          }`}
+          className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
+            ? "top-0"
+            : "-top-24"
+            }`}
           style={{
             background: "rgba(255, 255, 255, 0.8)",
             backdropFilter: "blur(12px)",
           }}
         >
-          <div className="flex items-center gap-4">
-            <div className="uiverse-menu-toggle">
+          <div className="flex items-center gap-2 lg:gap-4">
+            {/* Mobile hamburger menu */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              aria-label="Buka menu"
+            >
+              <Menu className="w-6 h-6 text-gray-700" />
+            </button>
+            {/* Desktop sidebar toggle */}
+            <div className="uiverse-menu-toggle hidden lg:inline-flex">
               <input
                 type="checkbox"
                 id="dashboard-menu-toggle"
@@ -1160,7 +1186,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <div className="p-6">{children}</div>
+        <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>
   );

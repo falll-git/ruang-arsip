@@ -160,14 +160,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div
-        className="welcome-banner rounded-2xl p-8 text-white animate-fade-in"
+        className="welcome-banner rounded-2xl p-4 lg:p-8 text-white animate-fade-in"
         style={{
           background: "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
         }}
       >
         <div className="flex items-center justify-between gap-6">
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold mb-2 leading-tight">
+            <h1 className="text-xl lg:text-3xl font-bold mb-2 leading-tight">
               Assalamualaikum, {user?.namaLengkap ?? "Pengguna"}!
             </h1>
           </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
         <div className="stat-card blue animate-fade-in stagger-1">
           <div className="flex items-center justify-between">
             <div>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
           />
           Modul Utama
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((card) => (
             <PremiumCard
               key={card.href}

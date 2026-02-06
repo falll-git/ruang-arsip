@@ -307,11 +307,10 @@ export default function InputSuratMasukPage() {
                     key={user.id}
                     onClick={() => handleDisposisiToggle(user.id)}
                     className={`p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3
-                            ${
-                              selectedDisposisi.includes(user.id)
-                                ? "border-primary-500 bg-primary-50 shadow-sm"
-                                : "border-gray-200 hover:border-primary-200 hover:bg-gray-50"
-                            }
+                            ${selectedDisposisi.includes(user.id)
+                        ? "border-primary-500 bg-primary-50 shadow-sm"
+                        : "border-gray-200 hover:border-primary-200 hover:bg-gray-50"
+                      }
                          `}
                   >
                     <div onClick={(event) => event.stopPropagation()}>
@@ -340,7 +339,7 @@ export default function InputSuratMasukPage() {
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 flex justify-end gap-3">
+          <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row justify-end gap-3">
             <button
               type="button"
               onClick={handleReset}

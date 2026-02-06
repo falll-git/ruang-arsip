@@ -132,13 +132,13 @@ export default function ProgressNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: formStatus,
-              noAkta: formNoAkta || d.noAkta,
-              tanggalSelesai:
-                formStatus === "Selesai" ? todayIsoDate() : d.tanggalSelesai,
-              catatan: formCatatan || d.catatan,
-            }
+            ...d,
+            status: formStatus,
+            noAkta: formNoAkta || d.noAkta,
+            tanggalSelesai:
+              formStatus === "Selesai" ? todayIsoDate() : d.tanggalSelesai,
+            catatan: formCatatan || d.catatan,
+          }
           : d,
       ),
     );
@@ -507,7 +507,7 @@ export default function ProgressNotarisPage() {
                   Tips: pilih No Kontrak dari daftar agar data nasabah valid.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Notaris

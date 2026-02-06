@@ -139,11 +139,11 @@ export default function TitipanNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Sudah Dibayar" as const,
-              tanggalBayar: todayIsoDate(),
-              noAkta: formNoAkta,
-            }
+            ...d,
+            status: "Sudah Dibayar" as const,
+            tanggalBayar: todayIsoDate(),
+            noAkta: formNoAkta,
+          }
           : d,
       ),
     );
@@ -170,11 +170,11 @@ export default function TitipanNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Dikembalikan" as const,
-              tanggalKembali: todayIsoDate(),
-              alasanKembali: formAlasanKembali,
-            }
+            ...d,
+            status: "Dikembalikan" as const,
+            tanggalKembali: todayIsoDate(),
+            alasanKembali: formAlasanKembali,
+          }
           : d,
       ),
     );
@@ -559,7 +559,7 @@ export default function TitipanNotarisPage() {
                   Tips: pilih No Kontrak dari daftar agar data nasabah valid.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Notaris

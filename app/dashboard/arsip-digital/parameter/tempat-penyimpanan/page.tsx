@@ -122,14 +122,14 @@ export default function SetupTempatPenyimpananPage() {
         return prev.map((t) =>
           t.id === editingId
             ? {
-                ...t,
-                kodeKantor,
-                namaKantor,
-                kodeLemari,
-                rak,
-                kapasitas: kapasitasNum,
-                status: form.status,
-              }
+              ...t,
+              kodeKantor,
+              namaKantor,
+              kodeLemari,
+              rak,
+              kapasitas: kapasitasNum,
+              status: form.status,
+            }
             : t,
         );
       }
@@ -223,11 +223,10 @@ export default function SetupTempatPenyimpananPage() {
                   <td className="tabular-nums">{t.kapasitas}</td>
                   <td>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        t.status === "Aktif"
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${t.status === "Aktif"
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
+                        }`}
                     >
                       {t.status}
                     </span>
@@ -394,7 +393,7 @@ export default function SetupTempatPenyimpananPage() {
               </div>
             </div>
 
-            <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+            <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
               <button onClick={closeModal} className="btn btn-outline">
                 Batal
               </button>

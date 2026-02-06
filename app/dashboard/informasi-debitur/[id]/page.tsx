@@ -91,7 +91,7 @@ export default function DetailDebiturPage() {
         <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
         <div className="bg-white rounded-xl p-6 space-y-4">
           <div className="h-12 bg-gray-100 rounded animate-pulse" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
             ))}
@@ -203,11 +203,10 @@ export default function DetailDebiturPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
+              className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
                   ? "border-[#157ec3] text-[#157ec3] bg-[#157ec3]/10"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -315,13 +314,12 @@ export default function DetailDebiturPage() {
                         </td>
                         <td className="py-3 px-4">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.status === "Tidak Ada"
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === "Tidak Ada"
                                 ? "bg-green-100 text-green-700"
                                 : item.status === "Ada - Lancar"
                                   ? "bg-blue-100 text-blue-700"
                                   : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {item.status}
                           </span>
@@ -589,11 +587,11 @@ export default function DetailDebiturPage() {
                                 normalizeFileUrl(item.fotoKunjungan!),
                                 `Lampiran Kunjungan - ${debitur.namaNasabah}`,
                                 item.fotoKunjunganTipe ??
-                                  (item
-                                    .fotoKunjungan!.toLowerCase()
-                                    .endsWith(".pdf")
-                                    ? "pdf"
-                                    : "image"),
+                                (item
+                                  .fotoKunjungan!.toLowerCase()
+                                  .endsWith(".pdf")
+                                  ? "pdf"
+                                  : "image"),
                               )
                             }
                             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"

@@ -146,12 +146,12 @@ export default function TitipanAsuransiPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Sudah Dibayar" as const,
-              tanggalBayar: todayIsoDate(),
-              noPolis: formNoPolis,
-              noBuktiBayar: formNoBukti,
-            }
+            ...d,
+            status: "Sudah Dibayar" as const,
+            tanggalBayar: todayIsoDate(),
+            noPolis: formNoPolis,
+            noBuktiBayar: formNoBukti,
+          }
           : d,
       ),
     );
@@ -166,11 +166,11 @@ export default function TitipanAsuransiPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: "Dikembalikan" as const,
-              tanggalKembali: todayIsoDate(),
-              alasanKembali: formAlasanKembali,
-            }
+            ...d,
+            status: "Dikembalikan" as const,
+            tanggalKembali: todayIsoDate(),
+            alasanKembali: formAlasanKembali,
+          }
           : d,
       ),
     );
@@ -485,9 +485,9 @@ export default function TitipanAsuransiPage() {
                     style={
                       currentPage === page
                         ? {
-                            background:
-                              "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
-                          }
+                          background:
+                            "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
+                        }
                         : undefined
                     }
                   >
@@ -559,7 +559,7 @@ export default function TitipanAsuransiPage() {
                   Tips: pilih No Kontrak dari daftar agar data nasabah valid.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Jenis Asuransi

@@ -145,7 +145,7 @@ export default function InputDokumenPage() {
       />
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-8">
+        <div className="p-4 lg:p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Section 1: Klasifikasi */}
             <section className="space-y-6">
@@ -156,7 +156,7 @@ export default function InputDokumenPage() {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div>
                   <label
                     htmlFor="tempatPenyimpanan"
@@ -360,7 +360,7 @@ export default function InputDokumenPage() {
               </div>
             </section>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
               <button
                 type="button"
                 className="btn btn-outline"

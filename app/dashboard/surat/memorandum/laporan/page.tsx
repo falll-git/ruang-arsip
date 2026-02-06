@@ -54,9 +54,9 @@ export default function LaporanMemorandumPage() {
     const items = memoScope.filter((memo) => {
       const matchSearch = normalizedSearch
         ? memo.noMemo.toLowerCase().includes(normalizedSearch) ||
-          memo.perihal.toLowerCase().includes(normalizedSearch) ||
-          memo.pembuatMemo.toLowerCase().includes(normalizedSearch) ||
-          memo.keterangan.toLowerCase().includes(normalizedSearch)
+        memo.perihal.toLowerCase().includes(normalizedSearch) ||
+        memo.pembuatMemo.toLowerCase().includes(normalizedSearch) ||
+        memo.keterangan.toLowerCase().includes(normalizedSearch)
         : true;
 
       const matchDivisi =
@@ -342,7 +342,7 @@ export default function LaporanMemorandumPage() {
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                       Metadata
                     </h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <label className="text-xs text-gray-500 block mb-1">
                           Divisi Pengirim

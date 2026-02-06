@@ -215,7 +215,7 @@ export default function ManajemenUserPage() {
         icon={<Users />}
       />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
         <div className="card p-4 text-center">
           <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
           <p className="text-sm text-gray-500">Total User</p>
@@ -254,7 +254,7 @@ export default function ManajemenUserPage() {
               />
             </div>
           </div>
-          <button onClick={handleAdd} className="btn btn-primary">
+          <button onClick={handleAdd} className="btn btn-primary w-full lg:w-auto">
             <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Tambah User</span>
           </button>
@@ -366,7 +366,7 @@ export default function ManajemenUserPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Nama Lengkap <span className="text-red-500">*</span>
@@ -469,7 +469,7 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
+                        formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>
@@ -480,8 +480,8 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.FUNGSI_LEGAL ||
-                      formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
+                        formData.role === USER_ROLES.FULL_AKSES ||
+                        formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>
@@ -492,8 +492,8 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.AKSES_RESTRICT ||
-                      formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
+                        formData.role === USER_ROLES.FULL_AKSES ||
+                        formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>
@@ -521,7 +521,7 @@ export default function ManajemenUserPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Atasan Terkait
@@ -559,7 +559,7 @@ export default function ManajemenUserPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
                 className="btn btn-outline"

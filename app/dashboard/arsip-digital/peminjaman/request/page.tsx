@@ -176,8 +176,8 @@ export default function RequestPeminjamanPage() {
                     <UiverseCheckbox
                       checked={
                         selectedDocs.length ===
-                          filteredDokumen.filter((d) => d.status === "Tersedia")
-                            .length &&
+                        filteredDokumen.filter((d) => d.status === "Tersedia")
+                          .length &&
                         filteredDokumen.filter((d) => d.status === "Tersedia")
                           .length > 0
                       }
@@ -245,10 +245,9 @@ export default function RequestPeminjamanPage() {
                   <td className="px-6 py-4 text-center">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                        ${
-                          doc.status === "Tersedia"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
+                        ${doc.status === "Tersedia"
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
                         }`}
                     >
                       {doc.status}
@@ -315,7 +314,7 @@ export default function RequestPeminjamanPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Tanggal Peminjaman <span className="text-red-500">*</span>
@@ -362,7 +361,7 @@ export default function RequestPeminjamanPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
                 className="btn btn-outline"

@@ -155,11 +155,11 @@ export default function ProgressAsuransiPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-              ...d,
-              status: formStatus,
-              noPolis: formNoPolis || d.noPolis,
-              catatan: formCatatan || d.catatan,
-            }
+            ...d,
+            status: formStatus,
+            noPolis: formNoPolis || d.noPolis,
+            catatan: formCatatan || d.catatan,
+          }
           : d,
       ),
     );
@@ -548,7 +548,7 @@ export default function ProgressAsuransiPage() {
                   Tips: pilih No Kontrak dari daftar agar data nasabah valid.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Perusahaan
