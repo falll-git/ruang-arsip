@@ -321,11 +321,12 @@ export default function ListDokumenPage() {
                     <td className="px-6 py-4 text-sm text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${doc.statusPinjam === "Tersedia"
-                            ? "bg-green-100 text-green-800"
-                            : doc.statusPinjam === "Dipinjam"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-gray-100 text-gray-800"
+                          ${
+                            doc.statusPinjam === "Tersedia"
+                              ? "bg-green-100 text-green-800"
+                              : doc.statusPinjam === "Dipinjam"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-gray-100 text-gray-800"
                           }`}
                       >
                         {doc.statusPinjam}
@@ -570,8 +571,8 @@ export default function ListDokumenPage() {
                       <span className="font-semibold text-gray-800">
                         {debiturTerkait
                           ? getKolektibilitasLabel(
-                            debiturTerkait.kolektibilitas,
-                          )
+                              debiturTerkait.kolektibilitas,
+                            )
                           : "-"}
                       </span>
                     </div>

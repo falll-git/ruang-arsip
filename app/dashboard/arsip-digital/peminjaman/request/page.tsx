@@ -176,8 +176,8 @@ export default function RequestPeminjamanPage() {
                     <UiverseCheckbox
                       checked={
                         selectedDocs.length ===
-                        filteredDokumen.filter((d) => d.status === "Tersedia")
-                          .length &&
+                          filteredDokumen.filter((d) => d.status === "Tersedia")
+                            .length &&
                         filteredDokumen.filter((d) => d.status === "Tersedia")
                           .length > 0
                       }
@@ -245,9 +245,10 @@ export default function RequestPeminjamanPage() {
                   <td className="px-6 py-4 text-center">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                        ${doc.status === "Tersedia"
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
+                        ${
+                          doc.status === "Tersedia"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
                         }`}
                     >
                       {doc.status}

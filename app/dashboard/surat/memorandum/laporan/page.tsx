@@ -54,9 +54,9 @@ export default function LaporanMemorandumPage() {
     const items = memoScope.filter((memo) => {
       const matchSearch = normalizedSearch
         ? memo.noMemo.toLowerCase().includes(normalizedSearch) ||
-        memo.perihal.toLowerCase().includes(normalizedSearch) ||
-        memo.pembuatMemo.toLowerCase().includes(normalizedSearch) ||
-        memo.keterangan.toLowerCase().includes(normalizedSearch)
+          memo.perihal.toLowerCase().includes(normalizedSearch) ||
+          memo.pembuatMemo.toLowerCase().includes(normalizedSearch) ||
+          memo.keterangan.toLowerCase().includes(normalizedSearch)
         : true;
 
       const matchDivisi =

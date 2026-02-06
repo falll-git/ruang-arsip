@@ -132,13 +132,13 @@ export default function ProgressNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: formStatus,
-            noAkta: formNoAkta || d.noAkta,
-            tanggalSelesai:
-              formStatus === "Selesai" ? todayIsoDate() : d.tanggalSelesai,
-            catatan: formCatatan || d.catatan,
-          }
+              ...d,
+              status: formStatus,
+              noAkta: formNoAkta || d.noAkta,
+              tanggalSelesai:
+                formStatus === "Selesai" ? todayIsoDate() : d.tanggalSelesai,
+              catatan: formCatatan || d.catatan,
+            }
           : d,
       ),
     );

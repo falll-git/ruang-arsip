@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   ChevronUp,
@@ -149,7 +149,7 @@ export default function ListDebiturPage() {
                     {
                       ["--spinner-size"]: "16px",
                       ["--spinner-border"]: "2px",
-                    } as React.CSSProperties
+                    } as CSSProperties
                   }
                   aria-hidden="true"
                 />
@@ -171,7 +171,7 @@ export default function ListDebiturPage() {
                     {
                       ["--spinner-size"]: "16px",
                       ["--spinner-border"]: "2px",
-                    } as React.CSSProperties
+                    } as CSSProperties
                   }
                   aria-hidden="true"
                 />
@@ -191,7 +191,7 @@ export default function ListDebiturPage() {
         }}
       >
         <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-70">
+          <div className="flex-1 min-w-60 w-full sm:w-auto">
             <div className="relative">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -210,7 +210,7 @@ export default function ListDebiturPage() {
             </div>
           </div>
 
-          <div className="shrink-0 min-w-60">
+          <div className="shrink-0 min-w-50 w-full sm:w-60">
             <select
               value={filterKol}
               onChange={(e) => {

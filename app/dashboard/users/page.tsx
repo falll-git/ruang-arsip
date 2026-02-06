@@ -254,7 +254,10 @@ export default function ManajemenUserPage() {
               />
             </div>
           </div>
-          <button onClick={handleAdd} className="btn btn-primary w-full lg:w-auto">
+          <button
+            onClick={handleAdd}
+            className="btn btn-primary w-full lg:w-auto"
+          >
             <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Tambah User</span>
           </button>
@@ -469,7 +472,7 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.FULL_AKSES ||
-                        formData.role === USER_ROLES.MASTER_USER
+                      formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>
@@ -480,8 +483,8 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.FUNGSI_LEGAL ||
-                        formData.role === USER_ROLES.FULL_AKSES ||
-                        formData.role === USER_ROLES.MASTER_USER
+                      formData.role === USER_ROLES.FULL_AKSES ||
+                      formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>
@@ -492,8 +495,8 @@ export default function ManajemenUserPage() {
                     </p>
                     <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.role === USER_ROLES.AKSES_RESTRICT ||
-                        formData.role === USER_ROLES.FULL_AKSES ||
-                        formData.role === USER_ROLES.MASTER_USER
+                      formData.role === USER_ROLES.FULL_AKSES ||
+                      formData.role === USER_ROLES.MASTER_USER
                         ? "Ya"
                         : "Tidak"}
                     </p>

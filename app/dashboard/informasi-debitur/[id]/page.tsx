@@ -203,10 +203,11 @@ export default function DetailDebiturPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id
+              className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === tab.id
                   ? "border-[#157ec3] text-[#157ec3] bg-[#157ec3]/10"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
+              }`}
             >
               {tab.label}
             </button>
@@ -286,66 +287,69 @@ export default function DetailDebiturPage() {
                   </p>
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Nama BPRS
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Status
-                      </th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Outstanding
-                      </th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Kol
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Tgl Cek
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {pengecekanBPRS.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">
-                          {item.namaBPRS}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === "Tidak Ada"
-                                ? "bg-green-100 text-green-700"
-                                : item.status === "Ada - Lancar"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right font-medium">
-                          {formatCurrency(item.outstanding)}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className="inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-900"
-                            style={{
-                              borderColor: getKolektibilitasColor(
-                                item.kolektibilitas,
-                              ),
-                            }}
-                          >
-                            {item.kolektibilitas}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
-                          {formatDateDisplay(item.tanggalCek)}
-                        </td>
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-180 w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Nama BPRS
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Status
+                        </th>
+                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Outstanding
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Kol
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tgl Cek
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {pengecekanBPRS.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="py-3 px-4 font-medium">
+                            {item.namaBPRS}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                item.status === "Tidak Ada"
+                                  ? "bg-green-100 text-green-700"
+                                  : item.status === "Ada - Lancar"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right font-medium">
+                            {formatCurrency(item.outstanding)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span
+                              className="inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-900"
+                              style={{
+                                borderColor: getKolektibilitasColor(
+                                  item.kolektibilitas,
+                                ),
+                              }}
+                            >
+                              {item.kolektibilitas}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-500">
+                            {formatDateDisplay(item.tanggalCek)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -357,55 +361,59 @@ export default function DetailDebiturPage() {
                   <p>Tidak ada data historis kolektibilitas</p>
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Bulan
-                      </th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Kol
-                      </th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        OS Pokok
-                      </th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        OS Margin
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Keterangan
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {historisKol.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{item.bulan}</td>
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className="inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-900"
-                            style={{
-                              borderColor: getKolektibilitasColor(
-                                item.kolektibilitas,
-                              ),
-                            }}
-                          >
-                            {item.kolektibilitas}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          {formatCurrency(item.osPokok)}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          {formatCurrency(item.osMargin)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
-                          {item.keterangan}
-                        </td>
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-180 w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Bulan
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Kol
+                        </th>
+                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          OS Pokok
+                        </th>
+                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          OS Margin
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Keterangan
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {historisKol.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="py-3 px-4 font-medium">
+                            {item.bulan}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span
+                              className="inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-900"
+                              style={{
+                                borderColor: getKolektibilitasColor(
+                                  item.kolektibilitas,
+                                ),
+                              }}
+                            >
+                              {item.kolektibilitas}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {formatCurrency(item.osPokok)}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {formatCurrency(item.osMargin)}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-500">
+                            {item.keterangan}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -587,11 +595,11 @@ export default function DetailDebiturPage() {
                                 normalizeFileUrl(item.fotoKunjungan!),
                                 `Lampiran Kunjungan - ${debitur.namaNasabah}`,
                                 item.fotoKunjunganTipe ??
-                                (item
-                                  .fotoKunjungan!.toLowerCase()
-                                  .endsWith(".pdf")
-                                  ? "pdf"
-                                  : "image"),
+                                  (item
+                                    .fotoKunjungan!.toLowerCase()
+                                    .endsWith(".pdf")
+                                    ? "pdf"
+                                    : "image"),
                               )
                             }
                             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
@@ -618,42 +626,44 @@ export default function DetailDebiturPage() {
                   <p>Belum ada langkah penanganan</p>
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Tanggal
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Langkah
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Hasil
-                      </th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {langkahPenanganan.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm">
-                          {formatDateDisplay(item.tanggal)}
-                        </td>
-                        <td className="py-3 px-4 font-medium">
-                          {item.langkah}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {item.hasilPenanganan}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <StatusBadge status={item.status} />
-                        </td>
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-180 w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tanggal
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Langkah
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Hasil
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Status
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {langkahPenanganan.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="py-3 px-4 text-sm">
+                            {formatDateDisplay(item.tanggal)}
+                          </td>
+                          <td className="py-3 px-4 font-medium">
+                            {item.langkah}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {item.hasilPenanganan}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <StatusBadge status={item.status} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -665,82 +675,84 @@ export default function DetailDebiturPage() {
                   <p>Belum ada surat peringatan</p>
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Jenis
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Tgl Terbit
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Tgl Kirim
-                      </th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Keterangan
-                      </th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                        Dokumen
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {suratPeringatan.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4">
-                          <span className="inline-flex px-2 py-1 rounded bg-blue-50 border border-blue-100 text-xs font-bold text-gray-900">
-                            {item.jenisSurat}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm">
-                          {formatDateDisplay(item.tanggalTerbit)}
-                        </td>
-                        <td className="py-3 px-4 text-sm">
-                          {formatDateDisplay(item.tanggalKirim)}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <StatusBadge status={item.statusKirim} />
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
-                          {item.keterangan || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              (() => {
-                                const suratDoc = arsipDigitalTerkait.find(
-                                  (d) =>
-                                    d.jenisDokumen === "Legal" &&
-                                    d.namaDokumen.includes(item.jenisSurat),
-                                );
-                                const fileUrl =
-                                  suratDoc?.fileUrl ??
-                                  "/documents/contoh-dok.pdf";
-                                openPreview(
-                                  fileUrl,
-                                  suratDoc
-                                    ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
-                                    : `Surat Peringatan ${item.jenisSurat}`,
-                                  "pdf",
-                                );
-                              })()
-                            }
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
-                            title={`Lihat dokumen ${item.jenisSurat}`}
-                          >
-                            <Eye className="w-4 h-4" aria-hidden="true" />
-                            Lihat
-                          </button>
-                        </td>
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-190 w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Jenis
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tgl Terbit
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tgl Kirim
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Status
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Keterangan
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Dokumen
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {suratPeringatan.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <span className="inline-flex px-2 py-1 rounded bg-blue-50 border border-blue-100 text-xs font-bold text-gray-900">
+                              {item.jenisSurat}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {formatDateDisplay(item.tanggalTerbit)}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {formatDateDisplay(item.tanggalKirim)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <StatusBadge status={item.statusKirim} />
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-500">
+                            {item.keterangan || "-"}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                (() => {
+                                  const suratDoc = arsipDigitalTerkait.find(
+                                    (d) =>
+                                      d.jenisDokumen === "Legal" &&
+                                      d.namaDokumen.includes(item.jenisSurat),
+                                  );
+                                  const fileUrl =
+                                    suratDoc?.fileUrl ??
+                                    "/documents/contoh-dok.pdf";
+                                  openPreview(
+                                    fileUrl,
+                                    suratDoc
+                                      ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
+                                      : `Surat Peringatan ${item.jenisSurat}`,
+                                    "pdf",
+                                  );
+                                })()
+                              }
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                              title={`Lihat dokumen ${item.jenisSurat}`}
+                            >
+                              <Eye className="w-4 h-4" aria-hidden="true" />
+                              Lihat
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}

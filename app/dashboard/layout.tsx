@@ -71,9 +71,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [now, setNow] = useState(() => new Date());
   const routeDecision = getDashboardRouteDecision(pathname, role);
+  const lastScrollYRef = useRef(0);
+  const scrollTickingRef = useRef(false);
 
   const [menuArsip, setMenuArsip] = useState(false);
   const [menuRuangArsip, setMenuRuangArsip] = useState(false);
@@ -102,24 +103,30 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     paths.some((p) => pathname.includes(p));
 
   useEffect(() => {
-    const controlHeader = () => {
-      if (typeof window !== "undefined") {
-        if (window.scrollY > lastScrollY && window.scrollY > 100) {
-          setHeaderVisible(false);
-        } else {
-          setHeaderVisible(true);
-        }
-        setLastScrollY(window.scrollY);
-      }
+    if (typeof window === "undefined") return undefined;
+
+    const handleScroll = () => {
+      if (scrollTickingRef.current) return;
+      scrollTickingRef.current = true;
+
+      window.requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const shouldShowHeader = !(
+          currentY > lastScrollYRef.current && currentY > 100
+        );
+
+        setHeaderVisible((prev) =>
+          prev === shouldShowHeader ? prev : shouldShowHeader,
+        );
+
+        lastScrollYRef.current = currentY;
+        scrollTickingRef.current = false;
+      });
     };
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", controlHeader);
-      return () => {
-        window.removeEventListener("scroll", controlHeader);
-      };
-    }
-  }, [lastScrollY]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const isFormField = (target: EventTarget | null) => {
@@ -230,7 +237,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         background: "linear-gradient(135deg, #f8fafc 0%, #e6f2fa 100%)",
       }}
     >
-      {/* Mobile Backdrop */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -239,8 +245,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen transition-all duration-300 ease-in-out flex-col ${mobileMenuOpen ? "flex" : "hidden"
-          } lg:flex`}
+        className={`fixed left-0 top-0 z-50 h-screen transition-all duration-300 ease-in-out flex-col ${
+          mobileMenuOpen ? "flex" : "hidden"
+        } lg:flex`}
         style={{
           width: sidebarOpen ? "280px" : "80px",
           background:
@@ -275,7 +282,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
             )}
-            {/* Mobile Close Button */}
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
@@ -1007,26 +1013,24 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main
-        className="transition-all duration-300 lg:ml-[280px]"
+        className="transition-all duration-300 lg:ml-70"
         style={{
           marginLeft:
-            isPreviewOpen || isFocusMode || isOverlayOpen
-              ? "0"
-              : undefined,
+            isPreviewOpen || isFocusMode || isOverlayOpen ? "0" : undefined,
         }}
       >
         <header
-          className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
-            ? "top-0"
-            : "-top-24"
-            }`}
+          className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${
+            headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
+              ? "top-0"
+              : "-top-24"
+          }`}
           style={{
             background: "rgba(255, 255, 255, 0.8)",
             backdropFilter: "blur(12px)",
           }}
         >
           <div className="flex items-center gap-2 lg:gap-4">
-            {/* Mobile hamburger menu */}
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -1034,7 +1038,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             >
               <Menu className="w-6 h-6 text-gray-700" />
             </button>
-            {/* Desktop sidebar toggle */}
             <div className="uiverse-menu-toggle hidden lg:inline-flex">
               <input
                 type="checkbox"

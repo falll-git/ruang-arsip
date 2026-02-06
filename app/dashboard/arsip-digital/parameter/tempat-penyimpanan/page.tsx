@@ -122,14 +122,14 @@ export default function SetupTempatPenyimpananPage() {
         return prev.map((t) =>
           t.id === editingId
             ? {
-              ...t,
-              kodeKantor,
-              namaKantor,
-              kodeLemari,
-              rak,
-              kapasitas: kapasitasNum,
-              status: form.status,
-            }
+                ...t,
+                kodeKantor,
+                namaKantor,
+                kodeLemari,
+                rak,
+                kapasitas: kapasitasNum,
+                status: form.status,
+              }
             : t,
         );
       }
@@ -223,10 +223,11 @@ export default function SetupTempatPenyimpananPage() {
                   <td className="tabular-nums">{t.kapasitas}</td>
                   <td>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${t.status === "Aktif"
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        t.status === "Aktif"
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
-                        }`}
+                      }`}
                     >
                       {t.status}
                     </span>

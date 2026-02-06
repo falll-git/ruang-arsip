@@ -103,13 +103,13 @@ export default function SetupJenisDokumenPage() {
         return prev.map((j) =>
           j.id === editingId
             ? {
-              ...j,
-              kode,
-              nama,
-              prefix,
-              isRestricted: form.isRestricted,
-              status: form.status,
-            }
+                ...j,
+                kode,
+                nama,
+                prefix,
+                isRestricted: form.isRestricted,
+                status: form.status,
+              }
             : j,
         );
       }
@@ -207,10 +207,11 @@ export default function SetupJenisDokumenPage() {
                   <td className="font-mono text-sm">{j.prefix}</td>
                   <td>
                     <span
-                      className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold ${j.isRestricted
+                      className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                        j.isRestricted
                           ? "bg-amber-50 text-amber-700 border border-amber-200"
                           : "bg-sky-50 text-sky-700 border border-sky-200"
-                        }`}
+                      }`}
                       title={j.isRestricted ? "Restrict" : "Non Restrict"}
                     >
                       {j.isRestricted ? (
@@ -223,10 +224,11 @@ export default function SetupJenisDokumenPage() {
                   </td>
                   <td>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${j.status === "Aktif"
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        j.status === "Aktif"
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
-                        }`}
+                      }`}
                     >
                       {j.status}
                     </span>

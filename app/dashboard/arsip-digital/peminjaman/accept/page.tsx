@@ -170,9 +170,10 @@ export default function AcceptPeminjamanPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                          ${item.tipe === "Peminjaman"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-green-50 text-green-700 border-green-200"
+                          ${
+                            item.tipe === "Peminjaman"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : "bg-green-50 text-green-700 border-green-200"
                           }`}
                       >
                         {item.tipe}

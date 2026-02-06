@@ -66,8 +66,8 @@ export default function LaporanSuratMasukPage() {
     const items = suratScope.filter((surat) => {
       const matchSearch = normalizedSearch
         ? surat.namaSurat.toLowerCase().includes(normalizedSearch) ||
-        surat.pengirim.toLowerCase().includes(normalizedSearch) ||
-        surat.perihal.toLowerCase().includes(normalizedSearch)
+          surat.pengirim.toLowerCase().includes(normalizedSearch) ||
+          surat.perihal.toLowerCase().includes(normalizedSearch)
         : true;
 
       const matchSifat = filterSifat === "Semua" || surat.sifat === filterSifat;

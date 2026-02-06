@@ -155,11 +155,11 @@ export default function ProgressAsuransiPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: formStatus,
-            noPolis: formNoPolis || d.noPolis,
-            catatan: formCatatan || d.catatan,
-          }
+              ...d,
+              status: formStatus,
+              noPolis: formNoPolis || d.noPolis,
+              catatan: formCatatan || d.catatan,
+            }
           : d,
       ),
     );

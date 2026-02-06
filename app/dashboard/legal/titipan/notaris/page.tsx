@@ -139,11 +139,11 @@ export default function TitipanNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: "Sudah Dibayar" as const,
-            tanggalBayar: todayIsoDate(),
-            noAkta: formNoAkta,
-          }
+              ...d,
+              status: "Sudah Dibayar" as const,
+              tanggalBayar: todayIsoDate(),
+              noAkta: formNoAkta,
+            }
           : d,
       ),
     );
@@ -170,11 +170,11 @@ export default function TitipanNotarisPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: "Dikembalikan" as const,
-            tanggalKembali: todayIsoDate(),
-            alasanKembali: formAlasanKembali,
-          }
+              ...d,
+              status: "Dikembalikan" as const,
+              tanggalKembali: todayIsoDate(),
+              alasanKembali: formAlasanKembali,
+            }
           : d,
       ),
     );

@@ -130,10 +130,10 @@ export default function TitipanAngsuranPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: "Sudah Diproses" as const,
-            tanggalProses: todayIsoDate(),
-          }
+              ...d,
+              status: "Sudah Diproses" as const,
+              tanggalProses: todayIsoDate(),
+            }
           : d,
       ),
     );
@@ -148,11 +148,11 @@ export default function TitipanAngsuranPage() {
       data.map((d) =>
         d.id === selectedItem.id
           ? {
-            ...d,
-            status: "Dikembalikan" as const,
-            tanggalKembali: todayIsoDate(),
-            alasanKembali: formAlasanKembali,
-          }
+              ...d,
+              status: "Dikembalikan" as const,
+              tanggalKembali: todayIsoDate(),
+              alasanKembali: formAlasanKembali,
+            }
           : d,
       ),
     );

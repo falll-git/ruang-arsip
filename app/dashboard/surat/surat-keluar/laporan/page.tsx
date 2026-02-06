@@ -72,8 +72,8 @@ export default function LaporanSuratKeluarPage() {
     const items = suratScope.filter((surat) => {
       const matchSearch = normalizedSearch
         ? surat.namaSurat.toLowerCase().includes(normalizedSearch) ||
-        surat.penerima.toLowerCase().includes(normalizedSearch) ||
-        surat.perihal.toLowerCase().includes(normalizedSearch)
+          surat.penerima.toLowerCase().includes(normalizedSearch) ||
+          surat.perihal.toLowerCase().includes(normalizedSearch)
         : true;
 
       const matchMedia = filterMedia === "Semua" || surat.media === filterMedia;
