@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ClipboardCheck, ClipboardList, X } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  CheckCircle2,
+  ClipboardCheck,
+  FileBarChart2,
+  X,
+} from "lucide-react";
 import { dummyDokumen, dummyPeminjaman } from "@/lib/data";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -92,7 +99,7 @@ export default function AcceptPeminjamanPage() {
             </p>
           </div>
           <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
-            <ClipboardList className="w-7 h-7" />
+            <FileBarChart2 className="w-7 h-7" />
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
@@ -105,7 +112,7 @@ export default function AcceptPeminjamanPage() {
             </p>
           </div>
           <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
-            <ClipboardCheck className="w-7 h-7" />
+            <BookOpen className="w-7 h-7" />
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
@@ -118,7 +125,7 @@ export default function AcceptPeminjamanPage() {
             </p>
           </div>
           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600">
-            <Check className="w-7 h-7" />
+            <CheckCircle2 className="w-7 h-7" />
           </div>
         </div>
       </div>
