@@ -1,23 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClipboardList, Plus, X } from "lucide-react";
+import { ClipboardList, Pencil, Plus, X } from "lucide-react";
 import {
   dummyDebiturList,
   dummyLangkahPenanganan,
   formatCurrency,
-  getKolektibilitasColor,
 } from "@/lib/data";
 import type { LangkahPenanganan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+import StatusBadge from "@/components/marketing/StatusBadge";
+import StatusEditModal from "@/components/marketing/StatusEditModal";
+import DetailModal, {
+  DetailSection,
+  DetailRow,
+} from "@/components/marketing/DetailModal";
+import KolBadge from "@/components/marketing/KolBadge";
 
 export default function LangkahPenangananPage() {
   const [data, setData] = useState<LangkahPenanganan[]>([
     ...dummyLangkahPenanganan,
   ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<LangkahPenanganan | null>(null);
+  const [statusEditItem, setStatusEditItem] =
+    useState<LangkahPenanganan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDebitur, setSelectedDebitur] = useState("");
   const [form, setForm] = useState({
@@ -55,6 +64,17 @@ export default function LangkahPenangananPage() {
     showToast("Langkah penanganan berhasil ditambahkan!", "success");
   };
 
+  const handleStatusSave = (
+    item: LangkahPenanganan,
+    newStatus: LangkahPenanganan["status"]
+  ) => {
+    setData((prev) =>
+      prev.map((d) => (d.id === item.id ? { ...d, status: newStatus } : d))
+    );
+    setStatusEditItem(null);
+    showToast("Status berhasil diubah!", "success");
+  };
+
   const getDebiturName = (id: string) => {
     const debitur = dummyDebiturList.find((d) => d.id === id);
     return debitur ? debitur.namaNasabah : id;
@@ -63,36 +83,6 @@ export default function LangkahPenangananPage() {
   const getDebiturKol = (id: string) => {
     const debitur = dummyDebiturList.find((d) => d.id === id);
     return debitur?.kolektibilitas || "1";
-  };
-
-  const KolBadge = ({ kol }: { kol: string }) => {
-    const color = getKolektibilitasColor(kol);
-    return (
-      <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-900">
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        Kol {kol}
-      </span>
-    );
-  };
-
-  const StatusBadge = ({ status }: { status: string }) => {
-    const colors: Record<string, string> = {
-      Pending: "#f59e0b",
-      Proses: "#3b82f6",
-      Selesai: "#10b981",
-    };
-    const color = colors[status] || "#6b7280";
-    return (
-      <span
-        className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
-        style={{ backgroundColor: `${color}20`, color }}
-      >
-        {status}
-      </span>
-    );
   };
 
   if (isLoading) {
@@ -154,7 +144,8 @@ export default function LangkahPenangananPage() {
             {data.map((item) => (
               <tr
                 key={item.id}
-                className="hover:bg-blue-50/30 transition-colors"
+                onClick={() => setDetailItem(item)}
+                className="hover:bg-blue-50/30 transition-colors cursor-pointer"
               >
                 <td className="px-5 py-4 text-sm text-gray-600 text-center">
                   {formatDateDisplay(item.tanggal)}
@@ -173,8 +164,22 @@ export default function LangkahPenangananPage() {
                 <td className="px-5 py-4 text-sm text-gray-600 text-center">
                   {item.hasilPenanganan}
                 </td>
-                <td className="px-5 py-4 text-center">
-                  <StatusBadge status={item.status} />
+                <td
+                  className="px-5 py-4 text-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <StatusBadge status={item.status} />
+                    <button
+                      type="button"
+                      onClick={() => setStatusEditItem(item)}
+                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-[#157ec3]"
+                      title="Ubah status"
+                      aria-label="Ubah status"
+                    >
+                      <Pencil className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -185,20 +190,21 @@ export default function LangkahPenangananPage() {
       {isModalOpen && (
         <div
           data-dashboard-overlay="true"
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
         >
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setIsModalOpen(false)}
           />
-          <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
                 Tambah Langkah Penanganan
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Tutup"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
@@ -271,14 +277,13 @@ export default function LangkahPenangananPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:opacity-90"
-                  style={{ backgroundColor: "#157ec3" }}
+                  className="flex-1 btn btn-primary px-4 py-2.5 text-sm"
                 >
                   Simpan
                 </button>
@@ -287,6 +292,49 @@ export default function LangkahPenangananPage() {
           </div>
         </div>
       )}
+
+      <DetailModal
+        isOpen={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        title="Detail Langkah Penanganan"
+      >
+        {detailItem && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DetailSection title="Informasi Utama">
+              <DetailRow
+                label="Debitur"
+                value={
+                  <span className="flex items-center gap-2">
+                    {getDebiturName(detailItem.debiturId)}
+                    <KolBadge kol={getDebiturKol(detailItem.debiturId)} />
+                  </span>
+                }
+              />
+              <DetailRow label="Langkah" value={detailItem.langkah} />
+              <DetailRow label="Hasil" value={detailItem.hasilPenanganan} />
+            </DetailSection>
+            <DetailSection title="Metadata">
+              <DetailRow label="Tanggal" value={formatDateDisplay(detailItem.tanggal)} />
+              <DetailRow label="Dibuat oleh" value={detailItem.createdBy} />
+            </DetailSection>
+            <div className="md:col-span-2">
+              <DetailSection title="Status">
+                <StatusBadge status={detailItem.status} />
+              </DetailSection>
+            </div>
+          </div>
+        )}
+      </DetailModal>
+
+      <StatusEditModal
+        isOpen={!!statusEditItem}
+        onClose={() => setStatusEditItem(null)}
+        currentStatus={statusEditItem?.status ?? "Pending"}
+        onSave={(newStatus) =>
+          statusEditItem && handleStatusSave(statusEditItem, newStatus)
+        }
+        title="Ubah Status Langkah Penanganan"
+      />
     </div>
   );
 }

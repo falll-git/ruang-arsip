@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, Plus, UploadCloud, X } from "lucide-react";
+import { Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
 import {
   dummyDebiturList,
   dummyHasilKunjungan,
   formatCurrency,
-  getKolektibilitasColor,
 } from "@/lib/data";
 import type { HasilKunjungan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -14,11 +13,18 @@ import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
+import DetailModal, {
+  DetailSection,
+  DetailRow,
+} from "@/components/marketing/DetailModal";
+import KolBadge from "@/components/marketing/KolBadge";
 
 export default function HasilKunjunganPage() {
   const { openPreview } = useDocumentPreviewContext();
   const [data, setData] = useState<HasilKunjungan[]>([...dummyHasilKunjungan]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<HasilKunjungan | null>(null);
+  const [editItem, setEditItem] = useState<HasilKunjungan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDebitur, setSelectedDebitur] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -37,8 +43,20 @@ export default function HasilKunjunganPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditItem(null);
     setDragOver(false);
     setFile(null);
+  };
+
+  const openEditModal = (item: HasilKunjungan) => {
+    setEditItem(item);
+    setSelectedDebitur(item.debiturId);
+    setForm({
+      tanggalKunjungan: item.tanggalKunjungan,
+      hasilKunjungan: item.hasilKunjungan,
+      kesimpulan: item.kesimpulan,
+    });
+    setIsModalOpen(true);
   };
 
   const getAttachmentType = (nextFile: File): "pdf" | "image" => {
@@ -84,28 +102,54 @@ export default function HasilKunjunganPage() {
       return;
     }
 
-    const fotoKunjungan = file ? URL.createObjectURL(file) : undefined;
-    const fotoKunjunganTipe = file ? getAttachmentType(file) : undefined;
-    const fotoKunjunganNama = file ? file.name : undefined;
+    if (editItem) {
+      const fotoKunjungan = file ? URL.createObjectURL(file) : editItem.fotoKunjungan;
+      const fotoKunjunganTipe = file
+        ? getAttachmentType(file)
+        : editItem.fotoKunjunganTipe;
+      const fotoKunjunganNama = file ? file.name : editItem.fotoKunjunganNama;
 
-    const newItem: HasilKunjungan = {
-      id: `HKJ${Date.now()}`,
-      debiturId: selectedDebitur,
-      tanggalKunjungan: form.tanggalKunjungan,
-      hasilKunjungan: form.hasilKunjungan,
-      kesimpulan: form.kesimpulan,
-      fotoKunjungan,
-      fotoKunjunganNama,
-      fotoKunjunganTipe,
-      createdBy: "User",
-    };
+      setData((prev) =>
+        prev.map((d) =>
+          d.id === editItem.id
+            ? {
+                ...d,
+                debiturId: selectedDebitur,
+                tanggalKunjungan: form.tanggalKunjungan,
+                hasilKunjungan: form.hasilKunjungan,
+                kesimpulan: form.kesimpulan,
+                fotoKunjungan,
+                fotoKunjunganTipe,
+                fotoKunjunganNama,
+              }
+            : d
+        )
+      );
+      showToast("Hasil kunjungan berhasil diubah!", "success");
+    } else {
+      const fotoKunjungan = file ? URL.createObjectURL(file) : undefined;
+      const fotoKunjunganTipe = file ? getAttachmentType(file) : undefined;
+      const fotoKunjunganNama = file ? file.name : undefined;
 
-    setData([newItem, ...data]);
-    setIsModalOpen(false);
+      const newItem: HasilKunjungan = {
+        id: `HKJ${Date.now()}`,
+        debiturId: selectedDebitur,
+        tanggalKunjungan: form.tanggalKunjungan,
+        hasilKunjungan: form.hasilKunjungan,
+        kesimpulan: form.kesimpulan,
+        fotoKunjungan,
+        fotoKunjunganNama,
+        fotoKunjunganTipe,
+        createdBy: "User",
+      };
+
+      setData([newItem, ...data]);
+      showToast("Hasil kunjungan berhasil ditambahkan!", "success");
+    }
+
+    closeModal();
     setForm({ tanggalKunjungan: "", hasilKunjungan: "", kesimpulan: "" });
     setSelectedDebitur("");
-    setFile(null);
-    showToast("Hasil kunjungan berhasil ditambahkan!", "success");
   };
 
   const getDebiturName = (id: string) => {
@@ -116,19 +160,6 @@ export default function HasilKunjunganPage() {
   const getDebiturKol = (id: string) => {
     const debitur = dummyDebiturList.find((d) => d.id === id);
     return debitur?.kolektibilitas || "1";
-  };
-
-  const KolBadge = ({ kol }: { kol: string }) => {
-    const color = getKolektibilitasColor(kol);
-    return (
-      <span className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-900">
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        Kol {kol}
-      </span>
-    );
   };
 
   const normalizeFileUrl = (filePath: string) => {
@@ -144,6 +175,20 @@ export default function HasilKunjunganPage() {
       : `/documents/${filePath}`;
   };
 
+  const handleViewDocument = (
+    item: HasilKunjungan,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (!item.fotoKunjungan) return;
+    openPreview(
+      normalizeFileUrl(item.fotoKunjungan),
+      `Lampiran Kunjungan - ${getDebiturName(item.debiturId)}${item.fotoKunjunganNama ? ` (${item.fotoKunjunganNama})` : ""}`,
+      item.fotoKunjunganTipe ??
+        (item.fotoKunjungan.toLowerCase().endsWith(".pdf") ? "pdf" : "image")
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -157,6 +202,8 @@ export default function HasilKunjunganPage() {
     );
   }
 
+  const isEditMode = !!editItem;
+
   return (
     <div className="space-y-6">
       <FeatureHeader
@@ -165,7 +212,13 @@ export default function HasilKunjunganPage() {
         icon={<Eye />}
         actions={
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditItem(null);
+              setForm({ tanggalKunjungan: "", hasilKunjungan: "", kesimpulan: "" });
+              setSelectedDebitur("");
+              setFile(null);
+              setIsModalOpen(true);
+            }}
             className="btn btn-primary"
             title="Tambah Hasil Kunjungan"
           >
@@ -175,75 +228,110 @@ export default function HasilKunjunganPage() {
         }
       />
 
-      <div className="space-y-4">
-        {data.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-xl p-5 border border-gray-100"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {getDebiturName(item.debiturId)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {formatDateDisplay(item.tanggalKunjungan)}
-                  </p>
-                  <div className="mt-2">
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+      >
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Tanggal
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Debitur
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Hasil Kunjungan
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Kesimpulan
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Lampiran
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {data.map((item) => (
+              <tr
+                key={item.id}
+                onClick={() => setDetailItem(item)}
+                className="hover:bg-blue-50/30 transition-colors cursor-pointer"
+              >
+                <td className="px-5 py-4 text-sm text-gray-600 text-center">
+                  {formatDateDisplay(item.tanggalKunjungan)}
+                </td>
+                <td className="px-5 py-4 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="font-medium text-gray-900">
+                      {getDebiturName(item.debiturId)}
+                    </span>
                     <KolBadge kol={getDebiturKol(item.debiturId)} />
                   </div>
-                </div>
-              </div>
-              <span className="text-xs text-gray-400">by {item.createdBy}</span>
-            </div>
-            <p className="text-gray-700 text-sm mb-3">{item.hasilKunjungan}</p>
-            <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-blue-700 mb-1">
-                Kesimpulan:
-              </p>
-              <p className="text-sm text-blue-900">{item.kesimpulan}</p>
-            </div>
-            {item.fotoKunjungan && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() =>
-                    openPreview(
-                      normalizeFileUrl(item.fotoKunjungan!),
-                      `Lampiran Kunjungan - ${getDebiturName(item.debiturId)}${item.fotoKunjunganNama ? ` (${item.fotoKunjunganNama})` : ""}`,
-                      item.fotoKunjunganTipe ??
-                        (item.fotoKunjungan!.toLowerCase().endsWith(".pdf")
-                          ? "pdf"
-                          : "image"),
-                    )
-                  }
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-700 max-w-xs text-center">
+                  <p className="truncate">{item.hasilKunjungan}</p>
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-600 max-w-xs text-center">
+                  <p className="truncate">{item.kesimpulan}</p>
+                </td>
+                <td
+                  className="px-5 py-4 text-center"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <Eye className="w-4 h-4" aria-hidden="true" />
-                  Lihat Lampiran
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+                  {item.fotoKunjungan ? (
+                    <button
+                      type="button"
+                      onClick={(ev) => handleViewDocument(item, ev)}
+                      className="btn btn-primary btn-sm inline-flex"
+                      title="Lihat lampiran"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Lihat
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
+                </td>
+                <td
+                  className="px-5 py-4 text-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(item)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-[#157ec3]"
+                    title="Ubah"
+                    aria-label="Ubah"
+                  >
+                    <Pencil className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {isModalOpen && (
+      {(isModalOpen || isEditMode) && (
         <div
           data-dashboard-overlay="true"
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
         >
           <div className="absolute inset-0 bg-black/50" onClick={closeModal} />
-          <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
-                Tambah Hasil Kunjungan
+                {isEditMode ? "Ubah Hasil Kunjungan" : "Tambah Hasil Kunjungan"}
               </h2>
               <button
                 onClick={closeModal}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Tutup"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
@@ -317,7 +405,7 @@ export default function HasilKunjunganPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Upload Lampiran (Opsional)
+                  Upload Lampiran {isEditMode ? "( Kosongkan jika tidak ubah )" : "(Opsional)"}
                 </label>
                 <div
                   className={`file-upload ${dragOver ? "dragover" : ""}`}
@@ -352,6 +440,15 @@ export default function HasilKunjunganPage() {
                           {(file.size / 1024).toFixed(2)} KB
                         </p>
                       </div>
+                    ) : isEditMode && editItem?.fotoKunjunganNama ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {editItem.fotoKunjunganNama}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Klik untuk ganti file
+                        </p>
+                      </div>
                     ) : (
                       <div className="text-center">
                         <p className="text-sm font-medium text-gray-700">
@@ -370,22 +467,76 @@ export default function HasilKunjunganPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:opacity-90"
-                  style={{ backgroundColor: "#157ec3" }}
+                  className="flex-1 btn btn-primary px-4 py-2.5 text-sm"
                 >
-                  Simpan
+                  {isEditMode ? "Simpan Perubahan" : "Simpan"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <DetailModal
+        isOpen={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        title="Detail Hasil Kunjungan"
+      >
+        {detailItem && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DetailSection title="Informasi Utama">
+              <DetailRow
+                label="Debitur"
+                value={
+                  <span className="flex items-center gap-2">
+                    {getDebiturName(detailItem.debiturId)}
+                    <KolBadge kol={getDebiturKol(detailItem.debiturId)} />
+                  </span>
+                }
+              />
+              <DetailRow
+                label="Tanggal Kunjungan"
+                value={formatDateDisplay(detailItem.tanggalKunjungan)}
+              />
+              <DetailRow label="Hasil Kunjungan" value={detailItem.hasilKunjungan} />
+              <DetailRow label="Kesimpulan" value={detailItem.kesimpulan} />
+            </DetailSection>
+            <DetailSection title="Metadata">
+              <DetailRow label="Dibuat oleh" value={detailItem.createdBy} />
+            </DetailSection>
+            {detailItem.fotoKunjungan && (
+              <div className="md:col-span-2">
+                <DetailSection title="File / Lampiran">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openPreview(
+                        normalizeFileUrl(detailItem.fotoKunjungan!),
+                        `Lampiran - ${getDebiturName(detailItem.debiturId)}${detailItem.fotoKunjunganNama ? ` (${detailItem.fotoKunjunganNama})` : ""}`,
+                        detailItem.fotoKunjunganTipe ??
+                          (detailItem.fotoKunjungan!.toLowerCase().endsWith(".pdf")
+                            ? "pdf"
+                            : "image")
+                      );
+                    }}
+                    className="btn btn-primary btn-sm inline-flex"
+                    title="Lihat dokumen"
+                  >
+                    <Eye className="w-4 h-4" aria-hidden="true" />
+                    {detailItem.fotoKunjunganNama || "Lihat Lampiran"}
+                  </button>
+                </DetailSection>
+              </div>
+            )}
+          </div>
+        )}
+      </DetailModal>
     </div>
   );
 }
