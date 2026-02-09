@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
+import { useState, useMemo, useEffect, type CSSProperties } from "react";
 import {
   ChevronUp,
   Eye,
@@ -329,30 +329,17 @@ export default function ListDebiturPage() {
                     <KolBadge kol={item.kolektibilitas} />
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <div className="inline-flex gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDetailDebiturId(item.id);
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-                      >
-                        <Eye className="w-4 h-4" aria-hidden="true" />
-                        Detail
-                      </button>
-                      <Link
-                        href={`/dashboard/informasi-debitur/${item.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                      >
-                        <ChevronUp
-                          className="w-4 h-4 rotate-180"
-                          aria-hidden="true"
-                        />
-                        Halaman
-                      </Link>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDetailDebiturId(item.id);
+                      }}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Detail
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -56,6 +56,10 @@ type DetailItem =
       type: "penanganan";
       data: ReturnType<typeof getLangkahPenangananByDebiturId>[0];
     }
+  | {
+      type: "actionplan";
+      data: ReturnType<typeof getActionPlanByDebiturId>[0];
+    }
   | { type: "sp"; data: ReturnType<typeof getSuratPeringatanByDebiturId>[0] };
 
 const tabs: { id: TabType; label: string }[] = [
@@ -286,6 +290,41 @@ export default function DetailDebiturPage() {
                 </p>
               </DetailSection>
             </div>
+          </div>
+        );
+      case "actionplan":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DetailSection title="Informasi Utama">
+              <DetailRow
+                label="Debitur"
+                value={
+                  <span className="flex items-center gap-2">
+                    {debitur.namaNasabah}
+                    <KolBadge kol={debitur.kolektibilitas} />
+                  </span>
+                }
+              />
+              <DetailRow label="Rencana" value={detailItem.data.rencana} />
+              <DetailRow
+                label="Target Tanggal"
+                value={formatDateDisplay(detailItem.data.targetTanggal)}
+              />
+            </DetailSection>
+            <DetailSection title="Metadata">
+              <DetailRow
+                label="Tanggal Dibuat"
+                value={formatDateDisplay(detailItem.data.tanggal)}
+              />
+              <DetailRow
+                label="Dibuat oleh"
+                value={detailItem.data.createdBy}
+              />
+              <DetailRow
+                label="Status"
+                value={<StatusBadge status={detailItem.data.status} />}
+              />
+            </DetailSection>
           </div>
         );
       default:
@@ -670,7 +709,10 @@ export default function DetailDebiturPage() {
                   {actionPlan.map((item) => (
                     <div
                       key={item.id}
-                      className="border border-gray-200 rounded-lg p-4"
+                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors cursor-pointer"
+                      onClick={() =>
+                        setDetailItem({ type: "actionplan", data: item })
+                      }
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -920,9 +962,11 @@ export default function DetailDebiturPage() {
               ? "Detail Cek BPRS"
               : detailItem.type === "historis"
                 ? "Detail Historis Kolektibilitas"
-                : detailItem.type === "penanganan"
-                  ? "Detail Langkah Penanganan"
-                  : "Detail Surat Peringatan"
+                : detailItem.type === "actionplan"
+                  ? "Detail Action Plan"
+                  : detailItem.type === "penanganan"
+                    ? "Detail Langkah Penanganan"
+                    : "Detail Surat Peringatan"
           }
         >
           {renderDetailContent()}
