@@ -15,9 +15,17 @@ import FeatureHeader from "@/components/ui/FeatureHeader";
 import {
   dummyDebiturList,
   formatCurrency,
-  getKolektibilitasColor,
+  getKolektibilitasLabel,
+  getHistorisKolektibilitasByDebiturId,
+  getDebiturById,
 } from "@/lib/data";
 import type { KolektibilitasType } from "@/lib/types/modul3";
+import { formatDateDisplay } from "@/lib/utils/date";
+import DetailModal, {
+  DetailSection,
+  DetailRow,
+} from "@/components/marketing/DetailModal";
+import KolBadge from "@/components/marketing/KolBadge";
 
 type SortField = "namaNasabah" | "osPokok" | "kolektibilitas";
 type SortOrder = "asc" | "desc";
@@ -33,6 +41,7 @@ export default function ListDebiturPage() {
   const [exportLoading, setExportLoading] = useState<"excel" | "pdf" | null>(
     null,
   );
+  const [detailDebiturId, setDetailDebiturId] = useState<string | null>(null);
 
   const itemsPerPage = 5;
 
@@ -94,19 +103,6 @@ export default function ListDebiturPage() {
       setExportLoading(null);
       showToast(`Export ${type.toUpperCase()} berhasil!`, "success");
     }, 1500);
-  };
-
-  const KolBadge = ({ kol }: { kol: KolektibilitasType }) => {
-    const color = getKolektibilitasColor(kol);
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-900">
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-        Kol {kol}
-      </span>
-    );
   };
 
   if (isLoading) {
@@ -300,7 +296,8 @@ export default function ListDebiturPage() {
               {paginatedData.map((item, idx) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-blue-50/30 transition-colors"
+                  className="hover:bg-blue-50/30 transition-colors cursor-pointer"
+                  onClick={() => setDetailDebiturId(item.id)}
                 >
                   <td className="px-5 py-4 text-sm text-gray-500">
                     {(currentPage - 1) * itemsPerPage + idx + 1}
@@ -332,13 +329,30 @@ export default function ListDebiturPage() {
                     <KolBadge kol={item.kolektibilitas} />
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <Link
-                      href={`/dashboard/informasi-debitur/${item.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                      Detail
-                    </Link>
+                    <div className="inline-flex gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailDebiturId(item.id);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" aria-hidden="true" />
+                        Detail
+                      </button>
+                      <Link
+                        href={`/dashboard/informasi-debitur/${item.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                      >
+                        <ChevronUp
+                          className="w-4 h-4 rotate-180"
+                          aria-hidden="true"
+                        />
+                        Halaman
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -387,6 +401,127 @@ export default function ListDebiturPage() {
           </div>
         )}
       </div>
+
+      <DebiturDetailModal
+        debiturId={detailDebiturId}
+        onClose={() => setDetailDebiturId(null)}
+      />
     </div>
+  );
+}
+
+function DebiturDetailModal({
+  debiturId,
+  onClose,
+}: {
+  debiturId: string | null;
+  onClose: () => void;
+}) {
+  const debitur = debiturId ? getDebiturById(debiturId) : null;
+  const historis =
+    debiturId && debitur
+      ? getHistorisKolektibilitasByDebiturId(debiturId).slice(0, 3)
+      : [];
+
+  if (!debiturId || !debitur) return null;
+
+  return (
+    <DetailModal isOpen={!!debiturId} onClose={onClose} title="Detail Debitur">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <DetailSection title="Informasi Utama">
+          <DetailRow
+            label="Nama Nasabah"
+            value={
+              <span className="flex items-center gap-2">
+                {debitur.namaNasabah}
+                <KolBadge kol={debitur.kolektibilitas as KolektibilitasType} />
+              </span>
+            }
+          />
+          <DetailRow label="No Kontrak" value={debitur.noKontrak} />
+          <DetailRow label="Cabang" value={debitur.cabang} />
+          <DetailRow label="Marketing" value={debitur.marketing} />
+          <DetailRow
+            label="Status Kolektibilitas"
+            value={getKolektibilitasLabel(debitur.kolektibilitas)}
+          />
+        </DetailSection>
+
+        <DetailSection title="Informasi Pembiayaan">
+          <DetailRow label="OS Pokok" value={formatCurrency(debitur.osPokok)} />
+          <DetailRow
+            label="OS Margin"
+            value={formatCurrency(debitur.osMargin)}
+          />
+          <DetailRow
+            label="Jangka Waktu"
+            value={`${debitur.jangkaWaktu} Bulan`}
+          />
+          <DetailRow
+            label="Tanggal Akad"
+            value={formatDateDisplay(debitur.tanggalAkad)}
+          />
+          <DetailRow
+            label="Jatuh Tempo"
+            value={formatDateDisplay(debitur.tanggalJatuhTempo)}
+          />
+        </DetailSection>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+            Ringkasan Historis Kol
+          </h4>
+          <Link
+            href={`/dashboard/informasi-debitur/${debitur.id}`}
+            className="text-sm font-semibold text-[#157ec3] hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Lihat detail lengkap
+          </Link>
+        </div>
+        {historis.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            Belum ada historis kolektibilitas.
+          </p>
+        ) : (
+          <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-100 text-xs font-semibold uppercase text-gray-500">
+                  <th className="text-left px-4 py-3">Bulan</th>
+                  <th className="text-center px-4 py-3">Kol</th>
+                  <th className="text-right px-4 py-3">OS Pokok</th>
+                  <th className="text-right px-4 py-3">OS Margin</th>
+                  <th className="text-left px-4 py-3">Keterangan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {historis.map((item) => (
+                  <tr key={item.id} className="bg-white/70">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      {item.bulan}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <KolBadge kol={item.kolektibilitas} />
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                      {formatCurrency(item.osPokok)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                      {formatCurrency(item.osMargin)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {item.keterangan}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </DetailModal>
   );
 }

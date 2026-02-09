@@ -30,6 +30,11 @@ import {
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
+import DetailModal, {
+  DetailSection,
+  DetailRow,
+} from "@/components/marketing/DetailModal";
+import KolBadge from "@/components/marketing/KolBadge";
 
 type TabType =
   | "info"
@@ -40,6 +45,18 @@ type TabType =
   | "kunjungan"
   | "penanganan"
   | "sp";
+
+type DetailItem =
+  | { type: "bprs"; data: ReturnType<typeof getPengecekanBPRSByDebiturId>[0] }
+  | {
+      type: "historis";
+      data: ReturnType<typeof getHistorisKolektibilitasByDebiturId>[0];
+    }
+  | {
+      type: "penanganan";
+      data: ReturnType<typeof getLangkahPenangananByDebiturId>[0];
+    }
+  | { type: "sp"; data: ReturnType<typeof getSuratPeringatanByDebiturId>[0] };
 
 const tabs: { id: TabType; label: string }[] = [
   { id: "info", label: "Data Utama" },
@@ -70,6 +87,7 @@ export default function DetailDebiturPage() {
   const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [isLoading, setIsLoading] = useState(true);
+  const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
 
   const debitur = getDebiturById(id as string);
   const pengecekanBPRS = getPengecekanBPRSByDebiturId(id as string);
@@ -162,6 +180,117 @@ export default function DetailDebiturPage() {
         {status}
       </span>
     );
+  };
+
+  const renderDetailContent = () => {
+    if (!detailItem) return null;
+
+    switch (detailItem.type) {
+      case "bprs":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DetailSection title="Informasi BPRS">
+              <DetailRow label="Nama BPRS" value={detailItem.data.namaBPRS} />
+              <DetailRow label="Status" value={detailItem.data.status} />
+              <DetailRow
+                label="Outstanding"
+                value={formatCurrency(detailItem.data.outstanding)}
+              />
+            </DetailSection>
+            <DetailSection title="Kolektibilitas & Tanggal">
+              <DetailRow
+                label="Kolektibilitas"
+                value={<KolBadge kol={detailItem.data.kolektibilitas} />}
+              />
+              <DetailRow
+                label="Tanggal Cek"
+                value={formatDateDisplay(detailItem.data.tanggalCek)}
+              />
+            </DetailSection>
+          </div>
+        );
+      case "historis":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DetailSection title="Periode & Kolektibilitas">
+              <DetailRow label="Bulan" value={detailItem.data.bulan} />
+              <DetailRow
+                label="Kolektibilitas"
+                value={<KolBadge kol={detailItem.data.kolektibilitas} />}
+              />
+            </DetailSection>
+            <DetailSection title="Outstanding">
+              <DetailRow
+                label="OS Pokok"
+                value={formatCurrency(detailItem.data.osPokok)}
+              />
+              <DetailRow
+                label="OS Margin"
+                value={formatCurrency(detailItem.data.osMargin)}
+              />
+            </DetailSection>
+            <div className="md:col-span-2">
+              <DetailSection title="Keterangan">
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {detailItem.data.keterangan || "-"}
+                </p>
+              </DetailSection>
+            </div>
+          </div>
+        );
+      case "penanganan":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DetailSection title="Informasi Utama">
+              <DetailRow
+                label="Tanggal"
+                value={formatDateDisplay(detailItem.data.tanggal)}
+              />
+              <DetailRow label="Langkah" value={detailItem.data.langkah} />
+              <DetailRow
+                label="Status"
+                value={<StatusBadge status={detailItem.data.status} />}
+              />
+            </DetailSection>
+            <DetailSection title="Hasil Penanganan">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {detailItem.data.hasilPenanganan}
+              </p>
+            </DetailSection>
+          </div>
+        );
+      case "sp":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DetailSection title="Informasi Surat">
+              <DetailRow label="Jenis" value={detailItem.data.jenisSurat} />
+              <DetailRow
+                label="Status Kirim"
+                value={<StatusBadge status={detailItem.data.statusKirim} />}
+              />
+            </DetailSection>
+            <DetailSection title="Tanggal">
+              <DetailRow
+                label="Tanggal Terbit"
+                value={formatDateDisplay(detailItem.data.tanggalTerbit)}
+              />
+              <DetailRow
+                label="Tanggal Kirim"
+                value={formatDateDisplay(detailItem.data.tanggalKirim)}
+              />
+            </DetailSection>
+            <div className="md:col-span-2">
+              <DetailSection title="Keterangan">
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {detailItem.data.keterangan || "-"}
+                </p>
+              </DetailSection>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   const headerKolColor = getKolektibilitasColor(debitur.kolektibilitas);
@@ -310,7 +439,13 @@ export default function DetailDebiturPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {pengecekanBPRS.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                        <tr
+                          key={item.id}
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() =>
+                            setDetailItem({ type: "bprs", data: item })
+                          }
+                        >
                           <td className="py-3 px-4 font-medium">
                             {item.namaBPRS}
                           </td>
@@ -384,7 +519,13 @@ export default function DetailDebiturPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {historisKol.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                        <tr
+                          key={item.id}
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() =>
+                            setDetailItem({ type: "historis", data: item })
+                          }
+                        >
                           <td className="py-3 px-4 font-medium">
                             {item.bulan}
                           </td>
@@ -646,7 +787,13 @@ export default function DetailDebiturPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {langkahPenanganan.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                        <tr
+                          key={item.id}
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() =>
+                            setDetailItem({ type: "penanganan", data: item })
+                          }
+                        >
                           <td className="py-3 px-4 text-sm">
                             {formatDateDisplay(item.tanggal)}
                           </td>
@@ -701,7 +848,13 @@ export default function DetailDebiturPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {suratPeringatan.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                        <tr
+                          key={item.id}
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() =>
+                            setDetailItem({ type: "sp", data: item })
+                          }
+                        >
                           <td className="py-3 px-4">
                             <span className="inline-flex px-2 py-1 rounded bg-blue-50 border border-blue-100 text-xs font-bold text-gray-900">
                               {item.jenisSurat}
@@ -722,25 +875,24 @@ export default function DetailDebiturPage() {
                           <td className="py-3 px-4 text-center">
                             <button
                               type="button"
-                              onClick={() =>
-                                (() => {
-                                  const suratDoc = arsipDigitalTerkait.find(
-                                    (d) =>
-                                      d.jenisDokumen === "Legal" &&
-                                      d.namaDokumen.includes(item.jenisSurat),
-                                  );
-                                  const fileUrl =
-                                    suratDoc?.fileUrl ??
-                                    "/documents/contoh-dok.pdf";
-                                  openPreview(
-                                    fileUrl,
-                                    suratDoc
-                                      ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
-                                      : `Surat Peringatan ${item.jenisSurat}`,
-                                    "pdf",
-                                  );
-                                })()
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const suratDoc = arsipDigitalTerkait.find(
+                                  (d) =>
+                                    d.jenisDokumen === "Legal" &&
+                                    d.namaDokumen.includes(item.jenisSurat),
+                                );
+                                const fileUrl =
+                                  suratDoc?.fileUrl ??
+                                  "/documents/contoh-dok.pdf";
+                                openPreview(
+                                  fileUrl,
+                                  suratDoc
+                                    ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
+                                    : `Surat Peringatan ${item.jenisSurat}`,
+                                  "pdf",
+                                );
+                              }}
                               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
                               title={`Lihat dokumen ${item.jenisSurat}`}
                             >
@@ -758,6 +910,24 @@ export default function DetailDebiturPage() {
           )}
         </div>
       </div>
+
+      {detailItem && (
+        <DetailModal
+          isOpen={!!detailItem}
+          onClose={() => setDetailItem(null)}
+          title={
+            detailItem.type === "bprs"
+              ? "Detail Cek BPRS"
+              : detailItem.type === "historis"
+                ? "Detail Historis Kolektibilitas"
+                : detailItem.type === "penanganan"
+                  ? "Detail Langkah Penanganan"
+                  : "Detail Surat Peringatan"
+          }
+        >
+          {renderDetailContent()}
+        </DetailModal>
+      )}
     </div>
   );
 }
