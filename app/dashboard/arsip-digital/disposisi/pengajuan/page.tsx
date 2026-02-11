@@ -190,7 +190,10 @@ export default function PengajuanDisposisiPage() {
                   <td className="px-6 py-4 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title={doc.detail}>
+                  <td
+                    className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"
+                    title={doc.detail}
+                  >
                     {doc.detail}
                   </td>
                   <td className="px-6 py-4">

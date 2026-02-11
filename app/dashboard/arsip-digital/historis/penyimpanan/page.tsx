@@ -156,11 +156,11 @@ export default function HistorisPenyimpananPage() {
           </div>
           <button
             onClick={handleExport}
-            className="btn btn-success"
+            className="btn btn-export-excel"
             title="Export Excel"
           >
             <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
-            Export
+            Export Excel
           </button>
         </div>
       </div>

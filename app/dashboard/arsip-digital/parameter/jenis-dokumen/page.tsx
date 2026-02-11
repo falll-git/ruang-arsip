@@ -179,7 +179,7 @@ export default function SetupJenisDokumenPage() {
                     </div>
                   </td>
                   <td>
-                <div className="text-sm text-gray-700">
+                    <div className="text-sm text-gray-700">
                       {j.keterangan || "-"}
                     </div>
                   </td>

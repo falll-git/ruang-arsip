@@ -285,10 +285,9 @@ export default function DetailDebiturPage() {
                           "pdf",
                         )
                       }
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat
                     </button>
                   ) : (
                     "-"
@@ -378,10 +377,9 @@ export default function DetailDebiturPage() {
                           "pdf",
                         )
                       }
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat
                     </button>
                   ) : (
                     "-"
@@ -803,10 +801,9 @@ export default function DetailDebiturPage() {
                                 "pdf",
                               );
                             }}
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                            className="btn btn-view-pdf inline-flex items-center justify-center"
                           >
                             <Eye className="w-4 h-4" aria-hidden="true" />
-                            Lihat Lampiran
                           </button>
                         </div>
                       )}
@@ -877,10 +874,9 @@ export default function DetailDebiturPage() {
                                     : "image"),
                               )
                             }
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                            className="btn btn-view-pdf inline-flex items-center justify-center"
                           >
                             <Eye className="w-4 h-4" aria-hidden="true" />
-                            Lihat Lampiran
                           </button>
                         </div>
                       )}
@@ -955,10 +951,9 @@ export default function DetailDebiturPage() {
                                     "pdf",
                                   )
                                 }
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                                className="btn btn-view-pdf btn-sm inline-flex"
                               >
                                 <Eye className="w-4 h-4" aria-hidden="true" />
-                                Lihat
                               </button>
                             ) : (
                               <span className="text-xs text-gray-400">-</span>
@@ -1054,11 +1049,10 @@ export default function DetailDebiturPage() {
                                   "pdf",
                                 );
                               }}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                              className="btn btn-view-pdf btn-sm inline-flex"
                               title={`Lihat dokumen ${item.jenisSurat}`}
                             >
                               <Eye className="w-4 h-4" aria-hidden="true" />
-                              Lihat
                             </button>
                           </td>
                         </tr>
@@ -1141,10 +1135,9 @@ export default function DetailDebiturPage() {
                                     "pdf",
                                   )
                                 }
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                                className="btn btn-view-pdf btn-sm inline-flex"
                               >
                                 <Eye className="w-4 h-4" aria-hidden="true" />
-                                Lihat
                               </button>
                             ) : (
                               <span className="text-xs text-gray-400">-</span>

@@ -143,7 +143,7 @@ export default function LaporanPeminjamanPage() {
           <div className="flex gap-3">
             <button
               onClick={handleExport}
-              className="btn btn-success"
+              className="btn btn-export-excel"
               title="Export Excel"
             >
               <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />

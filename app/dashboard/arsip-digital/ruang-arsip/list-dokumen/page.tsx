@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Clock,
+  Eye,
   FileSpreadsheet,
   FileText,
   MapPin,
@@ -194,7 +195,7 @@ export default function ListDokumenPage() {
         actions={
           <button
             onClick={handleExport}
-            className="btn btn-success"
+            className="btn btn-export-excel"
             title="Export Excel"
           >
             <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
@@ -485,10 +486,10 @@ export default function ListDokumenPage() {
                         );
                       }}
                       disabled={!selectedDoc.fileUrl}
-                      className="w-full btn btn-outline flex items-center justify-center gap-2"
+                      className="w-full btn btn-view-pdf flex items-center justify-center"
+                      title="Lihat file dokumen"
                     >
-                      <FileText className="w-4 h-4" />
-                      Lihat File Dokumen
+                      <Eye className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

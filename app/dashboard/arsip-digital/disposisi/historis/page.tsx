@@ -280,12 +280,10 @@ export default function HistorisDisposisiPage() {
                         {isApproved && (
                           <button
                             onClick={() => setViewingDoc(item)}
-                            className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors inline-flex items-center gap-2"
+                            className="btn btn-view-pdf btn-sm inline-flex items-center justify-center"
+                            title="View dokumen"
                           >
                             <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">
-                              View Dokumen
-                            </span>
                           </button>
                         )}
                       </div>

@@ -361,7 +361,7 @@ export default function ProgressNotarisPage() {
           <button
             type="button"
             onClick={handleExportExcel}
-            className="btn btn-success btn-sm"
+            className="btn btn-export-excel btn-sm"
           >
             <Download className="w-4 h-4" />
             Export Excel
@@ -462,10 +462,9 @@ export default function ProgressNotarisPage() {
                             "pdf",
                           )
                         }
-                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f]"
+                        className="btn btn-view-pdf btn-sm inline-flex"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        Lihat
                       </button>
                     ) : (
                       <span className="text-xs text-gray-400">-</span>
@@ -957,10 +956,9 @@ export default function ProgressNotarisPage() {
                     "pdf",
                   )
                 }
-                className="btn btn-primary w-full"
+                className="btn btn-view-pdf w-full"
               >
                 <Eye className="w-4 h-4" />
-                Lihat Lampiran
               </button>
             )}
           </div>

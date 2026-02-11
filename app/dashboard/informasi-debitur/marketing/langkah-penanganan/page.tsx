@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { ClipboardList, Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
-import {
-  dummyDebiturList,
-  dummyLangkahPenanganan,
-} from "@/lib/data";
+import { dummyDebiturList, dummyLangkahPenanganan } from "@/lib/data";
 import type { LangkahPenanganan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import DatePickerInput from "@/components/ui/DatePickerInput";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
 import StatusBadge from "@/components/marketing/StatusBadge";
 import StatusEditModal from "@/components/marketing/StatusEditModal";
@@ -34,6 +32,7 @@ export default function LangkahPenangananPage() {
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState({
+    tanggal: todayIsoDate(),
     langkah: "",
     hasilPenanganan: "",
   });
@@ -46,7 +45,11 @@ export default function LangkahPenangananPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setForm({ langkah: "", hasilPenanganan: "" });
+    setForm({
+      tanggal: todayIsoDate(),
+      langkah: "",
+      hasilPenanganan: "",
+    });
     setSelectedDebitur("");
     setFile(null);
     setDragOver(false);
@@ -98,7 +101,12 @@ export default function LangkahPenangananPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDebitur || !form.langkah || !form.hasilPenanganan) {
+    if (
+      !selectedDebitur ||
+      !form.tanggal ||
+      !form.langkah ||
+      !form.hasilPenanganan
+    ) {
       showToast("Semua field harus diisi!", "error");
       return;
     }
@@ -106,7 +114,7 @@ export default function LangkahPenangananPage() {
     const newItem: LangkahPenanganan = {
       id: `LP${Date.now()}`,
       debiturId: selectedDebitur,
-      tanggal: todayIsoDate(),
+      tanggal: form.tanggal,
       langkah: form.langkah,
       hasilPenanganan: form.hasilPenanganan,
       status: "Pending",
@@ -124,10 +132,10 @@ export default function LangkahPenangananPage() {
 
   const handleStatusSave = (
     item: LangkahPenanganan,
-    newStatus: LangkahPenanganan["status"]
+    newStatus: LangkahPenanganan["status"],
   ) => {
     setData((prev) =>
-      prev.map((d) => (d.id === item.id ? { ...d, status: newStatus } : d))
+      prev.map((d) => (d.id === item.id ? { ...d, status: newStatus } : d)),
     );
     setStatusEditItem(null);
     showToast("Status berhasil diubah!", "success");
@@ -240,11 +248,10 @@ export default function LangkahPenangananPage() {
                           "pdf",
                         )
                       }
-                      className="btn btn-primary btn-sm inline-flex"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                       title="Lihat lampiran"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat
                     </button>
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
@@ -278,10 +285,7 @@ export default function LangkahPenangananPage() {
           data-dashboard-overlay="true"
           className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
         >
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={closeModal}
-          />
+          <div className="absolute inset-0 bg-black/50" onClick={closeModal} />
           <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
@@ -312,6 +316,17 @@ export default function LangkahPenangananPage() {
                       osPokok: d.osPokok,
                     }))}
                   placeholder="Cari debitur berdasarkan nama/ID..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal Input
+                </label>
+                <DatePickerInput
+                  value={form.tanggal}
+                  onChange={(nextValue) =>
+                    setForm((prev) => ({ ...prev, tanggal: nextValue }))
+                  }
                 />
               </div>
               <div>
@@ -369,7 +384,9 @@ export default function LangkahPenangananPage() {
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() =>
-                    document.getElementById("langkahPenangananPdfInput")?.click()
+                    document
+                      .getElementById("langkahPenangananPdfInput")
+                      ?.click()
                   }
                 >
                   <input
@@ -447,7 +464,10 @@ export default function LangkahPenangananPage() {
               <DetailRow label="Hasil" value={detailItem.hasilPenanganan} />
             </DetailSection>
             <DetailSection title="Metadata">
-              <DetailRow label="Tanggal" value={formatDateDisplay(detailItem.tanggal)} />
+              <DetailRow
+                label="Tanggal"
+                value={formatDateDisplay(detailItem.tanggal)}
+              />
               <DetailRow label="Dibuat oleh" value={detailItem.createdBy} />
               <DetailRow
                 label="Lampiran"
@@ -463,10 +483,9 @@ export default function LangkahPenangananPage() {
                           "pdf",
                         )
                       }
-                      className="btn btn-primary btn-sm inline-flex"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat Lampiran
                     </button>
                   ) : (
                     "-"

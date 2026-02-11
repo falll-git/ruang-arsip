@@ -387,7 +387,7 @@ export default function ProgressAsuransiPage() {
           </h2>
           <button
             onClick={handleExportExcel}
-            className="btn btn-success btn-sm"
+            className="btn btn-export-excel btn-sm"
           >
             <Download className="w-4 h-4" />
             Export Excel
@@ -483,11 +483,10 @@ export default function ProgressAsuransiPage() {
                             "pdf",
                           )
                         }
-                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                        className="btn btn-view-pdf btn-sm inline-flex"
                         title="Lihat lampiran"
                       >
                         <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                        Lihat
                       </button>
                     ) : (
                       <span className="text-xs text-gray-400">-</span>
@@ -1049,10 +1048,9 @@ export default function ProgressAsuransiPage() {
                     "pdf",
                   )
                 }
-                className="btn btn-primary w-full mb-4"
+                className="btn btn-view-pdf w-full mb-4"
               >
                 <Eye className="w-4 h-4" aria-hidden="true" />
-                Lihat Lampiran
               </button>
             )}
 

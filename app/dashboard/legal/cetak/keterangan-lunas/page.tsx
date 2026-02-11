@@ -296,10 +296,9 @@ export default function CetakKeteranganLunasPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handlePreview}
-                  className="btn btn-outline flex-1"
+                  className="btn btn-view-pdf flex-1"
                 >
                   <Eye className="w-5 h-5" />
-                  Preview
                 </button>
                 <button
                   onClick={handleGenerate}
@@ -322,7 +321,7 @@ export default function CetakKeteranganLunasPage() {
           </h2>
           <button
             onClick={handleExportExcel}
-            className="btn btn-success btn-sm"
+            className="btn btn-export-excel btn-sm"
           >
             <Download className="w-4 h-4" />
             Export Excel

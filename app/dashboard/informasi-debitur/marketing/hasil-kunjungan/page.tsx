@@ -2,10 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
-import {
-  dummyDebiturList,
-  dummyHasilKunjungan,
-} from "@/lib/data";
+import { dummyDebiturList, dummyHasilKunjungan } from "@/lib/data";
 import type { HasilKunjungan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import DatePickerInput from "@/components/ui/DatePickerInput";
@@ -113,7 +110,9 @@ export default function HasilKunjunganPage() {
     }
 
     if (editItem) {
-      const fotoKunjungan = file ? URL.createObjectURL(file) : editItem.fotoKunjungan;
+      const fotoKunjungan = file
+        ? URL.createObjectURL(file)
+        : editItem.fotoKunjungan;
       const fotoKunjunganTipe = file
         ? getAttachmentType(file)
         : editItem.fotoKunjunganTipe;
@@ -133,8 +132,8 @@ export default function HasilKunjunganPage() {
                 fotoKunjunganTipe,
                 fotoKunjunganNama,
               }
-            : d
-        )
+            : d,
+        ),
       );
       showToast("Hasil kunjungan berhasil diubah!", "success");
     } else {
@@ -185,17 +184,14 @@ export default function HasilKunjunganPage() {
       : `/documents/${filePath}`;
   };
 
-  const handleViewDocument = (
-    item: HasilKunjungan,
-    e: React.MouseEvent
-  ) => {
+  const handleViewDocument = (item: HasilKunjungan, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!item.fotoKunjungan) return;
     openPreview(
       normalizeFileUrl(item.fotoKunjungan),
       `Lampiran Kunjungan - ${getDebiturName(item.debiturId)}${item.fotoKunjunganNama ? ` (${item.fotoKunjunganNama})` : ""}`,
       item.fotoKunjunganTipe ??
-        (item.fotoKunjungan.toLowerCase().endsWith(".pdf") ? "pdf" : "image")
+        (item.fotoKunjungan.toLowerCase().endsWith(".pdf") ? "pdf" : "image"),
     );
   };
 
@@ -308,11 +304,10 @@ export default function HasilKunjunganPage() {
                     <button
                       type="button"
                       onClick={(ev) => handleViewDocument(item, ev)}
-                      className="btn btn-primary btn-sm inline-flex"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                       title="Lihat lampiran"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat
                     </button>
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
@@ -445,7 +440,8 @@ export default function HasilKunjunganPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Upload Lampiran {isEditMode ? "( Kosongkan jika tidak ubah )" : "(Opsional)"}
+                  Upload Lampiran{" "}
+                  {isEditMode ? "( Kosongkan jika tidak ubah )" : "(Opsional)"}
                 </label>
                 <div
                   className={`file-upload ${dragOver ? "dragover" : ""}`}
@@ -545,7 +541,10 @@ export default function HasilKunjunganPage() {
                 value={formatDateDisplay(detailItem.tanggalKunjungan)}
               />
               <DetailRow label="Alamat" value={detailItem.alamat} />
-              <DetailRow label="Hasil Kunjungan" value={detailItem.hasilKunjungan} />
+              <DetailRow
+                label="Hasil Kunjungan"
+                value={detailItem.hasilKunjungan}
+              />
               <DetailRow label="Kesimpulan" value={detailItem.kesimpulan} />
             </DetailSection>
             <DetailSection title="Metadata">
@@ -561,16 +560,17 @@ export default function HasilKunjunganPage() {
                         normalizeFileUrl(detailItem.fotoKunjungan!),
                         `Lampiran - ${getDebiturName(detailItem.debiturId)}${detailItem.fotoKunjunganNama ? ` (${detailItem.fotoKunjunganNama})` : ""}`,
                         detailItem.fotoKunjunganTipe ??
-                          (detailItem.fotoKunjungan!.toLowerCase().endsWith(".pdf")
+                          (detailItem
+                            .fotoKunjungan!.toLowerCase()
+                            .endsWith(".pdf")
                             ? "pdf"
-                            : "image")
+                            : "image"),
                       );
                     }}
-                    className="btn btn-primary btn-sm inline-flex"
+                    className="btn btn-view-pdf btn-sm inline-flex"
                     title="Lihat dokumen"
                   >
                     <Eye className="w-4 h-4" aria-hidden="true" />
-                    {detailItem.fotoKunjunganNama || "Lihat Lampiran"}
                   </button>
                 </DetailSection>
               </div>

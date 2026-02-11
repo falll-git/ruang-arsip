@@ -293,7 +293,7 @@ export default function TitipanAngsuranPage() {
           </h2>
           <button
             onClick={handleExportExcel}
-            className="btn btn-success btn-sm"
+            className="btn btn-export-excel btn-sm"
           >
             <Download className="w-4 h-4" />
             Export Excel

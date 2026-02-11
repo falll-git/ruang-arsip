@@ -286,7 +286,7 @@ export default function LinkDokumenPage() {
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="btn btn-success btn-sm"
+                className="btn btn-export-excel btn-sm"
               >
                 <Download className="w-4 h-4" />
                 Export Excel
@@ -620,10 +620,10 @@ export default function LinkDokumenPage() {
                             "pdf",
                           )
                         }
-                        className="btn btn-primary w-full"
+                        className="btn btn-view-pdf w-full"
+                        title="Buka dokumen internal"
                       >
                         <Eye className="w-4 h-4" />
-                        Buka Dokumen Internal
                       </button>
                     )}
                   </>

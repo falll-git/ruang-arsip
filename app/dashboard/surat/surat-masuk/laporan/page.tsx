@@ -120,7 +120,7 @@ export default function LaporanSuratMasukPage() {
         actions={
           <button
             onClick={handleExportExcel}
-            className="btn btn-success"
+            className="btn btn-export-excel"
             title="Export Excel"
           >
             <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
@@ -442,7 +442,7 @@ export default function LaporanSuratMasukPage() {
                               Klik untuk melihat
                             </p>
                           </div>
-                          <button className="btn btn-sm btn-ghost text-blue-600">
+                          <button className="btn btn-view-pdf btn-sm">
                             <Eye className="w-4 h-4" />
                           </button>
                         </div>

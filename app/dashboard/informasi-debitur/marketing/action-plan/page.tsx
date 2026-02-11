@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClipboardCheck, Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
 import {
-  dummyDebiturList,
-  dummyActionPlan,
-} from "@/lib/data";
+  ClipboardCheck,
+  Eye,
+  Pencil,
+  Plus,
+  UploadCloud,
+  X,
+} from "lucide-react";
+import { dummyDebiturList, dummyActionPlan } from "@/lib/data";
 import type { ActionPlan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
@@ -237,11 +241,10 @@ export default function ActionPlanPage() {
                           "pdf",
                         )
                       }
-                      className="btn btn-primary btn-sm inline-flex"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                       title="Lihat lampiran"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat
                     </button>
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
@@ -275,10 +278,7 @@ export default function ActionPlanPage() {
           data-dashboard-overlay="true"
           className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
         >
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={closeModal}
-          />
+          <div className="absolute inset-0 bg-black/50" onClick={closeModal} />
           <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
@@ -450,10 +450,9 @@ export default function ActionPlanPage() {
                           "pdf",
                         )
                       }
-                      className="btn btn-primary btn-sm inline-flex"
+                      className="btn btn-view-pdf btn-sm inline-flex"
                     >
                       <Eye className="w-4 h-4" aria-hidden="true" />
-                      Lihat Lampiran
                     </button>
                   ) : (
                     "-"
