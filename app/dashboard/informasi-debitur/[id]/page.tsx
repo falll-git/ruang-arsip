@@ -78,6 +78,9 @@ export default function DetailDebiturPage() {
   const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTitipanId, setSelectedTitipanId] = useState<string | null>(
+    null,
+  );
 
   const debitur = getDebiturById(id as string);
   const pengecekanBPRS = getPengecekanBPRSByDebiturId(id as string);
@@ -96,6 +99,11 @@ export default function DetailDebiturPage() {
   const historisTitipan = debitur
     ? getHistorisTitipanByNoKontrak(debitur.noKontrak)
     : [];
+
+  const selectedTitipanDetail =
+    historisTitipan.find((item) => item.id === selectedTitipanId) ??
+    historisTitipan[0] ??
+    null;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -951,18 +959,30 @@ export default function DetailDebiturPage() {
 
           {activeTab === "titipan" && (
             <div className="space-y-6">
-              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
-                <p className="text-sm text-blue-700 font-medium">
-                  Saldo Dana Titipan
-                </p>
-                <p className="text-2xl font-bold text-blue-900 mt-1">
-                  {formatCurrency(saldoDanaTitipan)}
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
+                  <p className="text-sm text-blue-700 font-medium">
+                    Saldo Dana Titipan
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900 mt-1">
+                    {formatCurrency(saldoDanaTitipan)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-5">
+                  <p className="text-sm text-emerald-700 font-medium">
+                    Saldo Akhir Titipan Terpilih
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-900 mt-1">
+                    {selectedTitipanDetail
+                      ? formatCurrency(selectedTitipanDetail.saldoAkhir)
+                      : "-"}
+                  </p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  Historis Titipan (Semua Data)
+                  List Dana Titipan
                 </h3>
                 {historisTitipan.length === 0 ? (
                   <div className="text-center py-10 text-gray-500 border border-gray-100 rounded-lg">
@@ -970,7 +990,7 @@ export default function DetailDebiturPage() {
                   </div>
                 ) : (
                   <div className="overflow-x-auto -mx-2 sm:mx-0">
-                    <table className="min-w-200 w-full">
+                    <table className="min-w-220 w-full">
                       <thead>
                         <tr className="border-b border-gray-100">
                           <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
@@ -980,7 +1000,10 @@ export default function DetailDebiturPage() {
                             Jenis Titipan
                           </th>
                           <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                            Nominal
+                            Nominal Titipan
+                          </th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Saldo Akhir
                           </th>
                           <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
                             Status
@@ -992,7 +1015,15 @@ export default function DetailDebiturPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {historisTitipan.map((item) => (
-                          <tr key={item.id} className="hover:bg-gray-50">
+                          <tr
+                            key={item.id}
+                            onClick={() => setSelectedTitipanId(item.id)}
+                            className={`cursor-pointer transition-colors ${
+                              selectedTitipanDetail?.id === item.id
+                                ? "bg-blue-50/60"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
                             <td className="py-3 px-4 text-sm">
                               {formatDateDisplay(item.tanggal)}
                             </td>
@@ -1000,7 +1031,10 @@ export default function DetailDebiturPage() {
                               {item.jenisTitipan}
                             </td>
                             <td className="py-3 px-4 text-sm text-right font-semibold">
-                              {formatCurrency(item.nominal)}
+                              {formatCurrency(item.nominalTitipan)}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-right font-semibold text-emerald-700">
+                              {formatCurrency(item.saldoAkhir)}
                             </td>
                             <td className="py-3 px-4 text-center">
                               <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
@@ -1017,6 +1051,97 @@ export default function DetailDebiturPage() {
                   </div>
                 )}
               </div>
+
+              {selectedTitipanDetail && (
+                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700">
+                        Historis Transaksi Titipan Terpilih
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Klik baris pada list dana titipan untuk melihat detail
+                        histori transaksi.
+                      </p>
+                    </div>
+                    <div className="inline-flex px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold">
+                      {selectedTitipanDetail.jenisTitipan}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <p className="text-xs text-gray-500 mb-1">
+                        Nominal Titipan
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        {formatCurrency(selectedTitipanDetail.nominalTitipan)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-3">
+                      <p className="text-xs text-gray-500 mb-1">
+                        {selectedTitipanDetail.jenisTitipan === "Angsuran"
+                          ? "Total Diproses"
+                          : "Total Dibayar"}
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        {formatCurrency(selectedTitipanDetail.nominalTerbayar)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-emerald-50 p-3">
+                      <p className="text-xs text-emerald-700 mb-1">
+                        Saldo Akhir
+                      </p>
+                      <p className="font-semibold text-emerald-900">
+                        {formatCurrency(selectedTitipanDetail.saldoAkhir)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <table className="min-w-200 w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Tanggal
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Aktivitas
+                          </th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Nominal
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Keterangan
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {[...selectedTitipanDetail.riwayatTransaksi]
+                          .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+                          .map((riwayat, idx) => (
+                            <tr key={`${selectedTitipanDetail.id}-${idx}`}>
+                              <td className="py-3 px-4 text-sm">
+                                {formatDateDisplay(riwayat.tanggal)}
+                              </td>
+                              <td className="py-3 px-4 text-sm font-medium text-gray-800">
+                                {riwayat.aksi}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-right font-semibold">
+                                {formatCurrency(riwayat.nominal)}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-600">
+                                {riwayat.keterangan?.trim()
+                                  ? riwayat.keterangan
+                                  : "-"}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

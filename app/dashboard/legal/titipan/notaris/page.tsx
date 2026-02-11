@@ -59,6 +59,8 @@ export default function TitipanNotarisPage() {
     "APHT" | "Fidusia" | "Roya" | "Surat Kuasa"
   >("APHT");
   const [formNominal, setFormNominal] = useState("");
+  const [formNominalBayar, setFormNominalBayar] = useState("");
+  const [formTanggalBayar, setFormTanggalBayar] = useState(todayIsoDate());
   const [formKeterangan, setFormKeterangan] = useState("");
   const [formNoAkta, setFormNoAkta] = useState("");
   const [formAlasanKembali, setFormAlasanKembali] = useState("");
@@ -67,7 +69,7 @@ export default function TitipanNotarisPage() {
     const total = data.reduce((sum, d) => sum + d.nominal, 0);
     const paid = data
       .filter((d) => d.status === "Sudah Dibayar")
-      .reduce((sum, d) => sum + d.nominal, 0);
+      .reduce((sum, d) => sum + (d.nominalBayar ?? d.nominal), 0);
     const unpaid = data
       .filter((d) => d.status === "Belum Dibayar")
       .reduce((sum, d) => sum + d.nominal, 0);
@@ -135,20 +137,33 @@ export default function TitipanNotarisPage() {
 
   const handlePay = () => {
     if (!selectedItem) return;
+    const nominalBayar = Number.parseInt(formNominalBayar, 10) || 0;
+    if (nominalBayar <= 0) {
+      showToast("Nilai pembayaran wajib diisi!", "warning");
+      return;
+    }
+    if (!formTanggalBayar.trim()) {
+      showToast("Tanggal pembayaran wajib diisi!", "warning");
+      return;
+    }
     setData(
       data.map((d) =>
         d.id === selectedItem.id
           ? {
               ...d,
               status: "Sudah Dibayar" as const,
-              tanggalBayar: todayIsoDate(),
-              noAkta: formNoAkta,
+              nominalBayar,
+              tanggalBayar: formTanggalBayar,
+              noAkta: formNoAkta.trim(),
             }
           : d,
       ),
     );
     setShowPayModal(false);
     setSelectedItem(null);
+    setFormNoAkta("");
+    setFormNominalBayar("");
+    setFormTanggalBayar(todayIsoDate());
     showToast("Pembayaran berhasil dicatat!", "success");
   };
 
@@ -194,6 +209,8 @@ export default function TitipanNotarisPage() {
     setFormNotaris(notarisOptions[0]);
     setFormJenisAkta("APHT");
     setFormNominal("");
+    setFormNominalBayar("");
+    setFormTanggalBayar(todayIsoDate());
     setFormKeterangan("");
     setFormNoAkta("");
     setFormAlasanKembali("");
@@ -211,13 +228,19 @@ export default function TitipanNotarisPage() {
         { header: "Notaris", key: "namaNotaris", width: 25 },
         { header: "Jenis Akta", key: "jenisAkta", width: 12 },
         { header: "No Akta", key: "noAkta", width: 18 },
-        { header: "Nominal", key: "nominalText", width: 15 },
+        { header: "Nominal Titipan", key: "nominalTitipanText", width: 16 },
+        { header: "Nominal Bayar", key: "nominalBayarText", width: 16 },
+        { header: "Tanggal Bayar", key: "tanggalBayar", width: 14 },
         { header: "Status", key: "status", width: 15 },
       ],
       data: filteredData.map((item, idx) => ({
         ...item,
         no: idx + 1,
-        nominalText: formatCurrency(item.nominal),
+        nominalTitipanText: formatCurrency(item.nominal),
+        nominalBayarText:
+          item.status === "Sudah Dibayar"
+            ? formatCurrency(item.nominalBayar ?? item.nominal)
+            : "-",
       })),
     });
     showToast("Export Excel berhasil!", "success");
@@ -405,7 +428,11 @@ export default function TitipanNotarisPage() {
                     {item.noAkta || "-"}
                   </td>
                   <td className="px-4 py-3 text-sm text-right font-medium">
-                    {formatCurrency(item.nominal)}
+                    {formatCurrency(
+                      item.status === "Sudah Dibayar"
+                        ? (item.nominalBayar ?? item.nominal)
+                        : item.nominal,
+                    )}
                   </td>
                   <td className="px-4 py-3">{getStatusBadge(item.status)}</td>
                   <td className="px-4 py-3">
@@ -437,6 +464,11 @@ export default function TitipanNotarisPage() {
                           <button
                             onClick={() => {
                               setSelectedItem(item);
+                              setFormNoAkta(item.noAkta ?? "");
+                              setFormNominalBayar(
+                                String(item.nominalBayar ?? item.nominal),
+                              );
+                              setFormTanggalBayar(todayIsoDate());
                               setShowPayModal(true);
                             }}
                             className="p-1.5 rounded-lg hover:bg-green-100"
@@ -648,6 +680,9 @@ export default function TitipanNotarisPage() {
           onClick={() => {
             setShowPayModal(false);
             setSelectedItem(null);
+            setFormNoAkta("");
+            setFormNominalBayar("");
+            setFormTanggalBayar(todayIsoDate());
           }}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -657,6 +692,9 @@ export default function TitipanNotarisPage() {
                 onClick={() => {
                   setShowPayModal(false);
                   setSelectedItem(null);
+                  setFormNoAkta("");
+                  setFormNominalBayar("");
+                  setFormTanggalBayar(todayIsoDate());
                 }}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
@@ -668,27 +706,62 @@ export default function TitipanNotarisPage() {
                 <strong>{selectedItem.namaNasabah}</strong> -{" "}
                 {selectedItem.namaNotaris}
               </p>
+              <p className="text-sm text-gray-700 mt-1">Nominal Titipan</p>
               <p className="text-lg font-bold text-gray-900">
                 {formatCurrency(selectedItem.nominal)}
               </p>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                No Akta (opsional)
-              </label>
-              <input
-                type="text"
-                value={formNoAkta}
-                onChange={(e) => setFormNoAkta(e.target.value)}
-                className="input"
-                placeholder="APHT/001/I/2026"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nilai Pembayaran
+                </label>
+                <input
+                  type="text"
+                  value={
+                    formNominalBayar
+                      ? formatCurrency(Number.parseInt(formNominalBayar, 10))
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setFormNominalBayar(e.target.value.replace(/\D/g, ""))
+                  }
+                  className="input"
+                  placeholder="Rp 0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Pembayaran
+                </label>
+                <input
+                  type="date"
+                  value={formTanggalBayar}
+                  onChange={(e) => setFormTanggalBayar(e.target.value)}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  No Akta (opsional)
+                </label>
+                <input
+                  type="text"
+                  value={formNoAkta}
+                  onChange={(e) => setFormNoAkta(e.target.value)}
+                  className="input"
+                  placeholder="APHT/001/I/2026"
+                />
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowPayModal(false);
                   setSelectedItem(null);
+                  setFormNoAkta("");
+                  setFormNominalBayar("");
+                  setFormTanggalBayar(todayIsoDate());
                 }}
                 className="btn btn-outline flex-1"
               >
@@ -894,9 +967,21 @@ export default function TitipanNotarisPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-500">Nominal</label>
+                  <label className="text-sm text-gray-500">
+                    Nominal Titipan
+                  </label>
                   <p className="font-medium text-gray-800">
                     {formatCurrency(detailItem.nominal)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">Nominal Bayar</label>
+                  <p className="font-medium text-gray-800">
+                    {detailItem.status === "Sudah Dibayar"
+                      ? formatCurrency(
+                          detailItem.nominalBayar ?? detailItem.nominal,
+                        )
+                      : "-"}
                   </p>
                 </div>
                 <div>

@@ -16,6 +16,7 @@ import {
 import {
   LinkedDocument,
   NasabahLegal,
+  dummyDokumen,
   dummyLinkedDocuments,
   dummyNasabahLegal,
   getArsipDokumenByKode,
@@ -46,6 +47,7 @@ export default function LinkDokumenPage() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  const [showNoBerkasDropdown, setShowNoBerkasDropdown] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -96,6 +98,45 @@ export default function LinkDokumenPage() {
     return result;
   }, [data, search, selectedNasabah]);
 
+  const arsipPembiayaan = useMemo(() => {
+    const noKontrak = formNoKontrak.trim();
+    const linkedBerkasByKontrak = new Set(
+      data
+        .filter((item) => item.noKontrak === noKontrak)
+        .map((item) => item.noBerkas.toLowerCase()),
+    );
+
+    return dummyDokumen.filter((dokumen) => {
+      if (dokumen.jenisDokumen !== "Pembiayaan") return false;
+      if (noKontrak && dokumen.noKontrak && dokumen.noKontrak !== noKontrak) {
+        return false;
+      }
+      return !linkedBerkasByKontrak.has(dokumen.kode.toLowerCase());
+    });
+  }, [data, formNoKontrak]);
+
+  const filteredArsipPembiayaan = useMemo(() => {
+    const keyword = formNoBerkas.trim().toLowerCase();
+    if (!keyword) {
+      return arsipPembiayaan.slice(0, 8);
+    }
+
+    return arsipPembiayaan
+      .filter(
+        (dokumen) =>
+          dokumen.kode.toLowerCase().includes(keyword) ||
+          dokumen.namaDokumen.toLowerCase().includes(keyword) ||
+          dokumen.detail.toLowerCase().includes(keyword),
+      )
+      .slice(0, 8);
+  }, [arsipPembiayaan, formNoBerkas]);
+
+  const selectedArsipDokumen = useMemo(() => {
+    const kode = formNoBerkas.trim().toLowerCase();
+    if (!kode) return undefined;
+    return dummyDokumen.find((item) => item.kode.toLowerCase() === kode);
+  }, [formNoBerkas]);
+
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
@@ -106,6 +147,7 @@ export default function LinkDokumenPage() {
     setFormNoKontrak(selectedNasabah?.noKontrak || "");
     setFormNoBerkas("");
     setFormKeterangan("");
+    setShowNoBerkasDropdown(false);
   };
 
   const closeAddModal = () => {
@@ -114,33 +156,64 @@ export default function LinkDokumenPage() {
   };
 
   const handleAdd = () => {
-    if (
-      !formNoKontrak.trim() ||
-      !formNoBerkas.trim() ||
-      !formKeterangan.trim()
-    ) {
+    const noKontrak = formNoKontrak.trim();
+    const noBerkas = formNoBerkas.trim().toUpperCase();
+    const keterangan = formKeterangan.trim();
+
+    if (!noKontrak || !noBerkas || !keterangan) {
       showToast("No Kontrak, No Berkas, dan Keterangan wajib diisi.", "error");
       return;
     }
 
-    const nasabah = getNasabahLegalByNoKontrak(formNoKontrak.trim());
+    const nasabah = getNasabahLegalByNoKontrak(noKontrak);
     if (!nasabah) {
       showToast("No Kontrak tidak ditemukan pada data internal.", "error");
       return;
     }
 
-    const dokumen = getArsipDokumenByKode(formNoBerkas.trim());
+    const dokumen =
+      getArsipDokumenByKode(noBerkas) ??
+      dummyDokumen.find(
+        (item) => item.kode.toLowerCase() === noBerkas.toLowerCase(),
+      );
     if (!dokumen) {
-      showToast("No Berkas tidak ditemukan pada data arsip internal.", "error");
+      showToast("No Berkas tidak ditemukan pada data arsip digital.", "error");
+      return;
+    }
+    if (dokumen.jenisDokumen !== "Pembiayaan") {
+      showToast(
+        "No Berkas harus berasal dari arsip digital dokumen pembiayaan.",
+        "error",
+      );
+      return;
+    }
+    if (dokumen.noKontrak && dokumen.noKontrak !== noKontrak) {
+      showToast(
+        "No Berkas tidak sesuai dengan No Kontrak yang dipilih.",
+        "error",
+      );
+      return;
+    }
+    if (
+      data.some(
+        (item) =>
+          item.noKontrak === noKontrak &&
+          item.noBerkas.toLowerCase() === noBerkas.toLowerCase(),
+      )
+    ) {
+      showToast(
+        "No Berkas ini sudah ter-link pada No Kontrak tersebut.",
+        "error",
+      );
       return;
     }
 
     const newId = Math.max(0, ...data.map((item) => item.id)) + 1;
     const nextItem: LinkedDocument = {
       id: newId,
-      noKontrak: formNoKontrak.trim(),
-      noBerkas: formNoBerkas.trim(),
-      keterangan: formKeterangan.trim(),
+      noKontrak,
+      noBerkas,
+      keterangan,
       tanggalInput: todayIsoDate(),
       userInput: "Faisal",
     };
@@ -440,7 +513,11 @@ export default function LinkDokumenPage() {
                 <input
                   type="text"
                   value={formNoKontrak}
-                  onChange={(event) => setFormNoKontrak(event.target.value)}
+                  onChange={(event) => {
+                    setFormNoKontrak(event.target.value);
+                    setFormNoBerkas("");
+                    setShowNoBerkasDropdown(false);
+                  }}
                   className="input"
                   placeholder="PB/2024/001234"
                   readOnly={!!selectedNasabah}
@@ -450,13 +527,58 @@ export default function LinkDokumenPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   No Berkas
                 </label>
-                <input
-                  type="text"
-                  value={formNoBerkas}
-                  onChange={(event) => setFormNoBerkas(event.target.value)}
-                  className="input"
-                  placeholder="Contoh: A010254"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formNoBerkas}
+                    onChange={(event) => {
+                      setFormNoBerkas(event.target.value);
+                      setShowNoBerkasDropdown(true);
+                    }}
+                    onFocus={() => setShowNoBerkasDropdown(true)}
+                    onBlur={() => {
+                      setTimeout(() => setShowNoBerkasDropdown(false), 120);
+                    }}
+                    className="input input-with-icon"
+                    placeholder="Cari dari arsip digital (kode/nama dokumen)..."
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+
+                  {showNoBerkasDropdown && (
+                    <div className="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                      {filteredArsipPembiayaan.length > 0 ? (
+                        filteredArsipPembiayaan.map((dokumen) => (
+                          <button
+                            key={dokumen.id}
+                            type="button"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setFormNoBerkas(dokumen.kode);
+                              setShowNoBerkasDropdown(false);
+                            }}
+                            className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                          >
+                            <p className="text-sm font-semibold text-gray-800">
+                              {dokumen.kode}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {dokumen.namaDokumen}
+                            </p>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="px-4 py-3 text-sm text-gray-500">
+                          Tidak ada dokumen pembiayaan yang cocok.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {selectedArsipDokumen
+                    ? `Dokumen: ${selectedArsipDokumen.namaDokumen}`
+                    : "Ketik kode/nama dokumen untuk mencari dari arsip digital."}
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

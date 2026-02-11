@@ -196,14 +196,20 @@ export default function KlaimAsuransiPage() {
       status: formStatus,
       catatan: formCatatan || selectedItem.catatan,
     };
-    if (formStatus === "Cair") {
+    if (formStatus === "Disetujui" || formStatus === "Cair") {
       const nilaiCair = Number.parseInt(formNilaiCair, 10) || 0;
       if (nilaiCair <= 0) {
-        showToast("Nominal pencairan wajib diisi saat status Cair!", "warning");
+        showToast(
+          "Nominal pencairan wajib diisi saat status Disetujui.",
+          "warning",
+        );
         return;
       }
       if (!formTanggalCair) {
-        showToast("Tanggal pencairan wajib diisi saat status Cair!", "warning");
+        showToast(
+          "Tanggal pencairan wajib diisi saat status Disetujui.",
+          "warning",
+        );
         return;
       }
       updates.nilaiCair = nilaiCair;
@@ -804,7 +810,7 @@ export default function KlaimAsuransiPage() {
                   <option value="Ditolak">Ditolak</option>
                 </select>
               </div>
-              {formStatus === "Cair" && (
+              {(formStatus === "Disetujui" || formStatus === "Cair") && (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -831,6 +837,11 @@ export default function KlaimAsuransiPage() {
                       value={formTanggalCair}
                       onChange={setFormTanggalCair}
                     />
+                    {formStatus === "Disetujui" && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Wajib diisi saat status disetujui.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -981,7 +992,8 @@ export default function KlaimAsuransiPage() {
               </div>
             </div>
 
-            {detailItem.status === "Cair" && (
+            {(detailItem.status === "Disetujui" ||
+              detailItem.status === "Cair") && (
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <h3 className="font-semibold text-gray-800 mb-3">
                   Informasi Pencairan

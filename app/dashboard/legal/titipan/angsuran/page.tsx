@@ -34,6 +34,20 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
+const getProcessedAmount = (item: TitipanAngsuran) => {
+  if (typeof item.nominalDiproses === "number") {
+    return Math.max(item.nominalDiproses, 0);
+  }
+  if (item.status === "Sudah Diproses") {
+    return item.nominal;
+  }
+  return 0;
+};
+
+const getRemainingAmount = (item: TitipanAngsuran) => {
+  return Math.max(item.nominal - getProcessedAmount(item), 0);
+};
+
 export default function TitipanAngsuranPage() {
   const { showToast } = useAppToast();
   const [data, setData] = useState(dummyTitipanAngsuran);
@@ -55,23 +69,26 @@ export default function TitipanAngsuranPage() {
   const [formKeperluan, setFormKeperluan] = useState("Angsuran");
   const [formNominal, setFormNominal] = useState("");
   const [formKeterangan, setFormKeterangan] = useState("");
+  const [formNominalProses, setFormNominalProses] = useState("");
+  const [formTanggalProses, setFormTanggalProses] = useState(todayIsoDate());
+  const [formKeteranganProses, setFormKeteranganProses] = useState("");
   const [formAlasanKembali, setFormAlasanKembali] = useState("");
 
   const summary = useMemo(() => {
     const total = data.reduce((sum, d) => sum + d.nominal, 0);
-    const processed = data
-      .filter((d) => d.status === "Sudah Diproses")
-      .reduce((sum, d) => sum + d.nominal, 0);
+    const processed = data.reduce((sum, d) => sum + getProcessedAmount(d), 0);
     const pending = data
-      .filter((d) => d.status === "Pending")
-      .reduce((sum, d) => sum + d.nominal, 0);
+      .filter((d) => d.status !== "Dikembalikan")
+      .reduce((sum, d) => sum + getRemainingAmount(d), 0);
     return {
       total,
       processed,
       pending,
       totalCount: data.length,
-      processedCount: data.filter((d) => d.status === "Sudah Diproses").length,
-      pendingCount: data.filter((d) => d.status === "Pending").length,
+      processedCount: data.filter((d) => getProcessedAmount(d) > 0).length,
+      pendingCount: data.filter(
+        (d) => d.status !== "Dikembalikan" && getRemainingAmount(d) > 0,
+      ).length,
     };
   }, [data]);
 
@@ -126,20 +143,57 @@ export default function TitipanAngsuranPage() {
 
   const handleProcess = () => {
     if (!selectedItem) return;
+    const nominalProses = Number.parseInt(formNominalProses, 10) || 0;
+    if (nominalProses <= 0) {
+      showToast("Nominal proses wajib diisi!", "warning");
+      return;
+    }
+    if (!formTanggalProses.trim()) {
+      showToast("Tanggal proses wajib diisi!", "warning");
+      return;
+    }
+    if (!formKeteranganProses.trim()) {
+      showToast("Keterangan proses wajib diisi!", "warning");
+      return;
+    }
+
+    const sisaSebelumProses = getRemainingAmount(selectedItem);
+    if (nominalProses > sisaSebelumProses) {
+      showToast("Nominal proses tidak boleh melebihi sisa titipan.", "warning");
+      return;
+    }
+
+    const totalDiproses = getProcessedAmount(selectedItem) + nominalProses;
+    const statusBaru =
+      totalDiproses >= selectedItem.nominal
+        ? ("Sudah Diproses" as const)
+        : ("Sebagian Diproses" as const);
+    const sisaSetelahProses = Math.max(selectedItem.nominal - totalDiproses, 0);
+
     setData(
       data.map((d) =>
         d.id === selectedItem.id
           ? {
               ...d,
-              status: "Sudah Diproses" as const,
-              tanggalProses: todayIsoDate(),
+              status: statusBaru,
+              nominalDiproses: totalDiproses,
+              tanggalProses: formTanggalProses,
+              keteranganProses: formKeteranganProses.trim(),
             }
           : d,
       ),
     );
     setShowProcessModal(false);
     setSelectedItem(null);
-    showToast("Titipan berhasil diproses!", "success");
+    setFormNominalProses("");
+    setFormTanggalProses(todayIsoDate());
+    setFormKeteranganProses("");
+    showToast(
+      sisaSetelahProses === 0
+        ? "Titipan berhasil diproses dan sudah lunas."
+        : `Titipan berhasil diproses. Sisa titipan: ${formatCurrency(sisaSetelahProses)}.`,
+      "success",
+    );
   };
 
   const handleReturn = () => {
@@ -172,6 +226,9 @@ export default function TitipanAngsuranPage() {
     setFormKeperluan("Angsuran");
     setFormNominal("");
     setFormKeterangan("");
+    setFormNominalProses("");
+    setFormTanggalProses(todayIsoDate());
+    setFormKeteranganProses("");
     setFormAlasanKembali("");
   };
 
@@ -185,14 +242,19 @@ export default function TitipanAngsuranPage() {
         { header: "No Kontrak", key: "noKontrak", width: 15 },
         { header: "Nama", key: "namaNasabah", width: 20 },
         { header: "Keperluan", key: "keperluan", width: 18 },
-        { header: "Nominal", key: "nominalText", width: 15 },
+        { header: "Nominal Titipan", key: "nominalTitipanText", width: 16 },
+        { header: "Nominal Diproses", key: "nominalDiprosesText", width: 16 },
+        { header: "Sisa", key: "nominalSisaText", width: 14 },
         { header: "Tgl Setor", key: "tanggalSetor", width: 12 },
+        { header: "Tgl Proses", key: "tanggalProses", width: 12 },
         { header: "Status", key: "status", width: 15 },
       ],
       data: filteredData.map((item, idx) => ({
         ...item,
         no: idx + 1,
-        nominalText: formatCurrency(item.nominal),
+        nominalTitipanText: formatCurrency(item.nominal),
+        nominalDiprosesText: formatCurrency(getProcessedAmount(item)),
+        nominalSisaText: formatCurrency(getRemainingAmount(item)),
       })),
     });
     showToast("Export Excel berhasil!", "success");
@@ -201,6 +263,7 @@ export default function TitipanAngsuranPage() {
   const getStatusBadge = (status: string) => {
     const classes = {
       Pending: "bg-yellow-100 text-yellow-700",
+      "Sebagian Diproses": "bg-amber-100 text-amber-700",
       "Sudah Diproses": "bg-green-100 text-green-700",
       Dikembalikan: "bg-gray-100 text-gray-700",
     };
@@ -257,12 +320,12 @@ export default function TitipanAngsuranPage() {
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Sudah Diproses</p>
+              <p className="text-sm text-gray-500">Total Diproses</p>
               <p className="text-2xl font-bold text-gray-800">
                 {formatCurrency(summary.processed)}
               </p>
               <p className="text-xs text-gray-400">
-                {summary.processedCount} transaksi
+                {summary.processedCount} transaksi terproses
               </p>
             </div>
           </div>
@@ -273,12 +336,12 @@ export default function TitipanAngsuranPage() {
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-sm text-gray-500">Sisa Titipan</p>
               <p className="text-2xl font-bold text-gray-800">
                 {formatCurrency(summary.pending)}
               </p>
               <p className="text-xs text-gray-400">
-                {summary.pendingCount} transaksi
+                {summary.pendingCount} transaksi belum lunas
               </p>
             </div>
           </div>
@@ -307,6 +370,7 @@ export default function TitipanAngsuranPage() {
           >
             <option value="Semua">Semua Status</option>
             <option value="Pending">Pending</option>
+            <option value="Sebagian Diproses">Sebagian Diproses</option>
             <option value="Sudah Diproses">Sudah Diproses</option>
             <option value="Dikembalikan">Dikembalikan</option>
           </select>
@@ -356,8 +420,13 @@ export default function TitipanAngsuranPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">{item.namaNasabah}</td>
                   <td className="px-4 py-3 text-sm">{item.keperluan}</td>
-                  <td className="px-4 py-3 text-sm text-right font-medium">
-                    {formatCurrency(item.nominal)}
+                  <td className="px-4 py-3 text-sm text-right">
+                    <p className="font-medium text-gray-800">
+                      {formatCurrency(item.nominal)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Sisa: {formatCurrency(getRemainingAmount(item))}
+                    </p>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {formatDateDisplay(item.tanggalSetor)}
@@ -375,11 +444,17 @@ export default function TitipanAngsuranPage() {
                       >
                         <Eye className="w-4 h-4 text-gray-500" />
                       </button>
-                      {item.status === "Pending" && (
+                      {(item.status === "Pending" ||
+                        item.status === "Sebagian Diproses") && (
                         <>
                           <button
                             onClick={() => {
                               setSelectedItem(item);
+                              setFormNominalProses(
+                                String(getRemainingAmount(item)),
+                              );
+                              setFormTanggalProses(todayIsoDate());
+                              setFormKeteranganProses("");
                               setShowProcessModal(true);
                             }}
                             className="p-1.5 rounded-lg hover:bg-green-100"
@@ -569,6 +644,9 @@ export default function TitipanAngsuranPage() {
           onClick={() => {
             setShowProcessModal(false);
             setSelectedItem(null);
+            setFormNominalProses("");
+            setFormTanggalProses(todayIsoDate());
+            setFormKeteranganProses("");
           }}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -578,6 +656,9 @@ export default function TitipanAngsuranPage() {
                 onClick={() => {
                   setShowProcessModal(false);
                   setSelectedItem(null);
+                  setFormNominalProses("");
+                  setFormTanggalProses(todayIsoDate());
+                  setFormKeteranganProses("");
                 }}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
@@ -589,19 +670,74 @@ export default function TitipanAngsuranPage() {
                 <strong>{selectedItem.namaNasabah}</strong>
               </p>
               <p className="text-sm text-green-600">{selectedItem.keperluan}</p>
+              <p className="text-sm text-gray-700 mt-1">Nominal Titipan</p>
               <p className="text-lg font-bold text-gray-900">
                 {formatCurrency(selectedItem.nominal)}
               </p>
+              <p className="text-sm text-gray-700 mt-2">
+                Sudah Diproses:{" "}
+                <span className="font-semibold text-gray-900">
+                  {formatCurrency(getProcessedAmount(selectedItem))}
+                </span>
+              </p>
+              <p className="text-sm text-gray-700">
+                Sisa Saat Ini:{" "}
+                <span className="font-semibold text-gray-900">
+                  {formatCurrency(getRemainingAmount(selectedItem))}
+                </span>
+              </p>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Apakah Anda yakin ingin memproses titipan ini sebagai pembayaran{" "}
-              {selectedItem.keperluan.toLowerCase()}?
-            </p>
+            <div className="space-y-4 mb-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nominal Proses
+                </label>
+                <input
+                  type="text"
+                  value={
+                    formNominalProses
+                      ? formatCurrency(Number.parseInt(formNominalProses, 10))
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setFormNominalProses(e.target.value.replace(/\D/g, ""))
+                  }
+                  className="input"
+                  placeholder="Rp 0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Proses
+                </label>
+                <input
+                  type="date"
+                  value={formTanggalProses}
+                  onChange={(e) => setFormTanggalProses(e.target.value)}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Keterangan Proses
+                </label>
+                <textarea
+                  value={formKeteranganProses}
+                  onChange={(e) => setFormKeteranganProses(e.target.value)}
+                  rows={3}
+                  className="textarea"
+                  placeholder="Contoh: Pembayaran angsuran bulan ini"
+                />
+              </div>
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowProcessModal(false);
                   setSelectedItem(null);
+                  setFormNominalProses("");
+                  setFormTanggalProses(todayIsoDate());
+                  setFormKeteranganProses("");
                 }}
                 className="btn btn-outline flex-1"
               >
@@ -750,9 +886,25 @@ export default function TitipanAngsuranPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-500">Nominal</label>
+                  <label className="text-sm text-gray-500">
+                    Nominal Titipan
+                  </label>
                   <p className="font-medium text-gray-800">
                     {formatCurrency(detailItem.nominal)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">
+                    Nominal Diproses
+                  </label>
+                  <p className="font-medium text-gray-800">
+                    {formatCurrency(getProcessedAmount(detailItem))}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">Sisa Titipan</label>
+                  <p className="font-medium text-gray-800">
+                    {formatCurrency(getRemainingAmount(detailItem))}
                   </p>
                 </div>
                 <div>
@@ -773,6 +925,16 @@ export default function TitipanAngsuranPage() {
                   <label className="text-sm text-gray-500">User Input</label>
                   <p className="font-medium text-gray-800">
                     {detailItem.userInput}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">
+                    Keterangan Proses
+                  </label>
+                  <p className="font-medium text-gray-800">
+                    {detailItem.keteranganProses?.trim()
+                      ? detailItem.keteranganProses
+                      : "-"}
                   </p>
                 </div>
               </div>

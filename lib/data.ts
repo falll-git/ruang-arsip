@@ -940,13 +940,19 @@ export interface TitipanNotaris {
   jenisAkta: "APHT" | "Fidusia" | "Roya" | "Surat Kuasa";
   nominal: number;
   tanggalSetor: string;
-  status: "Belum Dibayar" | "Sudah Dibayar" | "Dikembalikan";
+  status:
+    | "Belum Dibayar"
+    | "Sebagian Dibayar"
+    | "Sudah Dibayar"
+    | "Dikembalikan";
   userInput: string;
   keterangan: string;
+  nominalBayar?: number;
   tanggalBayar?: string;
   noAkta?: string;
   tanggalKembali?: string;
   alasanKembali?: string;
+  riwayatTransaksi?: TitipanRiwayatTransaksi[];
 }
 
 export interface HistoryCetak {
@@ -1370,11 +1376,33 @@ export const dummyTitipanNotaris: TitipanNotaris[] = [
     notarisId: 1,
     namaNotaris: "Notaris A",
     jenisAkta: "APHT",
-    nominal: 1500000,
+    nominal: 50000000,
+    nominalBayar: 30000000,
     tanggalSetor: "2024-01-20",
-    status: "Belum Dibayar",
+    tanggalBayar: "2024-01-22",
+    status: "Sebagian Dibayar",
     userInput: "Faisal",
     keterangan: "Biaya APHT",
+    riwayatTransaksi: [
+      {
+        tanggal: "2024-01-20",
+        aksi: "Input titipan notaris",
+        nominal: 50000000,
+        keterangan: "Setoran awal titipan notaris",
+      },
+      {
+        tanggal: "2024-01-21",
+        aksi: "Bayar termin 1",
+        nominal: 25000000,
+        keterangan: "Pembayaran termin pertama",
+      },
+      {
+        tanggal: "2024-01-22",
+        aksi: "Bayar termin 2",
+        nominal: 5000000,
+        keterangan: "Pembayaran termin kedua",
+      },
+    ],
   },
 ];
 
@@ -1398,14 +1426,20 @@ export interface TitipanAsuransi {
   perusahaanAsuransi: string;
   nominal: number;
   tanggalSetor: string;
-  status: "Belum Dibayar" | "Sudah Dibayar" | "Dikembalikan";
+  status:
+    | "Belum Dibayar"
+    | "Sebagian Dibayar"
+    | "Sudah Dibayar"
+    | "Dikembalikan";
   userInput: string;
   keterangan: string;
+  nominalBayar?: number;
   noPolis?: string;
   noBuktiBayar?: string;
   tanggalBayar?: string;
   tanggalKembali?: string;
   alasanKembali?: string;
+  riwayatTransaksi?: TitipanRiwayatTransaksi[];
 }
 
 export interface TitipanAngsuran {
@@ -1415,12 +1449,22 @@ export interface TitipanAngsuran {
   keperluan: string;
   nominal: number;
   tanggalSetor: string;
-  status: "Pending" | "Sudah Diproses" | "Dikembalikan";
+  status: "Pending" | "Sebagian Diproses" | "Sudah Diproses" | "Dikembalikan";
   userInput: string;
   keterangan: string;
+  nominalDiproses?: number;
   tanggalProses?: string;
+  keteranganProses?: string;
   tanggalKembali?: string;
   alasanKembali?: string;
+  riwayatTransaksi?: TitipanRiwayatTransaksi[];
+}
+
+export interface TitipanRiwayatTransaksi {
+  tanggal: string;
+  nominal: number;
+  aksi: string;
+  keterangan?: string;
 }
 
 export const jenisAsuransiOptions = ["Jiwa", "Kebakaran", "Kendaraan"];
@@ -1443,6 +1487,14 @@ export const dummyTitipanAsuransi: TitipanAsuransi[] = [
     status: "Belum Dibayar",
     userInput: "Faisal",
     keterangan: "Premi Asuransi Jiwa",
+    riwayatTransaksi: [
+      {
+        tanggal: "2024-01-22",
+        aksi: "Input titipan asuransi",
+        nominal: 500000,
+        keterangan: "Setoran premi asuransi jiwa",
+      },
+    ],
   },
 ];
 
@@ -1457,6 +1509,14 @@ export const dummyTitipanAngsuran: TitipanAngsuran[] = [
     status: "Pending",
     userInput: "Faisal",
     keterangan: "Titipan Angsuran ke-1",
+    riwayatTransaksi: [
+      {
+        tanggal: "2024-01-23",
+        aksi: "Input titipan angsuran",
+        nominal: 4500000,
+        keterangan: "Titipan angsuran ke-1",
+      },
+    ],
   },
 ];
 
@@ -1467,8 +1527,12 @@ export interface HistorisTitipanDebitur {
   noKontrak: string;
   tanggal: string;
   nominal: number;
+  nominalTitipan: number;
+  nominalTerbayar: number;
+  saldoAkhir: number;
   status: string;
   keterangan: string;
+  riwayatTransaksi: TitipanRiwayatTransaksi[];
 }
 
 export function getKlaimAsuransiByNoKontrak(
@@ -1493,54 +1557,237 @@ export function getTitipanByNoKontrak(noKontrak: string): {
   };
 }
 
+function toSafeNominal(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(value, 0);
+}
+
+function sortRiwayatDesc(riwayat: TitipanRiwayatTransaksi[]) {
+  return [...riwayat].sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+}
+
+function getNominalTerbayarNotaris(item: TitipanNotaris): number {
+  if (typeof item.nominalBayar === "number") {
+    return Math.min(toSafeNominal(item.nominalBayar), item.nominal);
+  }
+  const fromRiwayat = (item.riwayatTransaksi ?? [])
+    .filter((r) => /(bayar|termin)/i.test(r.aksi))
+    .reduce((sum, r) => sum + toSafeNominal(r.nominal), 0);
+  if (fromRiwayat > 0) {
+    return Math.min(fromRiwayat, item.nominal);
+  }
+  if (item.status === "Sudah Dibayar") {
+    return item.nominal;
+  }
+  return 0;
+}
+
+function getNominalTerbayarAsuransi(item: TitipanAsuransi): number {
+  if (typeof item.nominalBayar === "number") {
+    return Math.min(toSafeNominal(item.nominalBayar), item.nominal);
+  }
+  const fromRiwayat = (item.riwayatTransaksi ?? [])
+    .filter((r) => /(bayar|termin)/i.test(r.aksi))
+    .reduce((sum, r) => sum + toSafeNominal(r.nominal), 0);
+  if (fromRiwayat > 0) {
+    return Math.min(fromRiwayat, item.nominal);
+  }
+  if (item.status === "Sudah Dibayar") {
+    return item.nominal;
+  }
+  return 0;
+}
+
+function getNominalTerbayarAngsuran(item: TitipanAngsuran): number {
+  if (typeof item.nominalDiproses === "number") {
+    return Math.min(toSafeNominal(item.nominalDiproses), item.nominal);
+  }
+  const fromRiwayat = (item.riwayatTransaksi ?? [])
+    .filter((r) => /(proses|termin|bayar)/i.test(r.aksi))
+    .reduce((sum, r) => sum + toSafeNominal(r.nominal), 0);
+  if (fromRiwayat > 0) {
+    return Math.min(fromRiwayat, item.nominal);
+  }
+  if (item.status === "Sudah Diproses") {
+    return item.nominal;
+  }
+  return 0;
+}
+
+function getRiwayatNotaris(item: TitipanNotaris): TitipanRiwayatTransaksi[] {
+  if (item.riwayatTransaksi && item.riwayatTransaksi.length > 0) {
+    return sortRiwayatDesc(item.riwayatTransaksi);
+  }
+
+  const riwayat: TitipanRiwayatTransaksi[] = [
+    {
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      aksi: "Input titipan notaris",
+      keterangan: item.keterangan,
+    },
+  ];
+  const nominalTerbayar = getNominalTerbayarNotaris(item);
+  if (nominalTerbayar > 0) {
+    riwayat.push({
+      tanggal: item.tanggalBayar ?? item.tanggalSetor,
+      nominal: nominalTerbayar,
+      aksi: "Pembayaran titipan notaris",
+      keterangan: item.noAkta ? `No Akta: ${item.noAkta}` : undefined,
+    });
+  }
+  if (item.tanggalKembali) {
+    riwayat.push({
+      tanggal: item.tanggalKembali,
+      nominal: Math.max(item.nominal - nominalTerbayar, 0),
+      aksi: "Pengembalian titipan notaris",
+      keterangan: item.alasanKembali,
+    });
+  }
+
+  return sortRiwayatDesc(riwayat);
+}
+
+function getRiwayatAsuransi(item: TitipanAsuransi): TitipanRiwayatTransaksi[] {
+  if (item.riwayatTransaksi && item.riwayatTransaksi.length > 0) {
+    return sortRiwayatDesc(item.riwayatTransaksi);
+  }
+
+  const riwayat: TitipanRiwayatTransaksi[] = [
+    {
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      aksi: "Input titipan asuransi",
+      keterangan: item.keterangan,
+    },
+  ];
+  const nominalTerbayar = getNominalTerbayarAsuransi(item);
+  if (nominalTerbayar > 0) {
+    riwayat.push({
+      tanggal: item.tanggalBayar ?? item.tanggalSetor,
+      nominal: nominalTerbayar,
+      aksi: "Pembayaran titipan asuransi",
+      keterangan: item.noBuktiBayar
+        ? `No Bukti Bayar: ${item.noBuktiBayar}`
+        : undefined,
+    });
+  }
+  if (item.tanggalKembali) {
+    riwayat.push({
+      tanggal: item.tanggalKembali,
+      nominal: Math.max(item.nominal - nominalTerbayar, 0),
+      aksi: "Pengembalian titipan asuransi",
+      keterangan: item.alasanKembali,
+    });
+  }
+
+  return sortRiwayatDesc(riwayat);
+}
+
+function getRiwayatAngsuran(item: TitipanAngsuran): TitipanRiwayatTransaksi[] {
+  if (item.riwayatTransaksi && item.riwayatTransaksi.length > 0) {
+    return sortRiwayatDesc(item.riwayatTransaksi);
+  }
+
+  const riwayat: TitipanRiwayatTransaksi[] = [
+    {
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      aksi: "Input titipan angsuran",
+      keterangan: item.keterangan,
+    },
+  ];
+  const nominalTerproses = getNominalTerbayarAngsuran(item);
+  if (nominalTerproses > 0) {
+    riwayat.push({
+      tanggal: item.tanggalProses ?? item.tanggalSetor,
+      nominal: nominalTerproses,
+      aksi: "Proses titipan angsuran",
+      keterangan: item.keteranganProses,
+    });
+  }
+  if (item.tanggalKembali) {
+    riwayat.push({
+      tanggal: item.tanggalKembali,
+      nominal: Math.max(item.nominal - nominalTerproses, 0),
+      aksi: "Pengembalian titipan angsuran",
+      keterangan: item.alasanKembali,
+    });
+  }
+
+  return sortRiwayatDesc(riwayat);
+}
+
 export function getHistorisTitipanByNoKontrak(
   noKontrak: string,
 ): HistorisTitipanDebitur[] {
   const { notaris, asuransi, angsuran } = getTitipanByNoKontrak(noKontrak);
   return [
-    ...notaris.map((item) => ({
-      id: `notaris-${item.id}`,
-      sumberId: item.id,
-      jenisTitipan: "Notaris" as const,
-      noKontrak: item.noKontrak,
-      tanggal: item.tanggalSetor,
-      nominal: item.nominal,
-      status: item.status,
-      keterangan: item.keterangan,
-    })),
-    ...asuransi.map((item) => ({
-      id: `asuransi-${item.id}`,
-      sumberId: item.id,
-      jenisTitipan: "Asuransi" as const,
-      noKontrak: item.noKontrak,
-      tanggal: item.tanggalSetor,
-      nominal: item.nominal,
-      status: item.status,
-      keterangan: item.keterangan,
-    })),
-    ...angsuran.map((item) => ({
-      id: `angsuran-${item.id}`,
-      sumberId: item.id,
-      jenisTitipan: "Angsuran" as const,
-      noKontrak: item.noKontrak,
-      tanggal: item.tanggalSetor,
-      nominal: item.nominal,
-      status: item.status,
-      keterangan: item.keterangan,
-    })),
+    ...notaris.map((item) => {
+      const nominalTitipan = item.nominal;
+      const nominalTerbayar = getNominalTerbayarNotaris(item);
+      const saldoAkhir = Math.max(nominalTitipan - nominalTerbayar, 0);
+      const riwayatTransaksi = getRiwayatNotaris(item);
+      return {
+        id: `notaris-${item.id}`,
+        sumberId: item.id,
+        jenisTitipan: "Notaris" as const,
+        noKontrak: item.noKontrak,
+        tanggal: riwayatTransaksi[0]?.tanggal ?? item.tanggalSetor,
+        nominal: nominalTitipan,
+        nominalTitipan,
+        nominalTerbayar,
+        saldoAkhir,
+        status: item.status,
+        keterangan: item.keterangan,
+        riwayatTransaksi,
+      };
+    }),
+    ...asuransi.map((item) => {
+      const nominalTitipan = item.nominal;
+      const nominalTerbayar = getNominalTerbayarAsuransi(item);
+      const saldoAkhir = Math.max(nominalTitipan - nominalTerbayar, 0);
+      const riwayatTransaksi = getRiwayatAsuransi(item);
+      return {
+        id: `asuransi-${item.id}`,
+        sumberId: item.id,
+        jenisTitipan: "Asuransi" as const,
+        noKontrak: item.noKontrak,
+        tanggal: riwayatTransaksi[0]?.tanggal ?? item.tanggalSetor,
+        nominal: nominalTitipan,
+        nominalTitipan,
+        nominalTerbayar,
+        saldoAkhir,
+        status: item.status,
+        keterangan: item.keterangan,
+        riwayatTransaksi,
+      };
+    }),
+    ...angsuran.map((item) => {
+      const nominalTitipan = item.nominal;
+      const nominalTerbayar = getNominalTerbayarAngsuran(item);
+      const saldoAkhir = Math.max(nominalTitipan - nominalTerbayar, 0);
+      const riwayatTransaksi = getRiwayatAngsuran(item);
+      return {
+        id: `angsuran-${item.id}`,
+        sumberId: item.id,
+        jenisTitipan: "Angsuran" as const,
+        noKontrak: item.noKontrak,
+        tanggal: riwayatTransaksi[0]?.tanggal ?? item.tanggalSetor,
+        nominal: nominalTitipan,
+        nominalTitipan,
+        nominalTerbayar,
+        saldoAkhir,
+        status: item.status,
+        keterangan: item.keterangan,
+        riwayatTransaksi,
+      };
+    }),
   ].sort((a, b) => b.tanggal.localeCompare(a.tanggal));
 }
 
 export function getSaldoDanaTitipanByNoKontrak(noKontrak: string): number {
-  const { notaris, asuransi, angsuran } = getTitipanByNoKontrak(noKontrak);
-  const saldoNotaris = notaris
-    .filter((item) => item.status === "Belum Dibayar")
-    .reduce((total, item) => total + item.nominal, 0);
-  const saldoAsuransi = asuransi
-    .filter((item) => item.status === "Belum Dibayar")
-    .reduce((total, item) => total + item.nominal, 0);
-  const saldoAngsuran = angsuran
-    .filter((item) => item.status === "Pending")
-    .reduce((total, item) => total + item.nominal, 0);
-  return saldoNotaris + saldoAsuransi + saldoAngsuran;
+  return getHistorisTitipanByNoKontrak(noKontrak)
+    .filter((item) => item.status !== "Dikembalikan")
+    .reduce((total, item) => total + item.saldoAkhir, 0);
 }

@@ -35,6 +35,20 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
+const getPaidAmount = (item: TitipanAsuransi) => {
+  if (typeof item.nominalBayar === "number") {
+    return Math.max(item.nominalBayar, 0);
+  }
+  if (item.status === "Sudah Dibayar") {
+    return item.nominal;
+  }
+  return 0;
+};
+
+const getRemainingAmount = (item: TitipanAsuransi) => {
+  return Math.max(item.nominal - getPaidAmount(item), 0);
+};
+
 export default function TitipanAsuransiPage() {
   const { showToast } = useAppToast();
   const [data, setData] = useState(dummyTitipanAsuransi);
@@ -61,6 +75,8 @@ export default function TitipanAsuransiPage() {
     perusahaanAsuransiOptions[0],
   );
   const [formNominal, setFormNominal] = useState("");
+  const [formNominalBayar, setFormNominalBayar] = useState("");
+  const [formTanggalBayar, setFormTanggalBayar] = useState(todayIsoDate());
   const [formKeterangan, setFormKeterangan] = useState("");
   const [formNoPolis, setFormNoPolis] = useState("");
   const [formNoBukti, setFormNoBukti] = useState("");
@@ -68,19 +84,19 @@ export default function TitipanAsuransiPage() {
 
   const summary = useMemo(() => {
     const total = data.reduce((sum, d) => sum + d.nominal, 0);
-    const paid = data
-      .filter((d) => d.status === "Sudah Dibayar")
-      .reduce((sum, d) => sum + d.nominal, 0);
+    const paid = data.reduce((sum, d) => sum + getPaidAmount(d), 0);
     const unpaid = data
-      .filter((d) => d.status === "Belum Dibayar")
-      .reduce((sum, d) => sum + d.nominal, 0);
+      .filter((d) => d.status !== "Dikembalikan")
+      .reduce((sum, d) => sum + getRemainingAmount(d), 0);
     return {
       total,
       paid,
       unpaid,
       totalCount: data.length,
-      paidCount: data.filter((d) => d.status === "Sudah Dibayar").length,
-      unpaidCount: data.filter((d) => d.status === "Belum Dibayar").length,
+      paidCount: data.filter((d) => getPaidAmount(d) > 0).length,
+      unpaidCount: data.filter(
+        (d) => d.status !== "Dikembalikan" && getRemainingAmount(d) > 0,
+      ).length,
     };
   }, [data]);
 
@@ -142,22 +158,58 @@ export default function TitipanAsuransiPage() {
       showToast("No Polis dan No Bukti Bayar wajib diisi!", "warning");
       return;
     }
+    const nominalBayar = Number.parseInt(formNominalBayar, 10) || 0;
+    if (nominalBayar <= 0) {
+      showToast("Nilai pembayaran wajib diisi!", "warning");
+      return;
+    }
+    if (!formTanggalBayar.trim()) {
+      showToast("Tanggal pembayaran wajib diisi!", "warning");
+      return;
+    }
+
+    const sisaSebelumBayar = getRemainingAmount(selectedItem);
+    if (nominalBayar > sisaSebelumBayar) {
+      showToast(
+        "Nilai pembayaran tidak boleh melebihi sisa titipan.",
+        "warning",
+      );
+      return;
+    }
+
+    const totalTerbayar = getPaidAmount(selectedItem) + nominalBayar;
+    const statusBaru =
+      totalTerbayar >= selectedItem.nominal
+        ? ("Sudah Dibayar" as const)
+        : ("Sebagian Dibayar" as const);
+    const sisaSetelahBayar = Math.max(selectedItem.nominal - totalTerbayar, 0);
+
     setData(
       data.map((d) =>
         d.id === selectedItem.id
           ? {
               ...d,
-              status: "Sudah Dibayar" as const,
-              tanggalBayar: todayIsoDate(),
-              noPolis: formNoPolis,
-              noBuktiBayar: formNoBukti,
+              status: statusBaru,
+              nominalBayar: totalTerbayar,
+              tanggalBayar: formTanggalBayar,
+              noPolis: formNoPolis.trim(),
+              noBuktiBayar: formNoBukti.trim(),
             }
           : d,
       ),
     );
     setShowPayModal(false);
     setSelectedItem(null);
-    showToast("Pembayaran berhasil dicatat!", "success");
+    setFormNoPolis("");
+    setFormNoBukti("");
+    setFormNominalBayar("");
+    setFormTanggalBayar(todayIsoDate());
+    showToast(
+      sisaSetelahBayar === 0
+        ? "Pembayaran berhasil dicatat. Titipan sudah lunas."
+        : `Pembayaran berhasil dicatat. Sisa titipan: ${formatCurrency(sisaSetelahBayar)}.`,
+      "success",
+    );
   };
 
   const handleReturn = () => {
@@ -191,6 +243,8 @@ export default function TitipanAsuransiPage() {
     setFormJenisAsuransi("Jiwa");
     setFormPerusahaan(perusahaanAsuransiOptions[0]);
     setFormNominal("");
+    setFormNominalBayar("");
+    setFormTanggalBayar(todayIsoDate());
     setFormKeterangan("");
     setFormNoPolis("");
     setFormNoBukti("");
@@ -208,14 +262,19 @@ export default function TitipanAsuransiPage() {
         { header: "Nama", key: "namaNasabah", width: 20 },
         { header: "Jenis", key: "jenisAsuransi", width: 12 },
         { header: "Perusahaan", key: "perusahaanAsuransi", width: 18 },
-        { header: "Nominal", key: "nominalText", width: 15 },
+        { header: "Nominal Titipan", key: "nominalTitipanText", width: 16 },
+        { header: "Nominal Dibayar", key: "nominalDibayarText", width: 16 },
+        { header: "Sisa", key: "nominalSisaText", width: 14 },
         { header: "Tgl Setor", key: "tanggalSetor", width: 12 },
+        { header: "Tgl Bayar", key: "tanggalBayar", width: 12 },
         { header: "Status", key: "status", width: 15 },
       ],
       data: filteredData.map((item, idx) => ({
         ...item,
         no: idx + 1,
-        nominalText: formatCurrency(item.nominal),
+        nominalTitipanText: formatCurrency(item.nominal),
+        nominalDibayarText: formatCurrency(getPaidAmount(item)),
+        nominalSisaText: formatCurrency(getRemainingAmount(item)),
       })),
     });
     showToast("Export Excel berhasil!", "success");
@@ -224,6 +283,7 @@ export default function TitipanAsuransiPage() {
   const getStatusBadge = (status: string) => {
     const classes = {
       "Belum Dibayar": "bg-yellow-100 text-yellow-700",
+      "Sebagian Dibayar": "bg-amber-100 text-amber-700",
       "Sudah Dibayar": "bg-green-100 text-green-700",
       Dikembalikan: "bg-gray-100 text-gray-700",
     };
@@ -280,12 +340,12 @@ export default function TitipanAsuransiPage() {
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Sudah Dibayar</p>
+              <p className="text-sm text-gray-500">Total Dibayar</p>
               <p className="text-2xl font-bold text-gray-800">
                 {formatCurrency(summary.paid)}
               </p>
               <p className="text-xs text-gray-400">
-                {summary.paidCount} transaksi
+                {summary.paidCount} transaksi terbayar
               </p>
             </div>
           </div>
@@ -296,12 +356,12 @@ export default function TitipanAsuransiPage() {
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Belum Dibayar</p>
+              <p className="text-sm text-gray-500">Sisa Pembayaran</p>
               <p className="text-2xl font-bold text-gray-800">
                 {formatCurrency(summary.unpaid)}
               </p>
               <p className="text-xs text-gray-400">
-                {summary.unpaidCount} transaksi
+                {summary.unpaidCount} transaksi belum lunas
               </p>
             </div>
           </div>
@@ -331,6 +391,7 @@ export default function TitipanAsuransiPage() {
           >
             <option value="Semua">Semua Status</option>
             <option value="Belum Dibayar">Belum Dibayar</option>
+            <option value="Sebagian Dibayar">Sebagian Dibayar</option>
             <option value="Sudah Dibayar">Sudah Dibayar</option>
             <option value="Dikembalikan">Dikembalikan</option>
           </select>
@@ -396,8 +457,13 @@ export default function TitipanAsuransiPage() {
                   <td className="px-4 py-3 text-sm">
                     {item.perusahaanAsuransi}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right font-medium">
-                    {formatCurrency(item.nominal)}
+                  <td className="px-4 py-3 text-sm text-right">
+                    <p className="font-medium text-gray-800">
+                      {formatCurrency(item.nominal)}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Sisa: {formatCurrency(getRemainingAmount(item))}
+                    </p>
                   </td>
                   <td className="px-4 py-3">{getStatusBadge(item.status)}</td>
                   <td className="px-4 py-3">
@@ -412,11 +478,18 @@ export default function TitipanAsuransiPage() {
                       >
                         <Eye className="w-4 h-4 text-gray-500" />
                       </button>
-                      {item.status === "Belum Dibayar" && (
+                      {(item.status === "Belum Dibayar" ||
+                        item.status === "Sebagian Dibayar") && (
                         <>
                           <button
                             onClick={() => {
                               setSelectedItem(item);
+                              setFormNoPolis(item.noPolis ?? "");
+                              setFormNoBukti(item.noBuktiBayar ?? "");
+                              setFormNominalBayar(
+                                String(getRemainingAmount(item)),
+                              );
+                              setFormTanggalBayar(todayIsoDate());
                               setShowPayModal(true);
                             }}
                             className="p-1.5 rounded-lg hover:bg-green-100"
@@ -652,6 +725,10 @@ export default function TitipanAsuransiPage() {
           onClick={() => {
             setShowPayModal(false);
             setSelectedItem(null);
+            setFormNoPolis("");
+            setFormNoBukti("");
+            setFormNominalBayar("");
+            setFormTanggalBayar(todayIsoDate());
           }}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -661,6 +738,10 @@ export default function TitipanAsuransiPage() {
                 onClick={() => {
                   setShowPayModal(false);
                   setSelectedItem(null);
+                  setFormNoPolis("");
+                  setFormNoBukti("");
+                  setFormNominalBayar("");
+                  setFormTanggalBayar(todayIsoDate());
                 }}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
@@ -671,11 +752,53 @@ export default function TitipanAsuransiPage() {
               <p className="text-sm text-green-800">
                 <strong>{selectedItem.namaNasabah}</strong>
               </p>
+              <p className="text-sm text-gray-700 mt-1">Nominal Titipan</p>
               <p className="text-lg font-bold text-gray-900">
                 {formatCurrency(selectedItem.nominal)}
               </p>
+              <p className="text-sm text-gray-700 mt-2">
+                Sudah Dibayar:{" "}
+                <span className="font-semibold text-gray-900">
+                  {formatCurrency(getPaidAmount(selectedItem))}
+                </span>
+              </p>
+              <p className="text-sm text-gray-700">
+                Sisa Saat Ini:{" "}
+                <span className="font-semibold text-gray-900">
+                  {formatCurrency(getRemainingAmount(selectedItem))}
+                </span>
+              </p>
             </div>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nilai Pembayaran
+                </label>
+                <input
+                  type="text"
+                  value={
+                    formNominalBayar
+                      ? formatCurrency(Number.parseInt(formNominalBayar, 10))
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setFormNominalBayar(e.target.value.replace(/\D/g, ""))
+                  }
+                  className="input"
+                  placeholder="Rp 0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Pembayaran
+                </label>
+                <input
+                  type="date"
+                  value={formTanggalBayar}
+                  onChange={(e) => setFormTanggalBayar(e.target.value)}
+                  className="input"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   No Polis
@@ -706,6 +829,10 @@ export default function TitipanAsuransiPage() {
                 onClick={() => {
                   setShowPayModal(false);
                   setSelectedItem(null);
+                  setFormNoPolis("");
+                  setFormNoBukti("");
+                  setFormNominalBayar("");
+                  setFormTanggalBayar(todayIsoDate());
                 }}
                 className="btn btn-outline flex-1"
               >
@@ -852,9 +979,27 @@ export default function TitipanAsuransiPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-500">Nominal</label>
+                  <label className="text-sm text-gray-500">
+                    Nominal Titipan
+                  </label>
                   <p className="font-medium text-gray-800">
                     {formatCurrency(detailItem.nominal)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">
+                    Nominal Dibayar
+                  </label>
+                  <p className="font-medium text-gray-800">
+                    {formatCurrency(getPaidAmount(detailItem))}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">
+                    Sisa Pembayaran
+                  </label>
+                  <p className="font-medium text-gray-800">
+                    {formatCurrency(getRemainingAmount(detailItem))}
                   </p>
                 </div>
                 <div>
