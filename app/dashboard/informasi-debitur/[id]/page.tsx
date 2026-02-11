@@ -23,6 +23,9 @@ import {
   getHasilKunjunganByDebiturId,
   getLangkahPenangananByDebiturId,
   getSuratPeringatanByDebiturId,
+  getKlaimAsuransiByNoKontrak,
+  getSaldoDanaTitipanByNoKontrak,
+  getHistorisTitipanByNoKontrak,
   formatCurrency,
   getKolektibilitasLabel,
   getKolektibilitasColor,
@@ -44,7 +47,9 @@ type TabType =
   | "actionplan"
   | "kunjungan"
   | "penanganan"
-  | "sp";
+  | "sp"
+  | "klaim"
+  | "titipan";
 
 type DetailItem =
   | { type: "bprs"; data: ReturnType<typeof getPengecekanBPRSByDebiturId>[0] }
@@ -71,6 +76,8 @@ const tabs: { id: TabType; label: string }[] = [
   { id: "kunjungan", label: "Hasil Kunjungan" },
   { id: "penanganan", label: "Langkah Penanganan" },
   { id: "sp", label: "Surat Peringatan" },
+  { id: "klaim", label: "Progress Claim Asuransi" },
+  { id: "titipan", label: "Dana Titipan" },
 ];
 
 const InfoRow = ({
@@ -101,6 +108,15 @@ export default function DetailDebiturPage() {
   const hasilKunjungan = getHasilKunjunganByDebiturId(id as string);
   const langkahPenanganan = getLangkahPenangananByDebiturId(id as string);
   const suratPeringatan = getSuratPeringatanByDebiturId(id as string);
+  const progressClaimAsuransi = debitur
+    ? getKlaimAsuransiByNoKontrak(debitur.noKontrak)
+    : [];
+  const saldoDanaTitipan = debitur
+    ? getSaldoDanaTitipanByNoKontrak(debitur.noKontrak)
+    : 0;
+  const historisTitipan = debitur
+    ? getHistorisTitipanByNoKontrak(debitur.noKontrak)
+    : [];
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -255,6 +271,30 @@ export default function DetailDebiturPage() {
                 label="Status"
                 value={<StatusBadge status={detailItem.data.status} />}
               />
+              <DetailRow
+                label="Lampiran"
+                value={
+                  detailItem.data.lampiranFilePath ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openPreview(
+                          normalizeFileUrl(detailItem.data.lampiranFilePath!),
+                          detailItem.data.lampiranFileName ||
+                            "lampiran_langkah_penanganan.pdf",
+                          "pdf",
+                        )
+                      }
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Lihat
+                    </button>
+                  ) : (
+                    "-"
+                  )
+                }
+              />
             </DetailSection>
             <DetailSection title="Hasil Penanganan">
               <p className="text-sm text-gray-700 leading-relaxed">
@@ -323,6 +363,30 @@ export default function DetailDebiturPage() {
               <DetailRow
                 label="Status"
                 value={<StatusBadge status={detailItem.data.status} />}
+              />
+              <DetailRow
+                label="Lampiran"
+                value={
+                  detailItem.data.lampiranFilePath ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openPreview(
+                          normalizeFileUrl(detailItem.data.lampiranFilePath!),
+                          detailItem.data.lampiranFileName ||
+                            "lampiran_action_plan.pdf",
+                          "pdf",
+                        )
+                      }
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Lihat
+                    </button>
+                  ) : (
+                    "-"
+                  )
+                }
               />
             </DetailSection>
           </div>
@@ -726,6 +790,26 @@ export default function DetailDebiturPage() {
                         </span>
                       </div>
                       <p className="text-gray-900">{item.rencana}</p>
+                      {item.lampiranFilePath && (
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openPreview(
+                                normalizeFileUrl(item.lampiranFilePath!),
+                                item.lampiranFileName ||
+                                  "lampiran_action_plan.pdf",
+                                "pdf",
+                              );
+                            }}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                          >
+                            <Eye className="w-4 h-4" aria-hidden="true" />
+                            Lihat Lampiran
+                          </button>
+                        </div>
+                      )}
                       <p className="text-xs text-gray-400 mt-2">
                         by {item.createdBy}
                       </p>
@@ -761,6 +845,14 @@ export default function DetailDebiturPage() {
                       <p className="text-gray-900 mb-2">
                         {item.hasilKunjungan}
                       </p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs font-medium text-gray-600 mb-1">
+                          Alamat Kunjungan:
+                        </p>
+                        <p className="text-sm text-gray-800">
+                          {item.alamat || "-"}
+                        </p>
+                      </div>
                       <div className="bg-blue-50 rounded-lg p-3 mt-3">
                         <p className="text-xs font-medium text-blue-700 mb-1">
                           Kesimpulan:
@@ -823,6 +915,9 @@ export default function DetailDebiturPage() {
                           Hasil
                         </th>
                         <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Lampiran
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
                           Status
                         </th>
                       </tr>
@@ -844,6 +939,30 @@ export default function DetailDebiturPage() {
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600">
                             {item.hasilPenanganan}
+                          </td>
+                          <td
+                            className="py-3 px-4 text-center"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            {item.lampiranFilePath ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openPreview(
+                                    normalizeFileUrl(item.lampiranFilePath!),
+                                    item.lampiranFileName ||
+                                      "lampiran_langkah_penanganan.pdf",
+                                    "pdf",
+                                  )
+                                }
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                              >
+                                <Eye className="w-4 h-4" aria-hidden="true" />
+                                Lihat
+                              </button>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-center">
                             <StatusBadge status={item.status} />
@@ -948,6 +1067,166 @@ export default function DetailDebiturPage() {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "klaim" && (
+            <div>
+              {progressClaimAsuransi.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <p>Belum ada historis/progress claim asuransi.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto -mx-2 sm:mx-0">
+                  <table className="min-w-220 w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tanggal
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Jenis Claim
+                        </th>
+                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Nilai Claim
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Status
+                        </th>
+                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Nominal Pencairan
+                        </th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Tanggal Pencairan
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                          Lampiran
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {progressClaimAsuransi.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="py-3 px-4 text-sm">
+                            {formatDateDisplay(item.tanggalPengajuan)}
+                          </td>
+                          <td className="py-3 px-4 text-sm font-medium">
+                            {item.jenisKlaim}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-right font-semibold">
+                            {formatCurrency(item.nilaiKlaim)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-right font-semibold">
+                            {item.nilaiCair
+                              ? formatCurrency(item.nilaiCair)
+                              : "-"}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            {formatDateDisplay(item.tanggalCair)}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {item.lampiranFilePath ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openPreview(
+                                    normalizeFileUrl(item.lampiranFilePath!),
+                                    item.lampiranFileName ||
+                                      "tracking_claim_asuransi.pdf",
+                                    "pdf",
+                                  )
+                                }
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                              >
+                                <Eye className="w-4 h-4" aria-hidden="true" />
+                                Lihat
+                              </button>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "titipan" && (
+            <div className="space-y-6">
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
+                <p className="text-sm text-blue-700 font-medium">
+                  Saldo Dana Titipan
+                </p>
+                <p className="text-2xl font-bold text-blue-900 mt-1">
+                  {formatCurrency(saldoDanaTitipan)}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  Historis Titipan (Semua Data)
+                </h3>
+                {historisTitipan.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500 border border-gray-100 rounded-lg">
+                    Belum ada historis titipan.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <table className="min-w-200 w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Tanggal
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Jenis Titipan
+                          </th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Nominal
+                          </th>
+                          <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Status
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Keterangan
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {historisTitipan.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm">
+                              {formatDateDisplay(item.tanggal)}
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium">
+                              {item.jenisTitipan}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-right font-semibold">
+                              {formatCurrency(item.nominal)}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                {item.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-600">
+                              {item.keterangan || "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

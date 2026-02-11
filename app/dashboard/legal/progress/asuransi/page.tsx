@@ -16,6 +16,7 @@ import {
   Trash2,
   Edit2,
   Eye,
+  UploadCloud,
 } from "lucide-react";
 import {
   dummyProgressAsuransi,
@@ -29,6 +30,7 @@ import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { formatDateDisplay } from "@/lib/utils/date";
+import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -38,6 +40,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount);
 
 export default function ProgressAsuransiPage() {
+  const { openPreview } = useDocumentPreviewContext();
   const { showToast } = useAppToast();
   const [data, setData] = useState(dummyProgressAsuransi);
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -69,6 +72,8 @@ export default function ProgressAsuransiPage() {
   const [formPeriodeAwal, setFormPeriodeAwal] = useState("");
   const [formPeriodeAkhir, setFormPeriodeAkhir] = useState("");
   const [formCatatan, setFormCatatan] = useState("");
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [updateFile, setUpdateFile] = useState<File | null>(null);
 
   const summary = useMemo(() => {
     return {
@@ -100,6 +105,34 @@ export default function ProgressAsuransiPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  const normalizeFileUrl = (filePath: string) => {
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+    if (/^(blob:|data:)/i.test(filePath)) return filePath;
+    if (filePath.startsWith("/")) {
+      return filePath.startsWith("/documents/")
+        ? filePath
+        : `/documents${filePath}`;
+    }
+    return filePath.startsWith("documents/")
+      ? `/${filePath}`
+      : `/documents/${filePath}`;
+  };
+
+  const validatePdfFile = (file: File): boolean => {
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      showToast("Lampiran harus berformat PDF.", "error");
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Ukuran file maksimal 5MB.", "error");
+      return false;
+    }
+    return true;
+  };
 
   const handleAdd = () => {
     const nasabah = dummyNasabahLegal.find(
@@ -135,6 +168,10 @@ export default function ProgressAsuransiPage() {
       status: "Proses",
       catatan: formCatatan,
       userInput: "Faisal",
+      lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
+      lampiranFileName: formFile?.name,
+      lampiranFileType: formFile ? "pdf" : undefined,
+      lampiranFileSize: formFile?.size,
     };
     setData([newItem, ...data]);
     setShowAddModal(false);
@@ -159,12 +196,23 @@ export default function ProgressAsuransiPage() {
               status: formStatus,
               noPolis: formNoPolis || d.noPolis,
               catatan: formCatatan || d.catatan,
+              lampiranFilePath: updateFile
+                ? URL.createObjectURL(updateFile)
+                : d.lampiranFilePath,
+              lampiranFileName: updateFile
+                ? updateFile.name
+                : d.lampiranFileName,
+              lampiranFileType: updateFile ? "pdf" : d.lampiranFileType,
+              lampiranFileSize: updateFile
+                ? updateFile.size
+                : d.lampiranFileSize,
             }
           : d,
       ),
     );
     setShowUpdateModal(false);
     setSelectedItem(null);
+    setUpdateFile(null);
     showToast("Progress berhasil diupdate!", "success");
   };
 
@@ -184,6 +232,8 @@ export default function ProgressAsuransiPage() {
     setFormPeriodeAwal("");
     setFormPeriodeAkhir("");
     setFormCatatan("");
+    setFormFile(null);
+    setUpdateFile(null);
   };
 
   const handleExportExcel = async () => {
@@ -397,6 +447,9 @@ export default function ProgressAsuransiPage() {
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
                   Nilai
                 </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                  Lampiran
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                   Status
                 </th>
@@ -419,6 +472,27 @@ export default function ProgressAsuransiPage() {
                   <td className="px-4 py-3 text-sm text-right font-medium">
                     {formatCurrency(item.nilaiPertanggungan)}
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    {item.lampiranFilePath ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openPreview(
+                            normalizeFileUrl(item.lampiranFilePath!),
+                            item.lampiranFileName || "progress_asuransi.pdf",
+                            "pdf",
+                          )
+                        }
+                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                        title="Lihat lampiran"
+                      >
+                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                        Lihat
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{getStatusBadge(item.status)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
@@ -438,6 +512,7 @@ export default function ProgressAsuransiPage() {
                           setFormStatus(item.status);
                           setFormNoPolis(item.noPolis || "");
                           setFormCatatan(item.catatan || "");
+                          setUpdateFile(null);
                           setShowUpdateModal(true);
                         }}
                         className="p-1.5 rounded-lg hover:bg-blue-100"
@@ -459,7 +534,7 @@ export default function ProgressAsuransiPage() {
               {paginatedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-8 text-center text-gray-500"
                   >
                     Tidak ada data
@@ -632,6 +707,55 @@ export default function ProgressAsuransiPage() {
                   className="textarea"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className="file-upload"
+                  onClick={() =>
+                    document.getElementById("progressAsuransiFile")?.click()
+                  }
+                >
+                  <input
+                    id="progressAsuransiFile"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const nextFile = e.target.files[0];
+                      if (!validatePdfFile(nextFile)) return;
+                      setFormFile(nextFile);
+                    }}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud
+                      className="w-10 h-10 text-[#157ec3] mb-2"
+                      aria-hidden="true"
+                    />
+                    {formFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {formFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(formFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik untuk pilih PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -657,6 +781,7 @@ export default function ProgressAsuransiPage() {
           onClick={() => {
             setShowUpdateModal(false);
             setSelectedItem(null);
+            setUpdateFile(null);
           }}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -666,6 +791,7 @@ export default function ProgressAsuransiPage() {
                 onClick={() => {
                   setShowUpdateModal(false);
                   setSelectedItem(null);
+                  setUpdateFile(null);
                 }}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
@@ -723,12 +849,73 @@ export default function ProgressAsuransiPage() {
                   className="textarea"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className="file-upload"
+                  onClick={() =>
+                    document
+                      .getElementById("progressAsuransiUpdateFile")
+                      ?.click()
+                  }
+                >
+                  <input
+                    id="progressAsuransiUpdateFile"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const nextFile = e.target.files[0];
+                      if (!validatePdfFile(nextFile)) return;
+                      setUpdateFile(nextFile);
+                    }}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud
+                      className="w-10 h-10 text-[#157ec3] mb-2"
+                      aria-hidden="true"
+                    />
+                    {updateFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {updateFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(updateFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : selectedItem?.lampiranFileName ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {selectedItem.lampiranFileName}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Klik untuk ganti file
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik untuk pilih PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowUpdateModal(false);
                   setSelectedItem(null);
+                  setUpdateFile(null);
                 }}
                 className="btn btn-outline flex-1"
               >
@@ -851,6 +1038,23 @@ export default function ProgressAsuransiPage() {
                 {detailItem.catatan?.trim() ? detailItem.catatan : "-"}
               </p>
             </div>
+
+            {detailItem.lampiranFilePath && (
+              <button
+                type="button"
+                onClick={() =>
+                  openPreview(
+                    normalizeFileUrl(detailItem.lampiranFilePath!),
+                    detailItem.lampiranFileName || "progress_asuransi.pdf",
+                    "pdf",
+                  )
+                }
+                className="btn btn-primary w-full mb-4"
+              >
+                <Eye className="w-4 h-4" aria-hidden="true" />
+                Lihat Lampiran
+              </button>
+            )}
 
             <button
               onClick={() => {

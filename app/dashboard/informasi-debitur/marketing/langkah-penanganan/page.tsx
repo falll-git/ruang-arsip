@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClipboardList, Pencil, Plus, X } from "lucide-react";
+import { ClipboardList, Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
 import {
   dummyDebiturList,
   dummyLangkahPenanganan,
-  formatCurrency,
 } from "@/lib/data";
 import type { LangkahPenanganan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -13,13 +12,16 @@ import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
 import StatusBadge from "@/components/marketing/StatusBadge";
 import StatusEditModal from "@/components/marketing/StatusEditModal";
+import SearchableDebiturSelect from "@/components/marketing/SearchableDebiturSelect";
 import DetailModal, {
   DetailSection,
   DetailRow,
 } from "@/components/marketing/DetailModal";
 import KolBadge from "@/components/marketing/KolBadge";
+import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 
 export default function LangkahPenangananPage() {
+  const { openPreview } = useDocumentPreviewContext();
   const [data, setData] = useState<LangkahPenanganan[]>([
     ...dummyLangkahPenanganan,
   ]);
@@ -29,6 +31,8 @@ export default function LangkahPenangananPage() {
     useState<LangkahPenanganan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDebitur, setSelectedDebitur] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState({
     langkah: "",
     hasilPenanganan: "",
@@ -39,6 +43,58 @@ export default function LangkahPenangananPage() {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setForm({ langkah: "", hasilPenanganan: "" });
+    setSelectedDebitur("");
+    setFile(null);
+    setDragOver(false);
+  };
+
+  const handleFileValidation = (nextFile: File): boolean => {
+    const isPdf =
+      nextFile.type === "application/pdf" ||
+      nextFile.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      showToast("Lampiran harus berformat PDF.", "error");
+      return false;
+    }
+    if (nextFile.size > 5 * 1024 * 1024) {
+      showToast("Ukuran file maksimal 5MB.", "error");
+      return false;
+    }
+    return true;
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files?.[0]) return;
+    const nextFile = event.target.files[0];
+    if (!handleFileValidation(nextFile)) return;
+    setFile(nextFile);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOver(false);
+    if (!event.dataTransfer.files?.[0]) return;
+    const nextFile = event.dataTransfer.files[0];
+    if (!handleFileValidation(nextFile)) return;
+    setFile(nextFile);
+  };
+
+  const normalizeFileUrl = (filePath: string) => {
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+    if (/^(blob:|data:)/i.test(filePath)) return filePath;
+    if (filePath.startsWith("/")) {
+      return filePath.startsWith("/documents/")
+        ? filePath
+        : `/documents${filePath}`;
+    }
+    return filePath.startsWith("documents/")
+      ? `/${filePath}`
+      : `/documents/${filePath}`;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +111,14 @@ export default function LangkahPenangananPage() {
       hasilPenanganan: form.hasilPenanganan,
       status: "Pending",
       createdBy: "User",
+      lampiranFilePath: file ? URL.createObjectURL(file) : undefined,
+      lampiranFileName: file?.name,
+      lampiranFileType: file ? "pdf" : undefined,
+      lampiranFileSize: file?.size,
     };
 
     setData([newItem, ...data]);
-    setIsModalOpen(false);
-    setForm({ langkah: "", hasilPenanganan: "" });
-    setSelectedDebitur("");
+    closeModal();
     showToast("Langkah penanganan berhasil ditambahkan!", "success");
   };
 
@@ -136,6 +194,9 @@ export default function LangkahPenangananPage() {
                 Hasil
               </th>
               <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Lampiran
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
                 Status
               </th>
             </tr>
@@ -168,6 +229,31 @@ export default function LangkahPenangananPage() {
                   className="px-5 py-4 text-center"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {item.lampiranFilePath ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openPreview(
+                          normalizeFileUrl(item.lampiranFilePath!),
+                          item.lampiranFileName ||
+                            "lampiran_langkah_penanganan.pdf",
+                          "pdf",
+                        )
+                      }
+                      className="btn btn-primary btn-sm inline-flex"
+                      title="Lihat lampiran"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Lihat
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
+                </td>
+                <td
+                  className="px-5 py-4 text-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="flex items-center justify-center gap-2">
                     <StatusBadge status={item.status} />
                     <button
@@ -194,7 +280,7 @@ export default function LangkahPenangananPage() {
         >
           <div
             className="absolute inset-0 bg-black/50"
-            onClick={() => setIsModalOpen(false)}
+            onClick={closeModal}
           />
           <div className="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-in">
             <div className="flex items-center justify-between mb-6">
@@ -202,7 +288,7 @@ export default function LangkahPenangananPage() {
                 Tambah Langkah Penanganan
               </h2>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={closeModal}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 aria-label="Tutup"
               >
@@ -214,22 +300,19 @@ export default function LangkahPenangananPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pilih Debitur
                 </label>
-                <select
+                <SearchableDebiturSelect
                   value={selectedDebitur}
-                  onChange={(e) => setSelectedDebitur(e.target.value)}
-                  className="select"
-                  required
-                >
-                  <option value="">-- Pilih Debitur --</option>
-                  {dummyDebiturList
+                  onChange={setSelectedDebitur}
+                  options={dummyDebiturList
                     .filter((d) => parseInt(d.kolektibilitas) >= 2)
-                    .map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.namaNasabah} - Kol {d.kolektibilitas} (
-                        {formatCurrency(d.osPokok)})
-                      </option>
-                    ))}
-                </select>
+                    .map((d) => ({
+                      id: d.id,
+                      namaNasabah: d.namaNasabah,
+                      kolektibilitas: d.kolektibilitas,
+                      osPokok: d.osPokok,
+                    }))}
+                  placeholder="Cari debitur berdasarkan nama/ID..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -273,10 +356,60 @@ export default function LangkahPenangananPage() {
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className={`file-upload ${dragOver ? "dragover" : ""}`}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={() =>
+                    document.getElementById("langkahPenangananPdfInput")?.click()
+                  }
+                >
+                  <input
+                    id="langkahPenangananPdfInput"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud
+                      className="w-10 h-10 text-[#157ec3] mb-2"
+                      aria-hidden="true"
+                    />
+                    {file ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(file.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik atau drag & drop PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeModal}
                   className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Batal
@@ -316,6 +449,30 @@ export default function LangkahPenangananPage() {
             <DetailSection title="Metadata">
               <DetailRow label="Tanggal" value={formatDateDisplay(detailItem.tanggal)} />
               <DetailRow label="Dibuat oleh" value={detailItem.createdBy} />
+              <DetailRow
+                label="Lampiran"
+                value={
+                  detailItem.lampiranFilePath ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openPreview(
+                          normalizeFileUrl(detailItem.lampiranFilePath!),
+                          detailItem.lampiranFileName ||
+                            "lampiran_langkah_penanganan.pdf",
+                          "pdf",
+                        )
+                      }
+                      className="btn btn-primary btn-sm inline-flex"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                      Lihat Lampiran
+                    </button>
+                  ) : (
+                    "-"
+                  )
+                }
+              />
             </DetailSection>
             <div className="md:col-span-2">
               <DetailSection title="Status">

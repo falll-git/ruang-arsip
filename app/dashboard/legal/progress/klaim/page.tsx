@@ -13,6 +13,7 @@ import {
   Edit2,
   Eye,
   DollarSign,
+  UploadCloud,
 } from "lucide-react";
 import {
   dummyKlaimAsuransi,
@@ -24,6 +25,8 @@ import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+import DatePickerInput from "@/components/ui/DatePickerInput";
+import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -33,6 +36,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount);
 
 export default function KlaimAsuransiPage() {
+  const { openPreview } = useDocumentPreviewContext();
   const { showToast } = useAppToast();
   const [data, setData] = useState(dummyKlaimAsuransi);
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -60,12 +64,15 @@ export default function KlaimAsuransiPage() {
     | "Kehilangan"
   >("Meninggal Dunia");
   const [formNilaiKlaim, setFormNilaiKlaim] = useState("");
+  const [formTanggalPengajuan, setFormTanggalPengajuan] = useState("");
   const [formStatus, setFormStatus] = useState<
     "Pengajuan" | "Verifikasi" | "Disetujui" | "Ditolak" | "Cair"
   >("Pengajuan");
   const [formNilaiCair, setFormNilaiCair] = useState("");
+  const [formTanggalCair, setFormTanggalCair] = useState("");
   const [formAlasan, setFormAlasan] = useState("");
   const [formCatatan, setFormCatatan] = useState("");
+  const [formFile, setFormFile] = useState<File | null>(null);
 
   const jenisKlaimOptions = [
     "Meninggal Dunia",
@@ -111,6 +118,34 @@ export default function KlaimAsuransiPage() {
     currentPage * itemsPerPage,
   );
 
+  const normalizeFileUrl = (filePath: string) => {
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+    if (/^(blob:|data:)/i.test(filePath)) return filePath;
+    if (filePath.startsWith("/")) {
+      return filePath.startsWith("/documents/")
+        ? filePath
+        : `/documents${filePath}`;
+    }
+    return filePath.startsWith("documents/")
+      ? `/${filePath}`
+      : `/documents/${filePath}`;
+  };
+
+  const validatePdfFile = (file: File): boolean => {
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      showToast("Lampiran harus berformat PDF.", "error");
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Ukuran lampiran maksimal 5MB.", "error");
+      return false;
+    }
+    return true;
+  };
+
   const handleAdd = () => {
     const nasabah = dummyNasabahLegal.find(
       (n) => n.noKontrak === formNoKontrak,
@@ -128,6 +163,10 @@ export default function KlaimAsuransiPage() {
       showToast("Nilai klaim wajib diisi!", "warning");
       return;
     }
+    if (!formTanggalPengajuan) {
+      showToast("Tanggal wajib diisi!", "warning");
+      return;
+    }
     const newItem: KlaimAsuransi = {
       id: data.length + 1,
       noKontrak: formNoKontrak,
@@ -136,10 +175,14 @@ export default function KlaimAsuransiPage() {
       perusahaanAsuransi: formPerusahaan,
       jenisKlaim: formJenisKlaim,
       nilaiKlaim,
-      tanggalPengajuan: todayIsoDate(),
+      tanggalPengajuan: formTanggalPengajuan,
       status: "Pengajuan",
       catatan: formCatatan,
       userInput: "Faisal",
+      lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
+      lampiranFileName: formFile?.name,
+      lampiranFileType: formFile ? "pdf" : undefined,
+      lampiranFileSize: formFile?.size,
     };
     setData([newItem, ...data]);
     setShowAddModal(false);
@@ -156,11 +199,15 @@ export default function KlaimAsuransiPage() {
     if (formStatus === "Cair") {
       const nilaiCair = Number.parseInt(formNilaiCair, 10) || 0;
       if (nilaiCair <= 0) {
-        showToast("Nilai cair wajib diisi saat status Cair!", "warning");
+        showToast("Nominal pencairan wajib diisi saat status Cair!", "warning");
+        return;
+      }
+      if (!formTanggalCair) {
+        showToast("Tanggal pencairan wajib diisi saat status Cair!", "warning");
         return;
       }
       updates.nilaiCair = nilaiCair;
-      updates.tanggalCair = todayIsoDate();
+      updates.tanggalCair = formTanggalCair;
     }
     if (formStatus === "Ditolak") {
       if (!formAlasan.trim()) {
@@ -189,10 +236,13 @@ export default function KlaimAsuransiPage() {
     setFormPerusahaan(perusahaanAsuransiOptions[0]);
     setFormJenisKlaim("Meninggal Dunia");
     setFormNilaiKlaim("");
+    setFormTanggalPengajuan("");
     setFormStatus("Pengajuan");
     setFormNilaiCair("");
+    setFormTanggalCair("");
     setFormAlasan("");
     setFormCatatan("");
+    setFormFile(null);
   };
 
   const handleExportExcel = async () => {
@@ -250,7 +300,10 @@ export default function KlaimAsuransiPage() {
           Total: <span className="font-semibold">{data.length}</span> klaim
         </p>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            setShowAddModal(true);
+            setFormTanggalPengajuan(todayIsoDate());
+          }}
           className="btn btn-primary"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
@@ -366,6 +419,9 @@ export default function KlaimAsuransiPage() {
                   Status
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                  Lampiran
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
                   Aksi
                 </th>
               </tr>
@@ -389,6 +445,27 @@ export default function KlaimAsuransiPage() {
                     {formatDateDisplay(item.tanggalPengajuan)}
                   </td>
                   <td className="px-4 py-3">{getStatusBadge(item.status)}</td>
+                  <td className="px-4 py-3 text-center">
+                    {item.lampiranFilePath ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openPreview(
+                            normalizeFileUrl(item.lampiranFilePath!),
+                            item.lampiranFileName ||
+                              "tracking_claim_asuransi.pdf",
+                            "pdf",
+                          )
+                        }
+                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f] transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                        Lihat
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
                       <button
@@ -406,7 +483,10 @@ export default function KlaimAsuransiPage() {
                           onClick={() => {
                             setSelectedItem(item);
                             setFormStatus(item.status);
-                            setFormNilaiCair("");
+                            setFormNilaiCair(
+                              item.nilaiCair ? String(item.nilaiCair) : "",
+                            );
+                            setFormTanggalCair(item.tanggalCair || "");
                             setFormAlasan("");
                             setFormCatatan(item.catatan || "");
                             setShowUpdateModal(true);
@@ -431,7 +511,7 @@ export default function KlaimAsuransiPage() {
               {paginatedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-8 text-center text-gray-500"
                   >
                     Tidak ada data
@@ -587,6 +667,64 @@ export default function KlaimAsuransiPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal
+                </label>
+                <DatePickerInput
+                  value={formTanggalPengajuan}
+                  onChange={setFormTanggalPengajuan}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className="file-upload"
+                  onClick={() =>
+                    document.getElementById("trackingClaimFile")?.click()
+                  }
+                >
+                  <input
+                    id="trackingClaimFile"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const nextFile = e.target.files[0];
+                      if (!validatePdfFile(nextFile)) return;
+                      setFormFile(nextFile);
+                    }}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud
+                      className="w-10 h-10 text-[#157ec3] mb-2"
+                      aria-hidden="true"
+                    />
+                    {formFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {formFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(formFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik untuk pilih PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Catatan
                 </label>
                 <textarea
@@ -622,6 +760,7 @@ export default function KlaimAsuransiPage() {
           onClick={() => {
             setShowUpdateModal(false);
             setSelectedItem(null);
+            setFormTanggalCair("");
           }}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -631,6 +770,7 @@ export default function KlaimAsuransiPage() {
                 onClick={() => {
                   setShowUpdateModal(false);
                   setSelectedItem(null);
+                  setFormTanggalCair("");
                 }}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
@@ -666,22 +806,33 @@ export default function KlaimAsuransiPage() {
                 </select>
               </div>
               {formStatus === "Cair" && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nilai Cair
-                  </label>
-                  <input
-                    type="text"
-                    value={
-                      formNilaiCair
-                        ? formatCurrency(Number.parseInt(formNilaiCair, 10))
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setFormNilaiCair(e.target.value.replace(/\D/g, ""))
-                    }
-                    className="input"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Nominal Pencairan
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formNilaiCair
+                          ? formatCurrency(Number.parseInt(formNilaiCair, 10))
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setFormNilaiCair(e.target.value.replace(/\D/g, ""))
+                      }
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Tanggal Pencairan
+                    </label>
+                    <DatePickerInput
+                      value={formTanggalCair}
+                      onChange={setFormTanggalCair}
+                    />
+                  </div>
                 </div>
               )}
               {formStatus === "Ditolak" && (
@@ -714,6 +865,7 @@ export default function KlaimAsuransiPage() {
                 onClick={() => {
                   setShowUpdateModal(false);
                   setSelectedItem(null);
+                  setFormTanggalCair("");
                 }}
                 className="btn btn-outline flex-1"
               >
@@ -837,7 +989,9 @@ export default function KlaimAsuransiPage() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-500">Nilai Cair</label>
+                    <label className="text-sm text-gray-500">
+                      Nominal Pencairan
+                    </label>
                     <p className="font-medium text-gray-800">
                       {detailItem.nilaiCair
                         ? formatCurrency(detailItem.nilaiCair)
@@ -846,7 +1000,7 @@ export default function KlaimAsuransiPage() {
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">
-                      Tanggal Cair
+                      Tanggal Pencairan
                     </label>
                     <p className="font-medium text-gray-800">
                       {formatDateDisplay(detailItem.tanggalCair)}
@@ -875,6 +1029,24 @@ export default function KlaimAsuransiPage() {
                 {detailItem.catatan?.trim() ? detailItem.catatan : "-"}
               </p>
             </div>
+
+            {detailItem.lampiranFilePath && (
+              <button
+                type="button"
+                onClick={() =>
+                  openPreview(
+                    normalizeFileUrl(detailItem.lampiranFilePath!),
+                    detailItem.lampiranFileName ||
+                      "tracking_claim_asuransi.pdf",
+                    "pdf",
+                  )
+                }
+                className="btn btn-primary w-full mb-4"
+              >
+                <Eye className="w-4 h-4" aria-hidden="true" />
+                Lihat Lampiran
+              </button>
+            )}
 
             <button
               onClick={() => {

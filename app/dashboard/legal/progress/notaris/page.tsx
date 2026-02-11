@@ -1,37 +1,45 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  FileText,
-  Download,
-  Plus,
-  X,
+  AlertTriangle,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Filter,
-  CheckCircle,
   Clock,
-  AlertTriangle,
-  Trash2,
+  Download,
   Edit2,
   Eye,
+  FileText,
+  Filter,
+  Plus,
+  Trash2,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import {
-  dummyProgressNotaris,
-  notarisOptions,
-  jenisAktaOptions,
-  dummyNasabahLegal,
+  MasterNotaris,
   ProgressNotaris,
+  dummyMasterNotaris,
+  dummyNasabahLegal,
+  dummyProgressNotaris,
+  jenisAktaOptions,
 } from "@/lib/data";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 
 export default function ProgressNotarisPage() {
+  const { openPreview } = useDocumentPreviewContext();
   const { showToast } = useAppToast();
-  const [data, setData] = useState(dummyProgressNotaris);
+
+  const [data, setData] = useState<ProgressNotaris[]>(dummyProgressNotaris);
+  const [masterNotaris, setMasterNotaris] = useState<MasterNotaris[]>(
+    dummyMasterNotaris.filter((item) => item.status === "Aktif"),
+  );
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterNotaris, setFilterNotaris] = useState("Semua");
   const [search, setSearch] = useState("");
@@ -41,13 +49,15 @@ export default function ProgressNotarisPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [detailItem, setDetailItem] = useState<ProgressNotaris | null>(null);
   const [selectedItem, setSelectedItem] = useState<ProgressNotaris | null>(
     null,
   );
+  const [detailItem, setDetailItem] = useState<ProgressNotaris | null>(null);
 
   const [formNoKontrak, setFormNoKontrak] = useState("");
-  const [formNotaris, setFormNotaris] = useState(notarisOptions[0]);
+  const [formNotarisId, setFormNotarisId] = useState<number>(
+    dummyMasterNotaris[0]?.id ?? 1,
+  );
   const [formJenisAkta, setFormJenisAkta] = useState<
     "APHT" | "Fidusia" | "Roya" | "Surat Kuasa"
   >("APHT");
@@ -58,30 +68,40 @@ export default function ProgressNotarisPage() {
   const [formEstimasiSelesai, setFormEstimasiSelesai] = useState("");
   const [formNoAkta, setFormNoAkta] = useState("");
   const [formCatatan, setFormCatatan] = useState("");
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [updateFile, setUpdateFile] = useState<File | null>(null);
 
-  const summary = useMemo(() => {
-    return {
+  const [newNotarisName, setNewNotarisName] = useState("");
+  const [newNotarisKantor, setNewNotarisKantor] = useState("");
+
+  const summary = useMemo(
+    () => ({
       total: data.length,
-      proses: data.filter((d) => d.status === "Proses").length,
-      selesai: data.filter((d) => d.status === "Selesai").length,
-      bermasalah: data.filter((d) => d.status === "Bermasalah").length,
-    };
-  }, [data]);
+      proses: data.filter((item) => item.status === "Proses").length,
+      selesai: data.filter((item) => item.status === "Selesai").length,
+      bermasalah: data.filter((item) => item.status === "Bermasalah").length,
+    }),
+    [data],
+  );
 
   const filteredData = useMemo(() => {
     let result = [...data];
-    if (filterStatus !== "Semua")
-      result = result.filter((d) => d.status === filterStatus);
-    if (filterNotaris !== "Semua")
-      result = result.filter((d) => d.namaNotaris === filterNotaris);
-    if (search)
+    if (filterStatus !== "Semua") {
+      result = result.filter((item) => item.status === filterStatus);
+    }
+    if (filterNotaris !== "Semua") {
+      result = result.filter((item) => item.namaNotaris === filterNotaris);
+    }
+    if (search.trim()) {
+      const keyword = search.toLowerCase();
       result = result.filter(
-        (d) =>
-          d.namaNasabah.toLowerCase().includes(search.toLowerCase()) ||
-          d.noKontrak.toLowerCase().includes(search.toLowerCase()),
+        (item) =>
+          item.noKontrak.toLowerCase().includes(keyword) ||
+          item.namaNasabah.toLowerCase().includes(keyword),
       );
+    }
     return result;
-  }, [data, filterStatus, filterNotaris, search]);
+  }, [data, filterNotaris, filterStatus, search]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
@@ -89,34 +109,115 @@ export default function ProgressNotarisPage() {
     currentPage * itemsPerPage,
   );
 
+  const normalizeFileUrl = (filePath: string) => {
+    if (/^https?:\/\//i.test(filePath)) return filePath;
+    if (/^(blob:|data:)/i.test(filePath)) return filePath;
+    if (filePath.startsWith("/")) {
+      return filePath.startsWith("/documents/")
+        ? filePath
+        : `/documents${filePath}`;
+    }
+    return filePath.startsWith("documents/")
+      ? `/${filePath}`
+      : `/documents/${filePath}`;
+  };
+
+  const validatePdf = (file: File) => {
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      showToast("Lampiran harus PDF.", "error");
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Ukuran lampiran maksimal 5MB.", "error");
+      return false;
+    }
+    return true;
+  };
+
+  const resetForm = () => {
+    setFormNoKontrak("");
+    setFormNotarisId(masterNotaris[0]?.id ?? 1);
+    setFormJenisAkta("APHT");
+    setFormStatus("Proses");
+    setFormTanggalMasuk("");
+    setFormEstimasiSelesai("");
+    setFormNoAkta("");
+    setFormCatatan("");
+    setFormFile(null);
+    setNewNotarisName("");
+    setNewNotarisKantor("");
+  };
+
+  const addMasterNotaris = () => {
+    if (!newNotarisName.trim()) {
+      showToast("Nama notaris wajib diisi.", "warning");
+      return;
+    }
+    const exists = masterNotaris.some(
+      (item) => item.nama.toLowerCase() === newNotarisName.trim().toLowerCase(),
+    );
+    if (exists) {
+      showToast("Nama notaris sudah ada.", "warning");
+      return;
+    }
+    const nextId = Math.max(0, ...masterNotaris.map((item) => item.id)) + 1;
+    const newMaster: MasterNotaris = {
+      id: nextId,
+      nama: newNotarisName.trim(),
+      kantor: newNotarisKantor.trim() || "-",
+      telepon: "-",
+      status: "Aktif",
+    };
+    setMasterNotaris((prev) => [...prev, newMaster]);
+    setFormNotarisId(nextId);
+    setNewNotarisName("");
+    setNewNotarisKantor("");
+    showToast("Master notaris ditambahkan.", "success");
+  };
+
   const handleAdd = () => {
     const nasabah = dummyNasabahLegal.find(
-      (n) => n.noKontrak === formNoKontrak,
+      (item) => item.noKontrak === formNoKontrak.trim(),
     );
     if (!nasabah) {
-      showToast("No kontrak tidak ditemukan!", "error");
+      showToast("No kontrak tidak valid.", "error");
       return;
     }
     if (!formEstimasiSelesai) {
-      showToast("Estimasi selesai belum diisi!", "warning");
+      showToast("Estimasi selesai wajib diisi.", "warning");
       return;
     }
-    const newItem: ProgressNotaris = {
-      id: data.length + 1,
-      noKontrak: formNoKontrak,
+    const notaris = masterNotaris.find((item) => item.id === formNotarisId);
+    if (!notaris) {
+      showToast("Notaris tidak valid.", "error");
+      return;
+    }
+
+    const next: ProgressNotaris = {
+      id: Math.max(0, ...data.map((item) => item.id)) + 1,
+      noKontrak: formNoKontrak.trim(),
       namaNasabah: nasabah.nama,
-      namaNotaris: formNotaris,
+      notarisId: notaris.id,
+      namaNotaris: notaris.nama,
       jenisAkta: formJenisAkta,
       tanggalMasuk: formTanggalMasuk || todayIsoDate(),
       estimasiSelesai: formEstimasiSelesai,
       status: "Proses",
-      catatan: formCatatan,
       userInput: "Faisal",
+      catatan: formCatatan,
+      lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
+      lampiranFileName: formFile?.name,
+      lampiranFileType: formFile ? "pdf" : undefined,
+      lampiranFileSize: formFile?.size,
     };
-    setData([newItem, ...data]);
+
+    setData((prev) => [next, ...prev]);
     setShowAddModal(false);
     resetForm();
-    showToast("Progress notaris berhasil ditambahkan!", "success");
+    showToast("Progress notaris ditambahkan.", "success");
   };
 
   const handleUpdate = () => {
@@ -125,43 +226,45 @@ export default function ProgressNotarisPage() {
       formStatus === "Selesai" &&
       !(formNoAkta.trim() || selectedItem.noAkta?.trim())
     ) {
-      showToast("No Akta wajib diisi saat status Selesai!", "warning");
+      showToast("No Akta wajib untuk status Selesai.", "warning");
       return;
     }
-    setData(
-      data.map((d) =>
-        d.id === selectedItem.id
+
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === selectedItem.id
           ? {
-              ...d,
+              ...item,
               status: formStatus,
-              noAkta: formNoAkta || d.noAkta,
+              noAkta: formNoAkta.trim() || item.noAkta,
               tanggalSelesai:
-                formStatus === "Selesai" ? todayIsoDate() : d.tanggalSelesai,
-              catatan: formCatatan || d.catatan,
+                formStatus === "Selesai" ? todayIsoDate() : item.tanggalSelesai,
+              catatan: formCatatan.trim() || item.catatan,
+              lampiranFilePath: updateFile
+                ? URL.createObjectURL(updateFile)
+                : item.lampiranFilePath,
+              lampiranFileName: updateFile
+                ? updateFile.name
+                : item.lampiranFileName,
+              lampiranFileType: updateFile ? "pdf" : item.lampiranFileType,
+              lampiranFileSize: updateFile
+                ? updateFile.size
+                : item.lampiranFileSize,
             }
-          : d,
+          : item,
       ),
     );
+
     setShowUpdateModal(false);
     setSelectedItem(null);
-    showToast("Progress berhasil diupdate!", "success");
+    setUpdateFile(null);
+    showToast("Progress notaris diupdate.", "success");
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Hapus data?")) {
-      setData(data.filter((d) => d.id !== id));
-      showToast("Data berhasil dihapus!", "success");
-    }
-  };
-  const resetForm = () => {
-    setFormNoKontrak("");
-    setFormNotaris(notarisOptions[0]);
-    setFormJenisAkta("APHT");
-    setFormStatus("Proses");
-    setFormTanggalMasuk("");
-    setFormEstimasiSelesai("");
-    setFormNoAkta("");
-    setFormCatatan("");
+    if (!confirm("Hapus data progress notaris?")) return;
+    setData((prev) => prev.filter((item) => item.id !== id));
+    showToast("Data dihapus.", "success");
   };
 
   const handleExportExcel = async () => {
@@ -171,38 +274,37 @@ export default function ProgressNotarisPage() {
       title: "LAPORAN PROGRESS NOTARIS",
       columns: [
         { header: "No", key: "no", width: 5 },
-        { header: "No Kontrak", key: "noKontrak", width: 15 },
-        { header: "Nama", key: "namaNasabah", width: 20 },
-        { header: "Notaris", key: "namaNotaris", width: 25 },
-        { header: "Jenis Akta", key: "jenisAkta", width: 12 },
-        { header: "Tgl Masuk", key: "tanggalMasuk", width: 12 },
-        { header: "Estimasi", key: "estimasiSelesai", width: 12 },
+        { header: "No Kontrak", key: "noKontrak", width: 18 },
+        { header: "Nama", key: "namaNasabah", width: 22 },
+        { header: "Notaris", key: "namaNotaris", width: 20 },
+        { header: "Jenis", key: "jenisAkta", width: 14 },
+        { header: "Tanggal Masuk", key: "tanggalMasuk", width: 14 },
+        { header: "Estimasi", key: "estimasiSelesai", width: 14 },
         { header: "Status", key: "status", width: 12 },
       ],
       data: filteredData.map((item, idx) => ({ ...item, no: idx + 1 })),
     });
-    showToast("Export Excel berhasil!", "success");
+    showToast("Export Excel berhasil.", "success");
   };
 
-  const getStatusBadge = (status: string) => {
-    const classes = {
+  const statusBadge = (status: string) => {
+    const classes: Record<string, string> = {
       Proses: "bg-yellow-100 text-yellow-700",
       Selesai: "bg-green-100 text-green-700",
       Bermasalah: "bg-red-100 text-red-700",
     };
-    const icons = {
-      Proses: <Clock className="w-3 h-3" />,
-      Selesai: <CheckCircle className="w-3 h-3" />,
-      Bermasalah: <AlertTriangle className="w-3 h-3" />,
-    };
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit ${classes[status as keyof typeof classes]}`}
+        className={`px-2 py-1 rounded-full text-xs font-medium ${classes[status] || "bg-gray-100 text-gray-700"}`}
       >
-        {icons[status as keyof typeof icons]}
         {status}
       </span>
     );
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    resetForm();
   };
 
   return (
@@ -218,6 +320,7 @@ export default function ProgressNotarisPage() {
           Total: <span className="font-semibold">{data.length}</span> progress
         </p>
         <button
+          type="button"
           onClick={() => setShowAddModal(true)}
           className="btn btn-primary"
         >
@@ -227,58 +330,26 @@ export default function ProgressNotarisPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
-              <FileText className="w-7 h-7 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
-                {summary.total}
-              </p>
-              <p className="text-sm text-gray-900 mt-1">Total</p>
-            </div>
-          </div>
-        </div>
-        <div className="card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-yellow-100 flex items-center justify-center">
-              <Clock className="w-7 h-7 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
-                {summary.proses}
-              </p>
-              <p className="text-sm text-gray-900 mt-1">Proses</p>
-            </div>
-          </div>
-        </div>
-        <div className="card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="w-7 h-7 text-green-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
-                {summary.selesai}
-              </p>
-              <p className="text-sm text-gray-900 mt-1">Selesai</p>
-            </div>
-          </div>
-        </div>
-        <div className="card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
-              <AlertTriangle className="w-7 h-7 text-red-600" />
-            </div>
-            <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
-                {summary.bermasalah}
-              </p>
-              <p className="text-sm text-gray-900 mt-1">Bermasalah</p>
-            </div>
-          </div>
-        </div>
+        <MiniCard
+          label="Total"
+          value={summary.total}
+          icon={<FileText className="w-6 h-6 text-blue-600" />}
+        />
+        <MiniCard
+          label="Proses"
+          value={summary.proses}
+          icon={<Clock className="w-6 h-6 text-yellow-600" />}
+        />
+        <MiniCard
+          label="Selesai"
+          value={summary.selesai}
+          icon={<CheckCircle className="w-6 h-6 text-green-600" />}
+        />
+        <MiniCard
+          label="Bermasalah"
+          value={summary.bermasalah}
+          icon={<AlertTriangle className="w-6 h-6 text-red-600" />}
+        />
       </div>
 
       <div className="card p-6">
@@ -288,6 +359,7 @@ export default function ProgressNotarisPage() {
             Daftar Progress
           </h2>
           <button
+            type="button"
             onClick={handleExportExcel}
             className="btn btn-success btn-sm"
           >
@@ -295,6 +367,7 @@ export default function ProgressNotarisPage() {
             Export Excel
           </button>
         </div>
+
         <div className="flex flex-wrap gap-3 mb-4">
           <select
             value={filterStatus}
@@ -312,9 +385,9 @@ export default function ProgressNotarisPage() {
             className="select"
           >
             <option value="Semua">Semua Notaris</option>
-            {notarisOptions.map((n) => (
-              <option key={n} value={n}>
-                {n}
+            {masterNotaris.map((item) => (
+              <option key={item.id} value={item.nama}>
+                {item.nama}
               </option>
             ))}
           </select>
@@ -329,6 +402,7 @@ export default function ProgressNotarisPage() {
             <Filter className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           </div>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -351,6 +425,9 @@ export default function ProgressNotarisPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                   Estimasi
                 </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                  Lampiran
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                   Status
                 </th>
@@ -367,21 +444,38 @@ export default function ProgressNotarisPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">{item.namaNasabah}</td>
                   <td className="px-4 py-3 text-sm">{item.namaNotaris}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-                      {item.jenisAkta}
-                    </span>
-                  </td>
+                  <td className="px-4 py-3 text-sm">{item.jenisAkta}</td>
                   <td className="px-4 py-3 text-sm">
                     {formatDateDisplay(item.tanggalMasuk)}
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {formatDateDisplay(item.estimasiSelesai)}
                   </td>
-                  <td className="px-4 py-3">{getStatusBadge(item.status)}</td>
+                  <td className="px-4 py-3 text-center">
+                    {item.lampiranFilePath ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openPreview(
+                            normalizeFileUrl(item.lampiranFilePath!),
+                            item.lampiranFileName || "progress_notaris.pdf",
+                            "pdf",
+                          )
+                        }
+                        className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#157ec3] hover:bg-[#0d5a8f]"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Lihat
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{statusBadge(item.status)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center gap-1">
                       <button
+                        type="button"
                         onClick={() => {
                           setDetailItem(item);
                           setShowDetailModal(true);
@@ -393,11 +487,13 @@ export default function ProgressNotarisPage() {
                       </button>
                       {item.status !== "Selesai" && (
                         <button
+                          type="button"
                           onClick={() => {
                             setSelectedItem(item);
                             setFormStatus(item.status);
                             setFormNoAkta(item.noAkta || "");
                             setFormCatatan(item.catatan || "");
+                            setUpdateFile(null);
                             setShowUpdateModal(true);
                           }}
                           className="p-1.5 rounded-lg hover:bg-blue-100"
@@ -407,6 +503,7 @@ export default function ProgressNotarisPage() {
                         </button>
                       )}
                       <button
+                        type="button"
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg hover:bg-red-100"
                         title="Hapus"
@@ -420,7 +517,7 @@ export default function ProgressNotarisPage() {
               {paginatedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-4 py-8 text-center text-gray-500"
                   >
                     Tidak ada data
@@ -430,6 +527,7 @@ export default function ProgressNotarisPage() {
             </tbody>
           </table>
         </div>
+
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-500">
@@ -437,6 +535,7 @@ export default function ProgressNotarisPage() {
             </p>
             <div className="flex gap-1">
               <button
+                type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50"
@@ -444,6 +543,7 @@ export default function ProgressNotarisPage() {
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
+                type="button"
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
@@ -458,13 +558,7 @@ export default function ProgressNotarisPage() {
       </div>
 
       {showAddModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
-            setShowAddModal(false);
-            resetForm();
-          }}
-        >
+        <div className="modal-overlay" onClick={closeAddModal}>
           <div
             className="modal-content modal-lg"
             onClick={(e) => e.stopPropagation()}
@@ -472,16 +566,45 @@ export default function ProgressNotarisPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Tambah Progress Notaris</h3>
               <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  resetForm();
-                }}
+                type="button"
+                onClick={closeAddModal}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
             <div className="space-y-4">
+              <div className="p-4 rounded-xl border border-gray-200 bg-gray-50">
+                <p className="text-sm font-semibold text-gray-700 mb-3">
+                  Master Data Notaris
+                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    value={newNotarisName}
+                    onChange={(e) => setNewNotarisName(e.target.value)}
+                    className="input"
+                    placeholder="Nama notaris baru"
+                  />
+                  <input
+                    type="text"
+                    value={newNotarisKantor}
+                    onChange={(e) => setNewNotarisKantor(e.target.value)}
+                    className="input"
+                    placeholder="Kantor"
+                  />
+                  <button
+                    type="button"
+                    onClick={addMasterNotaris}
+                    className="btn btn-outline"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Tambah Master
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   No Kontrak
@@ -495,31 +618,29 @@ export default function ProgressNotarisPage() {
                   placeholder="PB/2024/001234"
                 />
                 <datalist id="nasabah-kontrak-notaris">
-                  {dummyNasabahLegal.map((n) => (
+                  {dummyNasabahLegal.map((item) => (
                     <option
-                      key={n.noKontrak}
-                      value={n.noKontrak}
-                      label={n.nama}
+                      key={item.noKontrak}
+                      value={item.noKontrak}
+                      label={item.nama}
                     />
                   ))}
                 </datalist>
-                <p className="text-xs text-gray-500 mt-1">
-                  Tips: pilih No Kontrak dari daftar agar data nasabah valid.
-                </p>
               </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Notaris
                   </label>
                   <select
-                    value={formNotaris}
-                    onChange={(e) => setFormNotaris(e.target.value)}
+                    value={formNotarisId}
+                    onChange={(e) => setFormNotarisId(Number(e.target.value))}
                     className="select"
                   >
-                    {notarisOptions.map((n) => (
-                      <option key={n} value={n}>
-                        {n}
+                    {masterNotaris.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nama}
                       </option>
                     ))}
                   </select>
@@ -535,14 +656,15 @@ export default function ProgressNotarisPage() {
                     }
                     className="select"
                   >
-                    {jenisAktaOptions.map((j) => (
-                      <option key={j} value={j}>
-                        {j}
+                    {jenisAktaOptions.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -563,6 +685,7 @@ export default function ProgressNotarisPage() {
                   />
                 </div>
               </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Catatan
@@ -574,18 +697,68 @@ export default function ProgressNotarisPage() {
                   className="textarea"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className="file-upload"
+                  onClick={() =>
+                    document.getElementById("fileNotarisAdd")?.click()
+                  }
+                >
+                  <input
+                    id="fileNotarisAdd"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const nextFile = e.target.files[0];
+                      if (!validatePdf(nextFile)) return;
+                      setFormFile(nextFile);
+                    }}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud className="w-10 h-10 text-[#157ec3] mb-2" />
+                    {formFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {formFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(formFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik untuk pilih PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  resetForm();
-                }}
+                type="button"
+                onClick={closeAddModal}
                 className="btn btn-outline flex-1"
               >
                 Batal
               </button>
-              <button onClick={handleAdd} className="btn btn-primary flex-1">
+              <button
+                type="button"
+                onClick={handleAdd}
+                className="btn btn-primary flex-1"
+              >
                 Simpan
               </button>
             </div>
@@ -596,32 +769,20 @@ export default function ProgressNotarisPage() {
       {showUpdateModal && selectedItem && (
         <div
           className="modal-overlay"
-          onClick={() => {
-            setShowUpdateModal(false);
-            setSelectedItem(null);
-          }}
+          onClick={() => setShowUpdateModal(false)}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Update Progress</h3>
               <button
-                onClick={() => {
-                  setShowUpdateModal(false);
-                  setSelectedItem(null);
-                }}
+                type="button"
+                onClick={() => setShowUpdateModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-4 bg-gray-50 rounded-xl mb-4">
-              <p className="text-sm text-gray-800">
-                <strong>{selectedItem.namaNasabah}</strong>
-              </p>
-              <p className="text-sm text-gray-600">
-                {selectedItem.namaNotaris} - {selectedItem.jenisAkta}
-              </p>
-            </div>
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -639,6 +800,7 @@ export default function ProgressNotarisPage() {
                   <option value="Bermasalah">Bermasalah</option>
                 </select>
               </div>
+
               {formStatus === "Selesai" && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -653,6 +815,7 @@ export default function ProgressNotarisPage() {
                   />
                 </div>
               )}
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Catatan
@@ -664,18 +827,68 @@ export default function ProgressNotarisPage() {
                   className="textarea"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Lampiran (PDF, maks 5MB) - Opsional
+                </label>
+                <div
+                  className="file-upload"
+                  onClick={() =>
+                    document.getElementById("fileNotarisUpdate")?.click()
+                  }
+                >
+                  <input
+                    id="fileNotarisUpdate"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const nextFile = e.target.files[0];
+                      if (!validatePdf(nextFile)) return;
+                      setUpdateFile(nextFile);
+                    }}
+                  />
+                  <div className="flex flex-col items-center">
+                    <UploadCloud className="w-10 h-10 text-[#157ec3] mb-2" />
+                    {updateFile ? (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          {updateFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {(updateFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-gray-700">
+                          Klik untuk pilih PDF
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hanya PDF, maksimal 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => {
-                  setShowUpdateModal(false);
-                  setSelectedItem(null);
-                }}
+                type="button"
+                onClick={() => setShowUpdateModal(false)}
                 className="btn btn-outline flex-1"
               >
                 Batal
               </button>
-              <button onClick={handleUpdate} className="btn btn-primary flex-1">
+              <button
+                type="button"
+                onClick={handleUpdate}
+                className="btn btn-primary flex-1"
+              >
                 Update
               </button>
             </div>
@@ -686,117 +899,45 @@ export default function ProgressNotarisPage() {
       {showDetailModal && detailItem && (
         <div
           className="modal-overlay"
-          onClick={() => {
-            setShowDetailModal(false);
-            setDetailItem(null);
-          }}
+          onClick={() => setShowDetailModal(false)}
         >
           <div
             className="modal-content modal-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
-                  }}
-                >
-                  <FileText className="w-6 h-6 text-white" aria-hidden="true" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Detail Progress Notaris
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    {detailItem.noKontrak}
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold text-gray-800">
+                Detail Progress Notaris
+              </h2>
               <button
-                onClick={() => {
-                  setShowDetailModal(false);
-                  setDetailItem(null);
-                }}
+                type="button"
+                onClick={() => setShowDetailModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-xl"
               >
-                <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-500">Nama Nasabah</label>
-                  <p className="font-medium text-gray-800">
-                    {detailItem.namaNasabah}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Notaris</label>
-                  <p className="font-medium text-gray-800">
-                    {detailItem.namaNotaris}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Jenis Akta</label>
-                  <p className="font-medium text-gray-800">
-                    {detailItem.jenisAkta}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Tanggal Masuk</label>
-                  <p className="font-medium text-gray-800">
-                    {formatDateDisplay(detailItem.tanggalMasuk)}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-500">
-                    Estimasi Selesai
-                  </label>
-                  <p className="font-medium text-gray-800">
-                    {formatDateDisplay(detailItem.estimasiSelesai)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">Status</label>
-                  <div className="mt-1">
-                    {getStatusBadge(detailItem.status)}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">User Input</label>
-                  <p className="font-medium text-gray-800">
-                    {detailItem.userInput}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-4 mb-6">
-              <h3 className="font-semibold text-gray-800 mb-3">
-                Informasi Akta
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-gray-500">No Akta</label>
-                  <p className="font-medium text-gray-800">
-                    {detailItem.noAkta || "-"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-500">
-                    Tanggal Selesai
-                  </label>
-                  <p className="font-medium text-gray-800">
-                    {formatDateDisplay(detailItem.tanggalSelesai)}
-                  </p>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <InfoRow label="No Kontrak" value={detailItem.noKontrak} />
+              <InfoRow label="Nama Nasabah" value={detailItem.namaNasabah} />
+              <InfoRow label="Notaris" value={detailItem.namaNotaris} />
+              <InfoRow label="Jenis Akta" value={detailItem.jenisAkta} />
+              <InfoRow
+                label="Tanggal Masuk"
+                value={formatDateDisplay(detailItem.tanggalMasuk)}
+              />
+              <InfoRow
+                label="Estimasi Selesai"
+                value={formatDateDisplay(detailItem.estimasiSelesai)}
+              />
+              <InfoRow label="Status" value={detailItem.status} />
+              <InfoRow label="No Akta" value={detailItem.noAkta || "-"} />
+              <InfoRow
+                label="Tanggal Selesai"
+                value={formatDateDisplay(detailItem.tanggalSelesai)}
+              />
+              <InfoRow label="User Input" value={detailItem.userInput} />
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -806,18 +947,58 @@ export default function ProgressNotarisPage() {
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setDetailItem(null);
-              }}
-              className="btn btn-primary w-full"
-            >
-              Tutup
-            </button>
+            {detailItem.lampiranFilePath && (
+              <button
+                type="button"
+                onClick={() =>
+                  openPreview(
+                    normalizeFileUrl(detailItem.lampiranFilePath!),
+                    detailItem.lampiranFileName || "progress_notaris.pdf",
+                    "pdf",
+                  )
+                }
+                className="btn btn-primary w-full"
+              >
+                <Eye className="w-4 h-4" />
+                Lihat Lampiran
+              </button>
+            )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MiniCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="card p-5">
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+          {icon}
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-xs text-gray-500">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-3 bg-gray-50 rounded-xl">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="font-semibold text-gray-800">{value}</p>
     </div>
   );
 }

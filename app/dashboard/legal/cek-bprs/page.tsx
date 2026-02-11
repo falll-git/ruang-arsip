@@ -19,6 +19,7 @@ import {
 import {
   dummyBPRSLain,
   dummyHistoryCekBPRS,
+  dummyNasabahLegal,
   BPRSLain,
   HistoryCekBPRS,
 } from "@/lib/data";
@@ -32,6 +33,17 @@ export default function CekBPRSLainPage() {
   const [search, setSearch] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<BPRSLain[]>([]);
+  const [showMassResults, setShowMassResults] = useState(false);
+  const [massResults, setMassResults] = useState<
+    {
+      id: number;
+      noKontrak: string;
+      nama: string;
+      nik: string;
+      totalTemuan: number;
+      status: "Ditemukan" | "Bersih";
+    }[]
+  >([]);
   const [history, setHistory] = useState(dummyHistoryCekBPRS);
   const [historySearch, setHistorySearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,6 +78,33 @@ export default function CekBPRSLainPage() {
         ? `Ditemukan ${found.length} data debitur`
         : "Tidak ditemukan data debitur",
       found.length > 0 ? "warning" : "success",
+    );
+  };
+
+  const handleMassCheck = () => {
+    const checked = dummyNasabahLegal.map((item) => {
+      const matched = dummyBPRSLain.filter(
+        (bprs) =>
+          bprs.nik === item.nik ||
+          bprs.nama.toLowerCase() === item.nama.toLowerCase(),
+      );
+      return {
+        id: item.id,
+        noKontrak: item.noKontrak,
+        nama: item.nama,
+        nik: item.nik,
+        totalTemuan: matched.length,
+        status:
+          matched.length > 0 ? ("Ditemukan" as const) : ("Bersih" as const),
+      };
+    });
+
+    setMassResults(checked);
+    setShowMassResults(true);
+    const totalFound = checked.filter((item) => item.totalTemuan > 0).length;
+    showToast(
+      `Cek massal selesai. ${totalFound} dari ${checked.length} nasabah terdeteksi di BPRS lain.`,
+      totalFound > 0 ? "warning" : "success",
     );
   };
 
@@ -165,12 +204,20 @@ export default function CekBPRSLainPage() {
             />
             <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           </div>
-          <button
-            onClick={handleSearch}
-            className="btn btn-primary w-full md:w-auto"
-          >
-            Cek Sekarang
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <button
+              onClick={handleSearch}
+              className="btn btn-primary w-full md:w-auto"
+            >
+              Cek Sekarang
+            </button>
+            <button
+              onClick={handleMassCheck}
+              className="btn btn-outline w-full md:w-auto"
+            >
+              Cek Massal
+            </button>
+          </div>
         </div>
       </div>
 
@@ -261,6 +308,82 @@ export default function CekBPRSLainPage() {
           >
             ← Pencarian Baru
           </button>
+        </div>
+      )}
+
+      {showMassResults && (
+        <div className="card p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Hasil Cek Massal
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowMassResults(false)}
+              className="btn btn-outline btn-sm"
+            >
+              Tutup Hasil
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    No Kontrak
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Nama
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    NIK
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                    Temuan
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {massResults.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-primary">
+                      {item.noKontrak}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{item.nama}</td>
+                    <td className="px-4 py-3 text-sm">{item.nik}</td>
+                    <td className="px-4 py-3 text-center text-sm">
+                      {item.totalTemuan}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {item.status === "Ditemukan" ? (
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+                          Ditemukan
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                          Bersih
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {massResults.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      Belum ada hasil cek massal.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

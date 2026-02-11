@@ -694,6 +694,10 @@ export const dummyActionPlan: ActionPlan[] = [
     targetTanggal: "2024-12-20",
     status: "Proses",
     createdBy: "Marketing",
+    lampiranFilePath: "/documents/contoh-dok.pdf",
+    lampiranFileName: "action_plan_hendra.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 324000,
   },
   {
     id: "AP002",
@@ -711,6 +715,7 @@ export const dummyHasilKunjungan: HasilKunjungan[] = [
     id: "HKJ001",
     debiturId: "DBT003",
     tanggalKunjungan: "2024-12-18",
+    alamat: "Jl. Braga No. 78, Bandung",
     hasilKunjungan:
       "Nasabah kooperatif, usaha masih berjalan namun cashflow menurun.",
     kesimpulan: "Perlu restrukturisasi / penjadwalan ulang pembayaran.",
@@ -730,6 +735,10 @@ export const dummyLangkahPenanganan: LangkahPenanganan[] = [
     hasilPenanganan: "SP-1 dipersiapkan",
     status: "Proses",
     createdBy: "Marketing",
+    lampiranFilePath: "/documents/contoh-dok.pdf",
+    lampiranFileName: "langkah_penanganan_sp1.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 301000,
   },
   {
     id: "LP002",
@@ -794,6 +803,20 @@ export const dummyUploadRestrik: UploadRestrik[] = [
 
 export function getDebiturById(id: string): Debitur | undefined {
   return dummyDebiturList.find((d) => d.id === id);
+}
+
+export function getDebiturByNoKontrak(noKontrak: string): Debitur | undefined {
+  return dummyDebiturList.find((d) => d.noKontrak === noKontrak);
+}
+
+export function getNasabahLegalByNoKontrak(
+  noKontrak: string,
+): NasabahLegal | undefined {
+  return dummyNasabahLegal.find((item) => item.noKontrak === noKontrak);
+}
+
+export function getArsipDokumenByKode(kode: string): Dokumen | undefined {
+  return dummyDokumen.find((item) => item.kode === kode);
 }
 
 export function getPengecekanBPRSByDebiturId(id: string): PengecekanBPRS[] {
@@ -912,6 +935,7 @@ export interface TitipanNotaris {
   id: number;
   noKontrak: string;
   namaNasabah: string;
+  notarisId?: number;
   namaNotaris: string;
   jenisAkta: "APHT" | "Fidusia" | "Roya" | "Surat Kuasa";
   nominal: number;
@@ -944,7 +968,41 @@ export const jenisAkadOptions = [
   "Qardh",
 ];
 
-export const notarisOptions = ["Notaris A", "Notaris B", "Notaris C"];
+export interface MasterNotaris {
+  id: number;
+  nama: string;
+  kantor: string;
+  telepon: string;
+  status: "Aktif" | "Nonaktif";
+}
+
+export const dummyMasterNotaris: MasterNotaris[] = [
+  {
+    id: 1,
+    nama: "Notaris A",
+    kantor: "Bandung",
+    telepon: "022-7001001",
+    status: "Aktif",
+  },
+  {
+    id: 2,
+    nama: "Notaris B",
+    kantor: "Bandung",
+    telepon: "022-7001002",
+    status: "Aktif",
+  },
+  {
+    id: 3,
+    nama: "Notaris C",
+    kantor: "Jakarta",
+    telepon: "021-7001003",
+    status: "Aktif",
+  },
+];
+
+export const notarisOptions = dummyMasterNotaris
+  .filter((n) => n.status === "Aktif")
+  .map((n) => n.nama);
 export const jenisAktaOptions = ["APHT", "Fidusia", "Roya", "Surat Kuasa"];
 
 export const dummyNasabahLegal: NasabahLegal[] = [
@@ -1110,52 +1168,28 @@ export const dummyHistoryCekBPRS: HistoryCekBPRS[] = [
 export interface LinkedDocument {
   id: number;
   noKontrak: string;
-  namaNasabah: string;
-  kodeDokumen: string;
-  namaDokumen: string;
-  jenisDokumen: string;
-  fileUrl: string;
-  linkGdrive: string;
-  tanggalUpload: string;
-  tanggalLink: string;
-  userUpload: string;
-  user: string;
+  noBerkas: string;
   keterangan: string;
-  status: "Tersedia" | "Tidak Tersedia";
+  tanggalInput: string;
+  userInput: string;
 }
 
 export const dummyLinkedDocuments: LinkedDocument[] = [
   {
     id: 1,
     noKontrak: "PB/2024/001234",
-    namaNasabah: "Ahmad Suryanto",
-    kodeDokumen: "LNK-0001",
-    namaDokumen: "Akad Pembiayaan",
-    jenisDokumen: "Akad",
-    fileUrl: "/documents/contoh-dok.pdf",
-    linkGdrive: "https://drive.google.com/",
-    tanggalUpload: "2026-01-20",
-    tanggalLink: "2026-01-20",
-    userUpload: "Faisal",
-    user: "Faisal",
-    keterangan: "Dokumen akad tersimpan di drive",
-    status: "Tersedia",
+    noBerkas: "A010254",
+    keterangan: "Dokumen akad pembiayaan",
+    tanggalInput: "2026-01-20",
+    userInput: "Faisal",
   },
   {
     id: 2,
     noKontrak: "PB/2023/000987",
-    namaNasabah: "Hendra Wijaya",
-    kodeDokumen: "LNK-0002",
-    namaDokumen: "Jaminan (SHM)",
-    jenisDokumen: "Jaminan",
-    fileUrl: "/documents/contoh-dok.pdf",
-    linkGdrive: "https://drive.google.com/",
-    tanggalUpload: "2026-01-22",
-    tanggalLink: "2026-01-22",
-    userUpload: "Faisal",
-    user: "Faisal",
-    keterangan: "-",
-    status: "Tersedia",
+    noBerkas: "A010259",
+    keterangan: "Dokumen pembiayaan terkait agunan",
+    tanggalInput: "2026-01-22",
+    userInput: "Faisal",
   },
 ];
 
@@ -1172,6 +1206,10 @@ export interface ProgressAsuransi {
   userInput: string;
   catatan: string;
   noPolis?: string;
+  lampiranFilePath?: string;
+  lampiranFileName?: string;
+  lampiranFileType?: "pdf";
+  lampiranFileSize?: number;
 }
 
 export const dummyProgressAsuransi: ProgressAsuransi[] = [
@@ -1188,6 +1226,10 @@ export const dummyProgressAsuransi: ProgressAsuransi[] = [
     userInput: "Faisal",
     catatan: "Polis sudah aktif",
     noPolis: "POL-ASK-0001",
+    lampiranFilePath: "/documents/contoh-dok.pdf",
+    lampiranFileName: "progress_asuransi_askrindo.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 280000,
   },
   {
     id: 2,
@@ -1208,6 +1250,7 @@ export interface ProgressNotaris {
   id: number;
   noKontrak: string;
   namaNasabah: string;
+  notarisId?: number;
   namaNotaris: string;
   jenisAkta: "APHT" | "Fidusia" | "Roya" | "Surat Kuasa";
   tanggalMasuk: string;
@@ -1217,6 +1260,10 @@ export interface ProgressNotaris {
   catatan: string;
   noAkta?: string;
   tanggalSelesai?: string;
+  lampiranFilePath?: string;
+  lampiranFileName?: string;
+  lampiranFileType?: "pdf";
+  lampiranFileSize?: number;
 }
 
 export const dummyProgressNotaris: ProgressNotaris[] = [
@@ -1224,6 +1271,7 @@ export const dummyProgressNotaris: ProgressNotaris[] = [
     id: 1,
     noKontrak: "PB/2024/001234",
     namaNasabah: "Ahmad Suryanto",
+    notarisId: 1,
     namaNotaris: "Notaris A",
     jenisAkta: "APHT",
     tanggalMasuk: "2026-01-15",
@@ -1231,11 +1279,16 @@ export const dummyProgressNotaris: ProgressNotaris[] = [
     status: "Proses",
     userInput: "Faisal",
     catatan: "Berkas sedang diproses",
+    lampiranFilePath: "/documents/contoh-dok.pdf",
+    lampiranFileName: "progress_notaris_apht.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 290000,
   },
   {
     id: 2,
     noKontrak: "PB/2024/001235",
     namaNasabah: "Siti Rahayu",
+    notarisId: 2,
     namaNotaris: "Notaris B",
     jenisAkta: "Fidusia",
     tanggalMasuk: "2025-12-01",
@@ -1268,6 +1321,10 @@ export interface KlaimAsuransi {
   nilaiCair?: number;
   tanggalCair?: string;
   alasanTolak?: string;
+  lampiranFilePath?: string;
+  lampiranFileName?: string;
+  lampiranFileType?: "pdf";
+  lampiranFileSize?: number;
 }
 
 export const dummyKlaimAsuransi: KlaimAsuransi[] = [
@@ -1283,6 +1340,10 @@ export const dummyKlaimAsuransi: KlaimAsuransi[] = [
     status: "Verifikasi",
     userInput: "Faisal",
     catatan: "Menunggu kelengkapan dokumen",
+    lampiranFilePath: "/documents/contoh-dok.pdf",
+    lampiranFileName: "tracking_claim_ahmad.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 315000,
   },
   {
     id: 2,
@@ -1306,6 +1367,7 @@ export const dummyTitipanNotaris: TitipanNotaris[] = [
     id: 1,
     noKontrak: "PB/2024/001234",
     namaNasabah: "Ahmad Suryanto",
+    notarisId: 1,
     namaNotaris: "Notaris A",
     jenisAkta: "APHT",
     nominal: 1500000,
@@ -1397,3 +1459,88 @@ export const dummyTitipanAngsuran: TitipanAngsuran[] = [
     keterangan: "Titipan Angsuran ke-1",
   },
 ];
+
+export interface HistorisTitipanDebitur {
+  id: string;
+  sumberId: number;
+  jenisTitipan: "Notaris" | "Asuransi" | "Angsuran";
+  noKontrak: string;
+  tanggal: string;
+  nominal: number;
+  status: string;
+  keterangan: string;
+}
+
+export function getKlaimAsuransiByNoKontrak(
+  noKontrak: string,
+): KlaimAsuransi[] {
+  return dummyKlaimAsuransi.filter((item) => item.noKontrak === noKontrak);
+}
+
+export function getTitipanByNoKontrak(noKontrak: string): {
+  notaris: TitipanNotaris[];
+  asuransi: TitipanAsuransi[];
+  angsuran: TitipanAngsuran[];
+} {
+  return {
+    notaris: dummyTitipanNotaris.filter((item) => item.noKontrak === noKontrak),
+    asuransi: dummyTitipanAsuransi.filter(
+      (item) => item.noKontrak === noKontrak,
+    ),
+    angsuran: dummyTitipanAngsuran.filter(
+      (item) => item.noKontrak === noKontrak,
+    ),
+  };
+}
+
+export function getHistorisTitipanByNoKontrak(
+  noKontrak: string,
+): HistorisTitipanDebitur[] {
+  const { notaris, asuransi, angsuran } = getTitipanByNoKontrak(noKontrak);
+  return [
+    ...notaris.map((item) => ({
+      id: `notaris-${item.id}`,
+      sumberId: item.id,
+      jenisTitipan: "Notaris" as const,
+      noKontrak: item.noKontrak,
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      status: item.status,
+      keterangan: item.keterangan,
+    })),
+    ...asuransi.map((item) => ({
+      id: `asuransi-${item.id}`,
+      sumberId: item.id,
+      jenisTitipan: "Asuransi" as const,
+      noKontrak: item.noKontrak,
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      status: item.status,
+      keterangan: item.keterangan,
+    })),
+    ...angsuran.map((item) => ({
+      id: `angsuran-${item.id}`,
+      sumberId: item.id,
+      jenisTitipan: "Angsuran" as const,
+      noKontrak: item.noKontrak,
+      tanggal: item.tanggalSetor,
+      nominal: item.nominal,
+      status: item.status,
+      keterangan: item.keterangan,
+    })),
+  ].sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+}
+
+export function getSaldoDanaTitipanByNoKontrak(noKontrak: string): number {
+  const { notaris, asuransi, angsuran } = getTitipanByNoKontrak(noKontrak);
+  const saldoNotaris = notaris
+    .filter((item) => item.status === "Belum Dibayar")
+    .reduce((total, item) => total + item.nominal, 0);
+  const saldoAsuransi = asuransi
+    .filter((item) => item.status === "Belum Dibayar")
+    .reduce((total, item) => total + item.nominal, 0);
+  const saldoAngsuran = angsuran
+    .filter((item) => item.status === "Pending")
+    .reduce((total, item) => total + item.nominal, 0);
+  return saldoNotaris + saldoAsuransi + saldoAngsuran;
+}

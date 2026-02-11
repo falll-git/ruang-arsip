@@ -5,7 +5,6 @@ import { Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
 import {
   dummyDebiturList,
   dummyHasilKunjungan,
-  formatCurrency,
 } from "@/lib/data";
 import type { HasilKunjungan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -18,6 +17,7 @@ import DetailModal, {
   DetailRow,
 } from "@/components/marketing/DetailModal";
 import KolBadge from "@/components/marketing/KolBadge";
+import SearchableDebiturSelect from "@/components/marketing/SearchableDebiturSelect";
 
 export default function HasilKunjunganPage() {
   const { openPreview } = useDocumentPreviewContext();
@@ -31,6 +31,7 @@ export default function HasilKunjunganPage() {
   const [dragOver, setDragOver] = useState(false);
   const [form, setForm] = useState({
     tanggalKunjungan: "",
+    alamat: "",
     hasilKunjungan: "",
     kesimpulan: "",
   });
@@ -46,6 +47,13 @@ export default function HasilKunjunganPage() {
     setEditItem(null);
     setDragOver(false);
     setFile(null);
+    setSelectedDebitur("");
+    setForm({
+      tanggalKunjungan: "",
+      alamat: "",
+      hasilKunjungan: "",
+      kesimpulan: "",
+    });
   };
 
   const openEditModal = (item: HasilKunjungan) => {
@@ -53,6 +61,7 @@ export default function HasilKunjunganPage() {
     setSelectedDebitur(item.debiturId);
     setForm({
       tanggalKunjungan: item.tanggalKunjungan,
+      alamat: item.alamat,
       hasilKunjungan: item.hasilKunjungan,
       kesimpulan: item.kesimpulan,
     });
@@ -95,6 +104,7 @@ export default function HasilKunjunganPage() {
     if (
       !selectedDebitur ||
       !form.tanggalKunjungan ||
+      !form.alamat ||
       !form.hasilKunjungan ||
       !form.kesimpulan
     ) {
@@ -116,6 +126,7 @@ export default function HasilKunjunganPage() {
                 ...d,
                 debiturId: selectedDebitur,
                 tanggalKunjungan: form.tanggalKunjungan,
+                alamat: form.alamat,
                 hasilKunjungan: form.hasilKunjungan,
                 kesimpulan: form.kesimpulan,
                 fotoKunjungan,
@@ -135,6 +146,7 @@ export default function HasilKunjunganPage() {
         id: `HKJ${Date.now()}`,
         debiturId: selectedDebitur,
         tanggalKunjungan: form.tanggalKunjungan,
+        alamat: form.alamat,
         hasilKunjungan: form.hasilKunjungan,
         kesimpulan: form.kesimpulan,
         fotoKunjungan,
@@ -148,8 +160,6 @@ export default function HasilKunjunganPage() {
     }
 
     closeModal();
-    setForm({ tanggalKunjungan: "", hasilKunjungan: "", kesimpulan: "" });
-    setSelectedDebitur("");
   };
 
   const getDebiturName = (id: string) => {
@@ -214,7 +224,12 @@ export default function HasilKunjunganPage() {
           <button
             onClick={() => {
               setEditItem(null);
-              setForm({ tanggalKunjungan: "", hasilKunjungan: "", kesimpulan: "" });
+              setForm({
+                tanggalKunjungan: "",
+                alamat: "",
+                hasilKunjungan: "",
+                kesimpulan: "",
+              });
               setSelectedDebitur("");
               setFile(null);
               setIsModalOpen(true);
@@ -243,6 +258,9 @@ export default function HasilKunjunganPage() {
               </th>
               <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
                 Hasil Kunjungan
+              </th>
+              <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
+                Alamat
               </th>
               <th className="text-center px-5 py-4 text-xs font-semibold text-gray-500 uppercase">
                 Kesimpulan
@@ -275,6 +293,9 @@ export default function HasilKunjunganPage() {
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-700 max-w-xs text-center">
                   <p className="truncate">{item.hasilKunjungan}</p>
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-600 max-w-xs text-center">
+                  <p className="truncate">{item.alamat}</p>
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-600 max-w-xs text-center">
                   <p className="truncate">{item.kesimpulan}</p>
@@ -341,22 +362,28 @@ export default function HasilKunjunganPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pilih Debitur
                 </label>
-                <select
+                <SearchableDebiturSelect
                   value={selectedDebitur}
-                  onChange={(e) => setSelectedDebitur(e.target.value)}
-                  className="select"
-                  required
-                >
-                  <option value="">-- Pilih Debitur --</option>
-                  {dummyDebiturList
+                  onChange={(nextDebiturId) => {
+                    setSelectedDebitur(nextDebiturId);
+                    const selected = dummyDebiturList.find(
+                      (item) => item.id === nextDebiturId,
+                    );
+                    setForm((prev) => ({
+                      ...prev,
+                      alamat: selected?.alamat ?? prev.alamat,
+                    }));
+                  }}
+                  options={dummyDebiturList
                     .filter((d) => parseInt(d.kolektibilitas) >= 2)
-                    .map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.namaNasabah} - Kol {d.kolektibilitas} (
-                        {formatCurrency(d.osPokok)})
-                      </option>
-                    ))}
-                </select>
+                    .map((d) => ({
+                      id: d.id,
+                      namaNasabah: d.namaNasabah,
+                      kolektibilitas: d.kolektibilitas,
+                      osPokok: d.osPokok,
+                    }))}
+                  placeholder="Cari debitur berdasarkan nama/ID..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -370,6 +397,19 @@ export default function HasilKunjunganPage() {
                       tanggalKunjungan: nextValue,
                     }))
                   }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Alamat
+                </label>
+                <textarea
+                  value={form.alamat}
+                  onChange={(e) => setForm({ ...form, alamat: e.target.value })}
+                  rows={2}
+                  className="textarea resize-none"
+                  placeholder="Alamat kunjungan..."
+                  required
                 />
               </div>
               <div>
@@ -504,6 +544,7 @@ export default function HasilKunjunganPage() {
                 label="Tanggal Kunjungan"
                 value={formatDateDisplay(detailItem.tanggalKunjungan)}
               />
+              <DetailRow label="Alamat" value={detailItem.alamat} />
               <DetailRow label="Hasil Kunjungan" value={detailItem.hasilKunjungan} />
               <DetailRow label="Kesimpulan" value={detailItem.kesimpulan} />
             </DetailSection>

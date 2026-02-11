@@ -56,12 +56,17 @@ export interface ActionPlan {
   targetTanggal: string;
   status: "Pending" | "Proses" | "Selesai";
   createdBy: string;
+  lampiranFilePath?: string;
+  lampiranFileName?: string;
+  lampiranFileType?: "pdf";
+  lampiranFileSize?: number;
 }
 
 export interface HasilKunjungan {
   id: string;
   debiturId: string;
   tanggalKunjungan: string;
+  alamat: string;
   hasilKunjungan: string;
   kesimpulan: string;
   fotoKunjungan?: string;
@@ -78,6 +83,10 @@ export interface LangkahPenanganan {
   hasilPenanganan: string;
   status: "Pending" | "Proses" | "Selesai";
   createdBy: string;
+  lampiranFilePath?: string;
+  lampiranFileName?: string;
+  lampiranFileType?: "pdf";
+  lampiranFileSize?: number;
 }
 
 export interface SuratPeringatan {
