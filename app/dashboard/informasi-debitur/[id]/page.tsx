@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
@@ -33,11 +33,6 @@ import {
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
-import DetailModal, {
-  DetailSection,
-  DetailRow,
-} from "@/components/marketing/DetailModal";
-import KolBadge from "@/components/marketing/KolBadge";
 
 type TabType =
   | "info"
@@ -50,22 +45,6 @@ type TabType =
   | "sp"
   | "klaim"
   | "titipan";
-
-type DetailItem =
-  | { type: "bprs"; data: ReturnType<typeof getPengecekanBPRSByDebiturId>[0] }
-  | {
-      type: "historis";
-      data: ReturnType<typeof getHistorisKolektibilitasByDebiturId>[0];
-    }
-  | {
-      type: "penanganan";
-      data: ReturnType<typeof getLangkahPenangananByDebiturId>[0];
-    }
-  | {
-      type: "actionplan";
-      data: ReturnType<typeof getActionPlanByDebiturId>[0];
-    }
-  | { type: "sp"; data: ReturnType<typeof getSuratPeringatanByDebiturId>[0] };
 
 const tabs: { id: TabType; label: string }[] = [
   { id: "info", label: "Data Utama" },
@@ -95,10 +74,10 @@ const InfoRow = ({
 
 export default function DetailDebiturPage() {
   const { id } = useParams();
+  const router = useRouter();
   const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [isLoading, setIsLoading] = useState(true);
-  const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
 
   const debitur = getDebiturById(id as string);
   const pengecekanBPRS = getPengecekanBPRSByDebiturId(id as string);
@@ -200,198 +179,6 @@ export default function DetailDebiturPage() {
         {status}
       </span>
     );
-  };
-
-  const renderDetailContent = () => {
-    if (!detailItem) return null;
-
-    switch (detailItem.type) {
-      case "bprs":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailSection title="Informasi BPRS">
-              <DetailRow label="Nama BPRS" value={detailItem.data.namaBPRS} />
-              <DetailRow label="Status" value={detailItem.data.status} />
-              <DetailRow
-                label="Outstanding"
-                value={formatCurrency(detailItem.data.outstanding)}
-              />
-            </DetailSection>
-            <DetailSection title="Kolektibilitas & Tanggal">
-              <DetailRow
-                label="Kolektibilitas"
-                value={<KolBadge kol={detailItem.data.kolektibilitas} />}
-              />
-              <DetailRow
-                label="Tanggal Cek"
-                value={formatDateDisplay(detailItem.data.tanggalCek)}
-              />
-            </DetailSection>
-          </div>
-        );
-      case "historis":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailSection title="Periode & Kolektibilitas">
-              <DetailRow label="Bulan" value={detailItem.data.bulan} />
-              <DetailRow
-                label="Kolektibilitas"
-                value={<KolBadge kol={detailItem.data.kolektibilitas} />}
-              />
-            </DetailSection>
-            <DetailSection title="Outstanding">
-              <DetailRow
-                label="OS Pokok"
-                value={formatCurrency(detailItem.data.osPokok)}
-              />
-              <DetailRow
-                label="OS Margin"
-                value={formatCurrency(detailItem.data.osMargin)}
-              />
-            </DetailSection>
-            <div className="md:col-span-2">
-              <DetailSection title="Keterangan">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {detailItem.data.keterangan || "-"}
-                </p>
-              </DetailSection>
-            </div>
-          </div>
-        );
-      case "penanganan":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailSection title="Informasi Utama">
-              <DetailRow
-                label="Tanggal"
-                value={formatDateDisplay(detailItem.data.tanggal)}
-              />
-              <DetailRow label="Langkah" value={detailItem.data.langkah} />
-              <DetailRow
-                label="Status"
-                value={<StatusBadge status={detailItem.data.status} />}
-              />
-              <DetailRow
-                label="Lampiran"
-                value={
-                  detailItem.data.lampiranFilePath ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openPreview(
-                          normalizeFileUrl(detailItem.data.lampiranFilePath!),
-                          detailItem.data.lampiranFileName ||
-                            "lampiran_langkah_penanganan.pdf",
-                          "pdf",
-                        )
-                      }
-                      className="btn btn-view-pdf btn-sm inline-flex"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                  ) : (
-                    "-"
-                  )
-                }
-              />
-            </DetailSection>
-            <DetailSection title="Hasil Penanganan">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {detailItem.data.hasilPenanganan}
-              </p>
-            </DetailSection>
-          </div>
-        );
-      case "sp":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailSection title="Informasi Surat">
-              <DetailRow label="Jenis" value={detailItem.data.jenisSurat} />
-              <DetailRow
-                label="Status Kirim"
-                value={<StatusBadge status={detailItem.data.statusKirim} />}
-              />
-            </DetailSection>
-            <DetailSection title="Tanggal">
-              <DetailRow
-                label="Tanggal Terbit"
-                value={formatDateDisplay(detailItem.data.tanggalTerbit)}
-              />
-              <DetailRow
-                label="Tanggal Kirim"
-                value={formatDateDisplay(detailItem.data.tanggalKirim)}
-              />
-            </DetailSection>
-            <div className="md:col-span-2">
-              <DetailSection title="Keterangan">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {detailItem.data.keterangan || "-"}
-                </p>
-              </DetailSection>
-            </div>
-          </div>
-        );
-      case "actionplan":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailSection title="Informasi Utama">
-              <DetailRow
-                label="Debitur"
-                value={
-                  <span className="flex items-center gap-2">
-                    {debitur.namaNasabah}
-                    <KolBadge kol={debitur.kolektibilitas} />
-                  </span>
-                }
-              />
-              <DetailRow label="Rencana" value={detailItem.data.rencana} />
-              <DetailRow
-                label="Target Tanggal"
-                value={formatDateDisplay(detailItem.data.targetTanggal)}
-              />
-            </DetailSection>
-            <DetailSection title="Metadata">
-              <DetailRow
-                label="Tanggal Dibuat"
-                value={formatDateDisplay(detailItem.data.tanggal)}
-              />
-              <DetailRow
-                label="Dibuat oleh"
-                value={detailItem.data.createdBy}
-              />
-              <DetailRow
-                label="Status"
-                value={<StatusBadge status={detailItem.data.status} />}
-              />
-              <DetailRow
-                label="Lampiran"
-                value={
-                  detailItem.data.lampiranFilePath ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openPreview(
-                          normalizeFileUrl(detailItem.data.lampiranFilePath!),
-                          detailItem.data.lampiranFileName ||
-                            "lampiran_action_plan.pdf",
-                          "pdf",
-                        )
-                      }
-                      className="btn btn-view-pdf btn-sm inline-flex"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                  ) : (
-                    "-"
-                  )
-                }
-              />
-            </DetailSection>
-          </div>
-        );
-      default:
-        return null;
-    }
   };
 
   const headerKolColor = getKolektibilitasColor(debitur.kolektibilitas);
@@ -544,7 +331,9 @@ export default function DetailDebiturPage() {
                           key={item.id}
                           className="hover:bg-gray-50 cursor-pointer transition-colors"
                           onClick={() =>
-                            setDetailItem({ type: "bprs", data: item })
+                            router.push(
+                              `/dashboard/informasi-debitur/${debitur.id}/fitur/bprs/${item.id}`,
+                            )
                           }
                         >
                           <td className="py-3 px-4 font-medium">
@@ -624,7 +413,9 @@ export default function DetailDebiturPage() {
                           key={item.id}
                           className="hover:bg-gray-50 cursor-pointer transition-colors"
                           onClick={() =>
-                            setDetailItem({ type: "historis", data: item })
+                            router.push(
+                              `/dashboard/informasi-debitur/${debitur.id}/fitur/historis/${item.id}`,
+                            )
                           }
                         >
                           <td className="py-3 px-4 font-medium">
@@ -773,7 +564,9 @@ export default function DetailDebiturPage() {
                       key={item.id}
                       className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors cursor-pointer"
                       onClick={() =>
-                        setDetailItem({ type: "actionplan", data: item })
+                        router.push(
+                          `/dashboard/informasi-debitur/${debitur.id}/fitur/actionplan/${item.id}`,
+                        )
                       }
                     >
                       <div className="flex items-start justify-between mb-2">
@@ -807,9 +600,6 @@ export default function DetailDebiturPage() {
                           </button>
                         </div>
                       )}
-                      <p className="text-xs text-gray-400 mt-2">
-                        by {item.createdBy}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -828,7 +618,12 @@ export default function DetailDebiturPage() {
                   {hasilKunjungan.map((item) => (
                     <div
                       key={item.id}
-                      className="border border-gray-200 rounded-lg p-4"
+                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-colors cursor-pointer"
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/informasi-debitur/${debitur.id}/fitur/kunjungan/${item.id}`,
+                        )
+                      }
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <CalendarDays
@@ -862,7 +657,8 @@ export default function DetailDebiturPage() {
                         <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
                           <button
                             type="button"
-                            onClick={() =>
+                            onClick={(event) => {
+                              event.stopPropagation();
                               openPreview(
                                 normalizeFileUrl(item.fotoKunjungan!),
                                 `Lampiran Kunjungan - ${debitur.namaNasabah}`,
@@ -872,17 +668,14 @@ export default function DetailDebiturPage() {
                                     .endsWith(".pdf")
                                     ? "pdf"
                                     : "image"),
-                              )
-                            }
+                              );
+                            }}
                             className="btn btn-view-pdf inline-flex items-center justify-center"
                           >
                             <Eye className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
                       )}
-                      <p className="text-xs text-gray-400 mt-2">
-                        by {item.createdBy}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -924,7 +717,9 @@ export default function DetailDebiturPage() {
                           key={item.id}
                           className="hover:bg-gray-50 cursor-pointer transition-colors"
                           onClick={() =>
-                            setDetailItem({ type: "penanganan", data: item })
+                            router.push(
+                              `/dashboard/informasi-debitur/${debitur.id}/fitur/penanganan/${item.id}`,
+                            )
                           }
                         >
                           <td className="py-3 px-4 text-sm">
@@ -1008,7 +803,9 @@ export default function DetailDebiturPage() {
                           key={item.id}
                           className="hover:bg-gray-50 cursor-pointer transition-colors"
                           onClick={() =>
-                            setDetailItem({ type: "sp", data: item })
+                            router.push(
+                              `/dashboard/informasi-debitur/${debitur.id}/fitur/sp/${item.id}`,
+                            )
                           }
                         >
                           <td className="py-3 px-4">
@@ -1224,26 +1021,6 @@ export default function DetailDebiturPage() {
           )}
         </div>
       </div>
-
-      {detailItem && (
-        <DetailModal
-          isOpen={!!detailItem}
-          onClose={() => setDetailItem(null)}
-          title={
-            detailItem.type === "bprs"
-              ? "Detail Cek BPRS"
-              : detailItem.type === "historis"
-                ? "Detail Historis Kolektibilitas"
-                : detailItem.type === "actionplan"
-                  ? "Detail Action Plan"
-                  : detailItem.type === "penanganan"
-                    ? "Detail Langkah Penanganan"
-                    : "Detail Surat Peringatan"
-          }
-        >
-          {renderDetailContent()}
-        </DetailModal>
-      )}
     </div>
   );
 }

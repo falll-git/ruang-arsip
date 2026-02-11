@@ -1782,6 +1782,19 @@ table td .flex {
   animation: fadeIn 0.2s ease-out;
 }
 
+.modal-overlay,
+[data-dashboard-overlay="true"] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-overlay > :not(.absolute),
+[data-dashboard-overlay="true"] > :not(.absolute) {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+
 .modal-overlay.modal-exit {
   animation: fadeOut 0.15s ease-out forwards;
 }

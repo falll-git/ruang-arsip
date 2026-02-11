@@ -216,7 +216,7 @@ export const dummyDokumen: Dokumen[] = [
     statusPeminjaman: "Tersedia",
     levelAkses: "NON_RESTRICT",
     restrict: false,
-    fileUrl: "/docs/akta.pdf",
+    fileUrl: "/documents/contoh-dok.pdf",
   },
   {
     id: 2,

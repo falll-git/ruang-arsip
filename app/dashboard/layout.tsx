@@ -158,19 +158,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       return false;
     };
 
-    const shouldUseFocusMode = () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 768px)").matches;
-
     let blurTimer: ReturnType<typeof setTimeout> | null = null;
 
     const handleFocusIn = (e: FocusEvent) => {
-      if (!shouldUseFocusMode()) return;
       if (isFormField(e.target)) setIsFocusMode(true);
     };
 
     const handleFocusOut = () => {
-      if (!shouldUseFocusMode()) return;
       if (blurTimer) clearTimeout(blurTimer);
       blurTimer = setTimeout(() => {
         const active = document.activeElement;
@@ -179,7 +173,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     };
 
     const handleSubmit = () => {
-      if (!shouldUseFocusMode()) return;
       setIsFocusMode(true);
       if (blurTimer) clearTimeout(blurTimer);
       blurTimer = setTimeout(() => setIsFocusMode(false), 1200);
