@@ -1,26 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Eye, EyeOff, Lock, User } from "lucide-react";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { useAppToast } from "@/components/ui/AppToastProvider";
-import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
+import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { status, signIn } = useAuth();
-  const { showToast } = useAppToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
-  useEffect(() => {
-    if (status === "authenticated") router.replace("/dashboard");
-  }, [router, status]);
+  const [validationMessage, setValidationMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const sleep = (ms: number) =>
     new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -28,143 +20,141 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
-    setIsLoading(true);
-    const startedAt = Date.now();
-    const result = await signIn(username, password, { remember: rememberMe });
-    const elapsed = Date.now() - startedAt;
-    const minDelayMs = 900;
-    if (elapsed < minDelayMs) await sleep(minDelayMs - elapsed);
-    setIsLoading(false);
 
-    if (!result.ok) {
-      showToast(result.message, "warning");
+    setValidationMessage("");
+    setSuccessMessage("");
+
+    if (!username.trim() || !password.trim()) {
+      setValidationMessage("Username dan password wajib diisi.");
       return;
     }
 
-    router.push("/dashboard");
+    setIsLoading(true);
+    await sleep(1200);
+    setIsLoading(false);
+    setSuccessMessage(
+      `Login berhasil (simulasi). Ingat Saya: ${
+        rememberMe ? "aktif" : "nonaktif"
+      }.`,
+    );
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 relative">
-      <div className="star-container">
-        <div id="stars"></div>
-        <div id="stars2"></div>
-        <div id="stars3"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md animate-auth-in">
-        <div className="auth-card rounded-3xl px-8 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 leading-none tracking-tight text-[#157ec3]">
+    <AuthSplitLayout>
+      <div className="auth-card animate-auth-in rounded-[28px] px-7 py-8 sm:px-8 sm:py-9">
+        <div className="relative z-10">
+          <header className="mb-7 text-center">
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#157ec3]">
               RUWANG ARSIP
             </h1>
-            <p className="text-gray-500 text-sm">
-              Sistem Manajemen Arsip Digital
-            </p>
-          </div>
+            <p className="mt-2 text-sm text-slate-600">Masuk ke akun Anda</p>
+          </header>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="username"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
                 Username
               </label>
               <div className="relative">
-                <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                  style={{ color: "#157ec3" }}
-                >
-                  <User className="w-5 h-5" />
-                </span>
+                <User className="absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-[#157ec3]" />
                 <input
+                  id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Masukkan username"
                   className="input-fancy"
-                  required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
                 Password
               </label>
               <div className="relative">
-                <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                  style={{ color: "#157ec3" }}
-                >
-                  <Lock className="w-5 h-5" />
-                </span>
+                <Lock className="absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-[#157ec3]" />
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="input-fancy"
-                  style={{ paddingRight: "3rem" }}
-                  required
+                  className="input-fancy pr-12"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#157ec3] hover:text-[#0d5a8f] z-10 transition-colors duration-200"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 z-10 -translate-y-1/2 text-[#157ec3] transition-colors hover:text-[#0d5a8f]"
+                  aria-label={
+                    showPassword ? "Sembunyikan password" : "Tampilkan password"
+                  }
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <UiverseCheckbox
-                checked={rememberMe}
-                onCheckedChange={setRememberMe}
-                label="Ingat Saya"
-              />
+            <div className="flex items-center justify-between gap-3">
+              <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-[#157ec3] focus:ring-[#157ec3]"
+                />
+                Ingat Saya
+              </label>
 
               <Link
                 href="/forgot-password"
-                className="inline-flex items-center gap-2 text-sm font-medium
-                           cursor-pointer
-                           transition-all duration-200 hover:opacity-90 hover:underline"
-                style={{ color: "#157ec3" }}
+                className="text-sm font-semibold text-[#157ec3] transition-colors hover:text-[#0d5a8f]"
               >
                 Lupa Password?
-                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
-            <button type="submit" disabled={isLoading} className="button mt-4">
-              <div className="button-outer">
-                <div className="button-inner">
-                  {isLoading ? (
-                    <>
-                      <div className="button-spinner" aria-hidden="true" />
-                      <span>MEMPROSES...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>MASUK</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </div>
-              </div>
+            {validationMessage ? (
+              <p className="text-sm font-medium text-red-600">
+                {validationMessage}
+              </p>
+            ) : null}
+
+            {successMessage ? (
+              <p className="text-sm font-medium text-emerald-600">
+                {successMessage}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="auth-effect-button mt-2"
+            >
+              <span className="auth-effect-button__top">
+                {isLoading ? (
+                  <>
+                    <span className="button-spinner" aria-hidden="true" />
+                    <span>MEMPROSES...</span>
+                  </>
+                ) : (
+                  <span>Masuk</span>
+                )}
+              </span>
             </button>
           </form>
-
-          <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-400">
-              {"\u00A9"} 2026 RUWANG ARSIP v1.0
-            </p>
-          </div>
         </div>
       </div>
-    </main>
+    </AuthSplitLayout>
   );
 }

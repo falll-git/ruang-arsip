@@ -3,159 +3,162 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Mail, Send } from "lucide-react";
+import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const sleep = (ms: number) =>
+    new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+
+    setValidationMessage("");
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setValidationMessage("Email wajib diisi.");
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-    }, 2000);
+    await sleep(1200);
+    setIsLoading(false);
+    setSubmittedEmail(trimmedEmail);
+    setIsSuccess(true);
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 relative">
-      <div className="star-container">
-        <div id="stars"></div>
-        <div id="stars2"></div>
-        <div id="stars3"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md animate-auth-in">
-        <div className="auth-card rounded-3xl px-8 py-8">
+    <AuthSplitLayout>
+      <div className="auth-card animate-auth-in rounded-[28px] px-7 py-8 sm:px-8 sm:py-9">
+        <div className="relative z-10">
           {!isSuccess ? (
             <>
-              <div className="text-center mb-6">
-                <h1 className="text-4xl font-bold mb-1 leading-none tracking-tight text-[#157ec3]">
+              <header className="mb-6 text-center">
+                <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#157ec3]">
                   RUWANG ARSIP
                 </h1>
-                <h2 className="text-lg font-semibold text-gray-800 mt-3 mb-1">
+                <h2 className="mt-3 text-xl font-semibold text-slate-800">
                   Lupa Password?
                 </h2>
-                <p className="text-gray-500 text-sm">
+                <p className="mt-2 text-sm text-slate-600">
                   Masukkan email Anda dan kami akan mengirimkan link reset
                   password.
                 </p>
-              </div>
+              </header>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-slate-700"
+                  >
                     Email
                   </label>
                   <div className="relative">
-                    <span
-                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                      style={{ color: "#157ec3" }}
-                    >
-                      <Mail className="w-5 h-5" />
-                    </span>
+                    <Mail className="absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-[#157ec3]" />
                     <input
+                      id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Masukkan email address"
+                      placeholder="Masukkan email Anda"
                       className="input-fancy"
-                      required
                     />
                   </div>
                 </div>
 
-                <button type="submit" disabled={isLoading} className="button">
-                  <div className="button-outer">
-                    <div className="button-inner">
-                      {isLoading ? (
-                        <>
-                          <div className="button-spinner" aria-hidden="true" />
-                          <span>MEMPROSES...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>KIRIM LINK RESET</span>
-                          <Send className="w-5 h-5" />
-                        </>
-                      )}
-                    </div>
-                  </div>
+                {validationMessage ? (
+                  <p className="text-sm font-medium text-red-600">
+                    {validationMessage}
+                  </p>
+                ) : null}
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="auth-effect-button"
+                >
+                  <span className="auth-effect-button__top">
+                    {isLoading ? (
+                      <>
+                        <span className="button-spinner" aria-hidden="true" />
+                        <span>MEMPROSES...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>KIRIM LINK RESET</span>
+                        <Send className="h-5 w-5" />
+                      </>
+                    )}
+                  </span>
                 </button>
               </form>
 
-              <div className="mt-4 text-center">
+              <div className="mt-5 text-center">
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-2 text-sm font-medium
-                             cursor-pointer
-                             transition-all duration-200
-                             hover:opacity-90 hover:underline"
-                  style={{ color: "#157ec3" }}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#157ec3] transition-colors hover:text-[#0d5a8f]"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="h-4 w-4" />
                   Kembali ke Halaman Login
                 </Link>
               </div>
             </>
           ) : (
-            <div className="text-center py-4">
+            <div className="py-3 text-center">
               <div
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full"
                 style={{
                   background:
-                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                  boxShadow: "0 12px 32px rgba(16, 185, 129, 0.22)",
+                    "linear-gradient(135deg, #34d399 0%, #10b981 45%, #059669 100%)",
+                  boxShadow: "0 12px 28px rgba(16, 185, 129, 0.32)",
                 }}
               >
-                <Check className="w-8 h-8 text-white" />
+                <Check className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">
+              <h2 className="mb-2 text-xl font-bold text-slate-800">
                 Cek Email Anda
               </h2>
-              <p className="text-gray-500 text-sm mb-1">
-                Kami telah mengirimkan link reset ke:
+              <p className="text-sm text-slate-600">
+                Link reset password telah dikirim ke email:
               </p>
-              <p className="font-semibold mb-4" style={{ color: "#157ec3" }}>
-                {email}
+              <p className="mb-5 mt-1 text-sm font-semibold text-[#157ec3]">
+                {submittedEmail}
               </p>
+
               <div className="space-y-3">
                 <button
+                  type="button"
+                  className="button"
                   onClick={() => {
                     setIsSuccess(false);
-                    setEmail("");
+                    setValidationMessage("");
                   }}
-                  className="button"
                 >
-                  <div className="button-outer">
-                    <div className="button-inner">
-                      <span>KIRIM ULANG EMAIL</span>
-                    </div>
-                  </div>
+                  <span className="button-outer">
+                    <span className="button-inner">KIRIM ULANG EMAIL</span>
+                  </span>
                 </button>
 
                 <Link
                   href="/"
-                  className="inline-flex justify-center items-center gap-2
-                             cursor-pointer
-                             font-semibold text-sm
-                             transition-all duration-200
-                             hover:opacity-90 hover:underline"
-                  style={{ color: "#157ec3" }}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#157ec3] transition-colors hover:text-[#0d5a8f]"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="h-4 w-4" />
                   Kembali ke Halaman Login
                 </Link>
               </div>
             </div>
           )}
-
-          <div className="mt-4 pt-4 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-400">© 2026 RUWANG ARSIP v1.0</p>
-          </div>
         </div>
       </div>
-    </main>
+    </AuthSplitLayout>
   );
 }
