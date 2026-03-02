@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -45,6 +51,8 @@ import { useAppToast } from "@/components/ui/AppToastProvider";
 import ProtectedLink from "@/components/rbac/ProtectedLink";
 import { RBAC_DENIED_MESSAGE, getDashboardRouteDecision } from "@/lib/rbac";
 
+const SIDEBAR_OPEN_STORAGE_KEY = "ruang-arsip.dashboard.sidebar-open";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -66,7 +74,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { showToast } = useAppToast();
   const lastDeniedPathRef = useRef<string | null>(null);
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.sessionStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY);
+    if (stored === "0") return false;
+    if (stored === "1") return true;
+    return true;
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -99,6 +113,27 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [menuLinkDokumen, setMenuLinkDokumen] = useState(false);
   const [menuInputProgress, setMenuInputProgress] = useState(false);
 
+  const updateSidebarOpen = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      setSidebarOpen((prev) => {
+        const next =
+          typeof value === "function"
+            ? (value as (prev: boolean) => boolean)(prev)
+            : value;
+
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            SIDEBAR_OPEN_STORAGE_KEY,
+            next ? "1" : "0",
+          );
+        }
+
+        return next;
+      });
+    },
+    [],
+  );
+
   const isActive = (path: string) => pathname === path;
   const isActiveGroup = (paths: string[]) =>
     paths.some((p) => pathname.includes(p));
@@ -115,12 +150,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => {
-      if (window.innerWidth < 640) setSidebarOpen(false);
+      if (window.innerWidth < 640) updateSidebarOpen(false);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [updateSidebarOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -243,9 +278,29 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return <PageLoader />;
   }
 
-  const sidebarWidth = isDesktop ? (sidebarOpen ? 280 : 80) : 280;
+  const sidebarWidth = 280;
   const shouldOffsetMain =
-    isDesktop && !isPreviewOpen && !isFocusMode && !isOverlayOpen;
+    isDesktop && sidebarOpen && !isPreviewOpen && !isOverlayOpen;
+  const isSidebarExpanded = !isDesktop || sidebarOpen;
+
+  const handleSidebarNavClickCapture = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const anchor = target.closest(
+      "a.sidebar-menu-item, a.sidebar-submenu-item",
+    );
+    if (!anchor) return;
+    if (anchor.classList.contains("rbac-disabled")) return;
+
+    const href = anchor.getAttribute("href");
+    if (!href || !href.startsWith("/dashboard")) return;
+
+    updateSidebarOpen(false);
+    setMobileMenuOpen(false);
+  };
   const mainStyle: CSSProperties = {
     marginLeft: shouldOffsetMain ? `${sidebarWidth}px` : "0px",
     width: shouldOffsetMain ? `calc(100% - ${sidebarWidth}px)` : "100%",
@@ -276,7 +331,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           boxShadow: "4px 0 30px rgba(21, 126, 195, 0.2)",
           overflow: "hidden",
           transform:
-            isPreviewOpen || isFocusMode || isOverlayOpen
+            isPreviewOpen || isOverlayOpen || (isDesktop && !sidebarOpen)
               ? "translateX(-100%)"
               : "translateX(0)",
         }}
@@ -290,7 +345,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           }}
         >
           <div className="flex items-center justify-between gap-3">
-            {sidebarOpen ? (
+            {isSidebarExpanded ? (
               <div className="min-w-0 flex flex-col justify-center">
                 <h1 className="text-[15px] font-extrabold text-white tracking-wide leading-tight">
                   RUWANG ARSIP
@@ -315,6 +370,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         <nav
           className="flex-1 py-3 sidebar-nav"
+          onClickCapture={handleSidebarNavClickCapture}
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "rgba(255,255,255,0.3) transparent",
@@ -328,10 +384,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             className={`sidebar-menu-item ${isActive("/dashboard") ? "active" : ""}`}
           >
             <LayoutDashboard className="w-5 h-5" />
-            {sidebarOpen && <span className="font-medium">Dashboard</span>}
+            {isSidebarExpanded && (
+              <span className="font-medium">Dashboard</span>
+            )}
           </ProtectedLink>
 
-          {sidebarOpen && (
+          {isSidebarExpanded && (
             <div className="mx-0 my-2 border-t border-white/10">
               <span className="block px-4 py-2 text-xs text-white/50 uppercase tracking-wider font-semibold">
                 Modul Utama
@@ -1047,39 +1105,29 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         >
           <div className="flex items-center gap-2 lg:gap-4">
             <button
-              onClick={() => setMobileMenuOpen(true)}
+              onClick={() => {
+                updateSidebarOpen(true);
+                setMobileMenuOpen(true);
+              }}
               className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
               aria-label="Buka menu"
             >
               <Menu className="w-6 h-6 text-gray-700" />
             </button>
-            <div className="uiverse-menu-toggle hidden lg:inline-flex">
-              <input
-                type="checkbox"
-                id="dashboard-menu-toggle"
-                checked={sidebarOpen}
-                onChange={(event) => setSidebarOpen(event.target.checked)}
-                className="uiverse-menu-toggle__input"
-              />
-              <label
-                htmlFor="dashboard-menu-toggle"
-                className="uiverse-menu-toggle__label focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#157ec3]/30"
-                aria-label={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
-                title={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
-                role="button"
-                aria-pressed={sidebarOpen}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter" && event.key !== " ") return;
-                  event.preventDefault();
-                  setSidebarOpen((prev) => !prev);
-                }}
-              >
-                <div className="uiverse-menu-toggle__bar uiverse-menu-toggle__bar--1" />
-                <div className="uiverse-menu-toggle__bar uiverse-menu-toggle__bar--2" />
-                <div className="uiverse-menu-toggle__bar uiverse-menu-toggle__bar--3" />
-              </label>
-            </div>
+            <button
+              type="button"
+              onClick={() => updateSidebarOpen((prev) => !prev)}
+              className="hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-xl text-[#157ec3] transition-colors hover:bg-[#157ec3]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#157ec3]/30"
+              aria-label={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
+              title={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
+              aria-pressed={sidebarOpen}
+            >
+              {sidebarOpen ? (
+                <X className="h-7 w-7" aria-hidden="true" />
+              ) : (
+                <Menu className="h-7 w-7" aria-hidden="true" />
+              )}
+            </button>
             <div>
               <h2 className="text-lg font-bold text-gray-800">
                 {pathname === "/dashboard" && "Dashboard"}
