@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useAppToast } from "@/components/ui/AppToastProvider";
+import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { status, signIn } = useAuth();
+  const { showToast } = useAppToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [validationMessage, setValidationMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (status === "authenticated") router.replace("/dashboard");
+  }, [router, status]);
 
   const sleep = (ms: number) =>
     new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -21,22 +30,29 @@ export default function LoginPage() {
     e.preventDefault();
     if (isLoading) return;
 
-    setValidationMessage("");
-    setSuccessMessage("");
-
     if (!username.trim() || !password.trim()) {
-      setValidationMessage("Username dan password wajib diisi.");
+      showToast("Username dan password wajib diisi.", "warning");
       return;
     }
 
     setIsLoading(true);
-    await sleep(1200);
+    const startedAt = Date.now();
+    const result = await signIn(username, password, { remember: rememberMe });
+    const elapsed = Date.now() - startedAt;
+    const minDelayMs = 1200;
+
+    if (elapsed < minDelayMs) {
+      await sleep(minDelayMs - elapsed);
+    }
+
     setIsLoading(false);
-    setSuccessMessage(
-      `Login berhasil (simulasi). Ingat Saya: ${
-        rememberMe ? "aktif" : "nonaktif"
-      }.`,
-    );
+
+    if (!result.ok) {
+      showToast(result.message, "warning");
+      return;
+    }
+
+    router.push("/dashboard");
   };
 
   return (
@@ -67,6 +83,7 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Masukkan username"
                   className="input-fancy"
+                  required
                 />
               </div>
             </div>
@@ -87,6 +104,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
                   className="input-fancy pr-12"
+                  required
                 />
                 <button
                   type="button"
@@ -106,15 +124,11 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#157ec3] focus:ring-[#157ec3]"
-                />
-                Ingat Saya
-              </label>
+              <UiverseCheckbox
+                checked={rememberMe}
+                onCheckedChange={setRememberMe}
+                label="Ingat Saya"
+              />
 
               <Link
                 href="/forgot-password"
@@ -123,18 +137,6 @@ export default function LoginPage() {
                 Lupa Password?
               </Link>
             </div>
-
-            {validationMessage ? (
-              <p className="text-sm font-medium text-red-600">
-                {validationMessage}
-              </p>
-            ) : null}
-
-            {successMessage ? (
-              <p className="text-sm font-medium text-emerald-600">
-                {successMessage}
-              </p>
-            ) : null}
 
             <button
               type="submit"
