@@ -1076,16 +1076,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             {sidebarOpen && menuAdministrator && (
               <div className="mt-1 space-y-0.5">
                 <ProtectedLink
-                  href="/dashboard/informasi-debitur/admin/upload-slik"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
+                  href="/dashboard/admin/upload-slik"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/admin/upload-slik") ? "active" : ""}`}
                 >
                   <Upload className="w-4 h-4" />
                   <span>Upload Data SLIK</span>
                 </ProtectedLink>
 
                 <ProtectedLink
-                  href="/dashboard/informasi-debitur/admin/upload-restrik"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
+                  href="/dashboard/admin/upload-restrik"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/admin/upload-restrik") ? "active" : ""}`}
                 >
                   <Upload className="w-4 h-4" />
                   <span>Upload Data Restrik</span>
