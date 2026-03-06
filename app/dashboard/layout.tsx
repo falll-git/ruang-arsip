@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Archive,
   ArrowLeftRight,
+  ArrowUp,
   BookOpen,
   Briefcase,
   CalendarDays,
@@ -35,6 +36,7 @@ import {
   Search,
   Shield,
   Send,
+  Upload,
   Users,
   Wallet,
   X,
@@ -101,11 +103,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [menuSurat, setMenuSurat] = useState(false);
   const [menuSuratMasuk, setMenuSuratMasuk] = useState(false);
   const [menuSuratKeluar, setMenuSuratKeluar] = useState(false);
+  const [menuSuratCetak, setMenuSuratCetak] = useState(false);
   const [menuMemorandum, setMenuMemorandum] = useState(false);
 
   const [menuDebitur, setMenuDebitur] = useState(false);
   const [menuMarketing, setMenuMarketing] = useState(false);
   const [menuAdmin, setMenuAdmin] = useState(false);
+  const [menuAdministrator, setMenuAdministrator] = useState(false);
 
   const [menuLegal, setMenuLegal] = useState(false);
   const [menuCetakDokumen, setMenuCetakDokumen] = useState(false);
@@ -725,6 +729,67 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   )}
                 </div>
+
+                <div>
+                  <button
+                    onClick={() => setMenuSuratCetak(!menuSuratCetak)}
+                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/cetak"]) ? "active" : ""}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Printer className="w-4 h-4" />
+                      <span>Cetak Dokumen</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-3 h-3 transition-transform duration-300 ${menuSuratCetak ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {menuSuratCetak && (
+                    <div className="ml-1 mt-0.5 space-y-0.5">
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/akad"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Dokumen Akad</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/haftsheet"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Haftsheet</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-peringatan"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat Peringatan</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/formulir-asuransi"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Formulir Asuransi</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/keterangan-lunas"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat Keterangan Lunas</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-samsat"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat SAMSAT</span>
+                      </ProtectedLink>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -764,7 +829,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <div className="flex items-center gap-2">
                       <Briefcase className="w-4 h-4" />
-                      <span>Marketing</span>
+                      <span>Input Progres</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuMarketing ? "rotate-180" : ""}`}
@@ -796,39 +861,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   )}
                 </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuAdmin(!menuAdmin)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/admin"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      <span>Admin</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuAdmin ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuAdmin && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/admin/upload-slik"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Upload Data SLIK</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/admin/upload-restrik"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Upload Data Restrik</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
@@ -840,9 +872,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             >
               <div className="flex items-center gap-3">
                 <Scale className="w-5 h-5" aria-hidden="true" />
-                {sidebarOpen && (
-                  <span className="font-bold">Manajemen Legal</span>
-                )}
+                {sidebarOpen && <span className="font-bold">Legal</span>}
               </div>
               {sidebarOpen && (
                 <ChevronDown
@@ -959,39 +989,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
                 <div>
                   <button
-                    onClick={() => setMenuLinkDokumen(!menuLinkDokumen)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/link-dokumen"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Link2 className="w-4 h-4" aria-hidden="true" />
-                      <span>Link Dokumen</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuLinkDokumen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {menuLinkDokumen && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/legal/link-dokumen"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/link-dokumen") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Link Dokumen Pembiayaan</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
                     onClick={() => setMenuInputProgress(!menuInputProgress)}
                     className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/progress"]) ? "active" : ""}`}
                   >
                     <div className="flex items-center gap-2">
                       <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
-                      <span>Input Progress</span>
+                      <span>Input Progres PHK3</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuInputProgress ? "rotate-180" : ""}`}
@@ -1026,6 +1029,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <ProtectedLink
+                  href="/dashboard/legal/upload-ideb"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/upload-ideb") ? "active" : ""}`}
+                >
+                  <Upload className="w-4 h-4" aria-hidden="true" />
+                  <span>Upload Ideb</span>
+                </ProtectedLink>
+
+                <ProtectedLink
                   href="/dashboard/legal/cek-bprs"
                   className={`sidebar-submenu-item ${isActive("/dashboard/legal/cek-bprs") ? "active" : ""}`}
                 >
@@ -1039,10 +1050,49 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           {sidebarOpen && (
             <div className="mx-0 my-2 border-t border-white/10">
               <span className="block px-4 py-2 text-xs text-white/50 uppercase tracking-wider font-semibold">
-                Administrasi
+                Administrator
               </span>
             </div>
           )}
+
+          <div>
+            <button
+              onClick={() => setMenuAdministrator(!menuAdministrator)}
+              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/admin", "/users"]) ? "active" : ""}`}
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5" />
+                {sidebarOpen && (
+                  <span className="font-bold">Upload Data Pembiayaan</span>
+                )}
+              </div>
+              {sidebarOpen && (
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${menuAdministrator ? "rotate-180" : ""}`}
+                />
+              )}
+            </button>
+
+            {sidebarOpen && menuAdministrator && (
+              <div className="mt-1 space-y-0.5">
+                <ProtectedLink
+                  href="/dashboard/admin/upload-slik"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/admin/upload-slik") ? "active" : ""}`}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Data SLIK</span>
+                </ProtectedLink>
+
+                <ProtectedLink
+                  href="/dashboard/admin/upload-restrik"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/admin/upload-restrik") ? "active" : ""}`}
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Data Restrik</span>
+                </ProtectedLink>
+              </div>
+            )}
+          </div>
 
           <ProtectedLink
             href="/dashboard/users"

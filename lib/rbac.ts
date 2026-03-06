@@ -136,6 +136,18 @@ export function getDashboardRouteDecision(
     return canManageUsers(role) ? allow() : deny("USER_MANAGEMENT_ONLY_MASTER");
   }
 
+  if (pathname.startsWith("/dashboard/admin")) {
+    if (pathname.startsWith("/dashboard/admin/upload-restrik")) {
+      return canAccessRestrictData(role) ? allow() : deny("RESTRICT_DATA_ONLY");
+    }
+    if (pathname.startsWith("/dashboard/admin/upload-slik")) {
+      return canAccessNonRestrictData(role)
+        ? allow()
+        : deny("NON_RESTRICT_DATA_ONLY");
+    }
+    return canManageUsers(role) ? allow() : deny("USER_MANAGEMENT_ONLY_MASTER");
+  }
+
   if (pathname.startsWith("/dashboard/legal")) {
     return canAccessLegalModule(role) ? allow() : deny("LEGAL_ONLY");
   }
