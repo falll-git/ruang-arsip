@@ -103,6 +103,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [menuSurat, setMenuSurat] = useState(false);
   const [menuSuratMasuk, setMenuSuratMasuk] = useState(false);
   const [menuSuratKeluar, setMenuSuratKeluar] = useState(false);
+  const [menuSuratCetak, setMenuSuratCetak] = useState(false);
   const [menuMemorandum, setMenuMemorandum] = useState(false);
 
   const [menuDebitur, setMenuDebitur] = useState(false);
@@ -729,13 +730,66 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   )}
                 </div>
 
-                <ProtectedLink
-                  href="/dashboard/surat/cetak-dokumen"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/surat/cetak-dokumen") ? "active" : ""}`}
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Cetak Dokumen</span>
-                </ProtectedLink>
+                <div>
+                  <button
+                    onClick={() => setMenuSuratCetak(!menuSuratCetak)}
+                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/cetak"]) ? "active" : ""}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Printer className="w-4 h-4" />
+                      <span>Cetak Dokumen</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-3 h-3 transition-transform duration-300 ${menuSuratCetak ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {menuSuratCetak && (
+                    <div className="ml-1 mt-0.5 space-y-0.5">
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/akad"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Dokumen Akad</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/haftsheet"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Haftsheet</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-peringatan"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat Peringatan</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/formulir-asuransi"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Formulir Asuransi</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/keterangan-lunas"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat Keterangan Lunas</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-samsat"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Cetak Surat SAMSAT</span>
+                      </ProtectedLink>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -760,6 +814,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {sidebarOpen && menuDebitur && (
               <div className="mt-1 space-y-0.5">
+                <ProtectedLink
+                  href="/dashboard/informasi-debitur"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/informasi-debitur") ? "active" : ""}`}
+                >
+                  <List className="w-4 h-4" />
+                  <span>List Debitur</span>
+                </ProtectedLink>
+
                 <div>
                   <button
                     onClick={() => setMenuMarketing(!menuMarketing)}
@@ -822,6 +884,109 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {sidebarOpen && menuLegal && (
               <div className="mt-1 space-y-0.5">
+                <div>
+                  <button
+                    onClick={() => setMenuCetakDokumen(!menuCetakDokumen)}
+                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/cetak"]) ? "active" : ""}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Printer className="w-4 h-4" aria-hidden="true" />
+                      <span>Cetak Dokumen</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-3 h-3 transition-transform duration-300 ${menuCetakDokumen ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {menuCetakDokumen && (
+                    <div className="ml-1 mt-0.5 space-y-0.5">
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/akad"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Dokumen Akad</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/haftsheet"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Haftsheet</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-peringatan"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Surat Peringatan</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/formulir-asuransi"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Formulir Asuransi</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/keterangan-lunas"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Surat Keterangan Lunas</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/cetak/surat-samsat"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Surat Samsat</span>
+                      </ProtectedLink>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <button
+                    onClick={() => setMenuDataTitipan(!menuDataTitipan)}
+                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/titipan"]) ? "active" : ""}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4" aria-hidden="true" />
+                      <span>Data Titipan</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-3 h-3 transition-transform duration-300 ${menuDataTitipan ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {menuDataTitipan && (
+                    <div className="ml-1 mt-0.5 space-y-0.5">
+                      <ProtectedLink
+                        href="/dashboard/legal/titipan/asuransi"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/asuransi") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Dana Titipan Asuransi</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/titipan/notaris"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/notaris") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Dana Titipan Notaris</span>
+                      </ProtectedLink>
+                      <ProtectedLink
+                        href="/dashboard/legal/titipan/angsuran"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/angsuran") ? "active" : ""}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <span>Dana Titipan Angsuran</span>
+                      </ProtectedLink>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <button
                     onClick={() => setMenuInputProgress(!menuInputProgress)}
