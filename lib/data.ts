@@ -11,6 +11,23 @@ import type {
   UploadRestrik,
   UploadSLIK,
 } from "@/lib/types/modul3";
+import type {
+  CetakDokumenLegalType,
+  CetakDokumenRecord,
+  IdebRecord,
+  IdebRingkasan,
+  JenisTitipan,
+  KolektibilitasItem,
+  LaporanNpfSummary,
+  PihakKetiga,
+  PihakKetigaKategori,
+  PihakKetigaSummary,
+  ProgresPHK3Record,
+  RiwayatBPRSLain,
+  RiwayatNPF,
+  TitipanNasabah,
+  TitipanSummary,
+} from "@/lib/types";
 import { USER_ROLES, type DataAccessLevel, type UserRole } from "@/lib/rbac";
 
 export interface User {
@@ -343,6 +360,214 @@ export const dummyDisposisi: Disposisi[] = [
     tglAksi: "22-01-2026",
     alasanAksi: "Approved by Owner",
   },
+  {
+    id: 3,
+    dokumenId: 1,
+    detail: "Akta Pendirian Awal Tahun 1992",
+    pemohon: "FAISAL",
+    pemilik: "ANNAS",
+    tglPengajuan: "23-01-2026",
+    status: "Approved",
+    alasanPengajuan: "Verifikasi legalitas perusahaan",
+    tglExpired: "27-01-2026",
+    tglAksi: "23-01-2026",
+    alasanAksi: "Disetujui untuk kebutuhan verifikasi dokumen induk",
+  },
+  {
+    id: 4,
+    dokumenId: 4,
+    detail: "Dokumen Taksasi An. Fulan",
+    pemohon: "BURHAN",
+    pemilik: "ANNAS",
+    tglPengajuan: "24-01-2026",
+    status: "Rejected",
+    alasanPengajuan: "Pengecekan ulang nilai agunan",
+    tglExpired: null,
+    tglAksi: "24-01-2026",
+    alasanAksi: "Ditolak karena harus melalui approval supervisor",
+  },
+  {
+    id: 5,
+    dokumenId: 5,
+    detail: "Voucher Juni 2025 Kantor Pusat",
+    pemohon: "ANGGITA",
+    pemilik: "BURHAN",
+    tglPengajuan: "25-01-2026",
+    status: "Approved",
+    alasanPengajuan: "Audit transaksi teller pusat",
+    tglExpired: "28-01-2026",
+    tglAksi: "25-01-2026",
+    alasanAksi: "Disetujui untuk keperluan audit internal",
+  },
+  {
+    id: 6,
+    dokumenId: 6,
+    detail: "Voucher Juni 2025 Kantor Kas KST",
+    pemohon: "ANNAS",
+    pemilik: "BURHAN",
+    tglPengajuan: "26-01-2026",
+    status: "Rejected",
+    alasanPengajuan: "Konfirmasi transaksi kas cabang",
+    tglExpired: null,
+    tglAksi: "26-01-2026",
+    alasanAksi: "Ditolak karena dokumen sedang dipakai tim audit cabang",
+  },
+  {
+    id: 7,
+    dokumenId: 7,
+    detail: "NPWP dan NIB",
+    pemohon: "FAISAL",
+    pemilik: "ANNAS",
+    tglPengajuan: "27-01-2026",
+    status: "Approved",
+    alasanPengajuan: "Review kelengkapan dokumen perusahaan",
+    tglExpired: "31-01-2026",
+    tglAksi: "27-01-2026",
+    alasanAksi: "Disetujui untuk review lanjutan",
+  },
+  {
+    id: 8,
+    dokumenId: 3,
+    detail: "SK Pengangkatan An. Burhan",
+    pemohon: "BURHAN",
+    pemilik: "ANGGITA",
+    tglPengajuan: "28-01-2026",
+    status: "Approved",
+    alasanPengajuan: "Pelengkap administrasi kepegawaian",
+    tglExpired: "01-02-2026",
+    tglAksi: "28-01-2026",
+    alasanAksi: "Disetujui sesuai kebutuhan administrasi",
+  },
+  {
+    id: 9,
+    dokumenId: 2,
+    detail: "Dokumen Akad An. Fulan",
+    pemohon: "ANGGITA",
+    pemilik: "ANNAS",
+    tglPengajuan: "29-01-2026",
+    status: "Rejected",
+    alasanPengajuan: "Pemeriksaan isi akad pembiayaan",
+    tglExpired: null,
+    tglAksi: "29-01-2026",
+    alasanAksi: "Ditolak karena dokumen sedang dalam proses review legal",
+  },
+  {
+    id: 10,
+    dokumenId: 4,
+    detail: "Dokumen Taksasi An. Fulan",
+    pemohon: "FAISAL",
+    pemilik: "ANNAS",
+    tglPengajuan: "30-01-2026",
+    status: "Approved",
+    alasanPengajuan: "Komparasi nilai appraisal",
+    tglExpired: "03-02-2026",
+    tglAksi: "30-01-2026",
+    alasanAksi: "Disetujui untuk pengecekan appraisal",
+  },
+  {
+    id: 11,
+    dokumenId: 1,
+    detail: "Akta Pendirian Awal Tahun 1992",
+    pemohon: "ANNAS",
+    pemilik: "FAISAL",
+    tglPengajuan: "31-01-2026",
+    status: "Rejected",
+    alasanPengajuan: "Pencocokan data legal perusahaan",
+    tglExpired: null,
+    tglAksi: "31-01-2026",
+    alasanAksi: "Ditolak karena salinan digital sudah tersedia",
+  },
+  {
+    id: 12,
+    dokumenId: 5,
+    detail: "Voucher Juni 2025 Kantor Pusat",
+    pemohon: "FAISAL",
+    pemilik: "BURHAN",
+    tglPengajuan: "01-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Rekonsiliasi transaksi kas",
+    tglExpired: "05-02-2026",
+    tglAksi: "01-02-2026",
+    alasanAksi: "Disetujui untuk kebutuhan rekonsiliasi",
+  },
+  {
+    id: 13,
+    dokumenId: 7,
+    detail: "NPWP dan NIB",
+    pemohon: "ANGGITA",
+    pemilik: "ANNAS",
+    tglPengajuan: "02-02-2026",
+    status: "Rejected",
+    alasanPengajuan: "Validasi identitas badan usaha",
+    tglExpired: null,
+    tglAksi: "02-02-2026",
+    alasanAksi: "Ditolak karena lampiran sudah tersedia di folder bersama",
+  },
+  {
+    id: 14,
+    dokumenId: 6,
+    detail: "Voucher Juni 2025 Kantor Kas KST",
+    pemohon: "BURHAN",
+    pemilik: "FAISAL",
+    tglPengajuan: "03-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Konfirmasi selisih transaksi kas",
+    tglExpired: "06-02-2026",
+    tglAksi: "03-02-2026",
+    alasanAksi: "Disetujui untuk pengecekan selisih transaksi",
+  },
+  {
+    id: 15,
+    dokumenId: 3,
+    detail: "SK Pengangkatan An. Burhan",
+    pemohon: "ANNAS",
+    pemilik: "ANGGITA",
+    tglPengajuan: "04-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Pembaruan data personalia",
+    tglExpired: "08-02-2026",
+    tglAksi: "04-02-2026",
+    alasanAksi: "Disetujui untuk pembaruan data internal",
+  },
+  {
+    id: 16,
+    dokumenId: 2,
+    detail: "Dokumen Akad An. Fulan",
+    pemohon: "FAISAL",
+    pemilik: "ANNAS",
+    tglPengajuan: "05-02-2026",
+    status: "Rejected",
+    alasanPengajuan: "Penyesuaian berkas pembiayaan",
+    tglExpired: null,
+    tglAksi: "05-02-2026",
+    alasanAksi: "Ditolak karena dokumen sedang diproses untuk cetak ulang",
+  },
+  {
+    id: 17,
+    dokumenId: 4,
+    detail: "Dokumen Taksasi An. Fulan",
+    pemohon: "ANGGITA",
+    pemilik: "ANNAS",
+    tglPengajuan: "06-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Pelengkap komite pembiayaan",
+    tglExpired: "09-02-2026",
+    tglAksi: "06-02-2026",
+    alasanAksi: "Disetujui untuk rapat komite",
+  },
+  {
+    id: 18,
+    dokumenId: 1,
+    detail: "Akta Pendirian Awal Tahun 1992",
+    pemohon: "BURHAN",
+    pemilik: "FAISAL",
+    tglPengajuan: "07-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Pemeriksaan arsip legal lama",
+    tglExpired: "10-02-2026",
+    tglAksi: "07-02-2026",
+    alasanAksi: "Disetujui untuk kebutuhan arsip legal",
+  },
 ];
 
 export const dummyPeminjaman: Peminjaman[] = [
@@ -397,6 +622,7 @@ export interface SuratMasuk {
   disposisiKepada: string[];
   statusDisposisi: "Pending" | "Dalam Proses" | "Selesai";
   fileName: string;
+  fileUrl?: string;
 }
 
 export interface SuratKeluar {
@@ -410,6 +636,7 @@ export interface SuratKeluar {
   sifat: "Biasa" | "Rahasia";
   disposisiKepada: string[];
   fileName: string;
+  fileUrl?: string;
 }
 
 export interface Memorandum {
@@ -423,6 +650,7 @@ export interface Memorandum {
   penerimaTipe: "divisi" | "perorangan";
   penerima: string[];
   fileName: string;
+  fileUrl?: string;
 }
 
 export const dummyDivisiList: string[] = [
@@ -665,7 +893,8 @@ const dummyDokumenDebitur: DokumenDebitur[] = [
     namaDokumen: "KTP Nasabah",
     jenisDokumen: "KTP",
     tanggalUpload: "2024-01-16",
-    filePath: "/documents/contoh-dok.pdf",
+    filePath: "/contoh-dok/ktp-nasabah.pdf",
+    fileType: "pdf",
   },
   {
     id: "DOC002",
@@ -673,7 +902,8 @@ const dummyDokumenDebitur: DokumenDebitur[] = [
     namaDokumen: "Akad Pembiayaan",
     jenisDokumen: "Akad",
     tanggalUpload: "2024-01-15",
-    filePath: "/documents/contoh-dok.pdf",
+    filePath: "/contoh-dok/akad-pembiayaan.pdf",
+    fileType: "pdf",
   },
   {
     id: "DOC003",
@@ -681,7 +911,74 @@ const dummyDokumenDebitur: DokumenDebitur[] = [
     namaDokumen: "Dokumen Jaminan (BPKB)",
     jenisDokumen: "Jaminan",
     tanggalUpload: "2023-03-12",
-    filePath: "/documents/contoh-dok.pdf",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC004",
+    debiturId: "DBT001",
+    namaDokumen: "KTP Nasabah",
+    jenisDokumen: "KTP",
+    kategori: "AWAL",
+    keterangan: "KTP elektronik nasabah terbaru.",
+    tanggalUpload: "2026-01-08",
+    filePath: "/contoh-dok/ktp-nasabah.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC005",
+    debiturId: "DBT001",
+    namaDokumen: "NPWP",
+    jenisDokumen: "NPWP",
+    kategori: "AWAL",
+    keterangan: "NPWP pribadi Ahmad Suryanto.",
+    tanggalUpload: "2026-01-08",
+    filePath: "/contoh-dok/npwp.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC006",
+    debiturId: "DBT001",
+    namaDokumen: "Akad Pembiayaan",
+    jenisDokumen: "Akad",
+    kategori: "AWAL",
+    keterangan: "Akad pembiayaan murabahah pembaruan 2026.",
+    tanggalUpload: "2026-01-09",
+    filePath: "/contoh-dok/akad-pembiayaan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC007",
+    debiturId: "DBT001",
+    namaDokumen: "Sertifikat Jaminan",
+    jenisDokumen: "Jaminan",
+    kategori: "AWAL",
+    keterangan: "Sertifikat rumah tinggal yang dijaminkan.",
+    tanggalUpload: "2026-01-09",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC008",
+    debiturId: "DBT001",
+    namaDokumen: "Kartu Keluarga",
+    jenisDokumen: "KK",
+    kategori: "AWAL",
+    keterangan: "Kartu keluarga nasabah aktif.",
+    tanggalUpload: "2026-01-10",
+    filePath: "/contoh-dok/kartu-keluarga.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "DOC009",
+    debiturId: "DBT001",
+    namaDokumen: "Surat Pernyataan Restrukturisasi",
+    jenisDokumen: "Lainnya",
+    kategori: "LAINNYA",
+    keterangan: "Surat pernyataan restrukturisasi yang ditandatangani nasabah.",
+    tanggalUpload: "2026-01-27",
+    filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fileType: "pdf",
   },
 ];
 
@@ -694,8 +991,8 @@ export const dummyActionPlan: ActionPlan[] = [
     targetTanggal: "2024-12-20",
     status: "Proses",
     createdBy: "Marketing",
-    lampiranFilePath: "/documents/contoh-dok.pdf",
-    lampiranFileName: "action_plan_hendra.pdf",
+    lampiranFilePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileName: "surat-pernyataan-restrukturisasi.pdf",
     lampiranFileType: "pdf",
     lampiranFileSize: 324000,
   },
@@ -708,6 +1005,44 @@ export const dummyActionPlan: ActionPlan[] = [
     status: "Selesai",
     createdBy: "Marketing",
   },
+  {
+    id: "AP003",
+    debiturId: "DBT001",
+    tanggal: "2026-01-10",
+    rencana: "Kunjungan nasabah ke rumah - konfirmasi tunggakan 3 bulan",
+    targetTanggal: "2026-01-11",
+    status: "Selesai",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-01",
+    lampiranFilePath: "/contoh-dok/ktp-nasabah.pdf",
+    lampiranFileName: "ktp-nasabah.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 26461,
+  },
+  {
+    id: "AP004",
+    debiturId: "DBT001",
+    tanggal: "2026-01-25",
+    rencana: "Negosiasi restrukturisasi pembiayaan",
+    targetTanggal: "2026-01-27",
+    status: "Proses",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-02",
+    lampiranFilePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileName: "surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 26461,
+  },
+  {
+    id: "AP005",
+    debiturId: "DBT001",
+    tanggal: "2026-02-10",
+    rencana: "Follow up hasil negosiasi",
+    targetTanggal: "2026-02-15",
+    status: "Belum",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-03",
+  },
 ];
 
 export const dummyHasilKunjungan: HasilKunjungan[] = [
@@ -719,10 +1054,38 @@ export const dummyHasilKunjungan: HasilKunjungan[] = [
     hasilKunjungan:
       "Nasabah kooperatif, usaha masih berjalan namun cashflow menurun.",
     kesimpulan: "Perlu restrukturisasi / penjadwalan ulang pembayaran.",
-    fotoKunjungan: "/documents/contoh-dok.pdf",
-    fotoKunjunganNama: "foto_kunjungan.pdf",
+    fotoKunjungan: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fotoKunjunganNama: "surat-pernyataan-restrukturisasi.pdf",
     fotoKunjunganTipe: "pdf",
     createdBy: "Marketing",
+  },
+  {
+    id: "HKJ002",
+    debiturId: "DBT001",
+    tanggalKunjungan: "2026-01-11",
+    alamat: "Jl. Soekarno Hatta No. 15, Bandung",
+    hasilKunjungan: "Nasabah kooperatif, berjanji bayar tanggal 20 Jan",
+    kesimpulan: "Komunikasi positif, perlu monitoring realisasi pembayaran.",
+    status: "Positif",
+    fotoKunjungan: "/contoh-dok/ktp-nasabah.pdf",
+    fotoKunjunganNama: "ktp-nasabah.pdf",
+    fotoKunjunganTipe: "pdf",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-01",
+  },
+  {
+    id: "HKJ003",
+    debiturId: "DBT001",
+    tanggalKunjungan: "2026-01-27",
+    alamat: "Jl. Soekarno Hatta No. 15, Bandung",
+    hasilKunjungan: "Nasabah minta perpanjangan waktu 1 bulan",
+    kesimpulan: "Negosiasi dilanjutkan dengan evaluasi restrukturisasi.",
+    status: "Netral",
+    fotoKunjungan: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fotoKunjunganNama: "surat-pernyataan-restrukturisasi.pdf",
+    fotoKunjunganTipe: "pdf",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-02",
   },
 ];
 
@@ -735,8 +1098,8 @@ export const dummyLangkahPenanganan: LangkahPenanganan[] = [
     hasilPenanganan: "SP-1 dipersiapkan",
     status: "Proses",
     createdBy: "Marketing",
-    lampiranFilePath: "/documents/contoh-dok.pdf",
-    lampiranFileName: "langkah_penanganan_sp1.pdf",
+    lampiranFilePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileName: "surat-pernyataan-restrukturisasi.pdf",
     lampiranFileType: "pdf",
     lampiranFileSize: 301000,
   },
@@ -748,6 +1111,34 @@ export const dummyLangkahPenanganan: LangkahPenanganan[] = [
     hasilPenanganan: "Nasabah berjanji membayar minggu ini",
     status: "Pending",
     createdBy: "Marketing",
+  },
+  {
+    id: "LP003",
+    debiturId: "DBT001",
+    tanggal: "2026-01-20",
+    langkah: "Pembayaran sebagian diterima Rp 5.000.000",
+    hasilPenanganan: "Pembayaran parsial diterima dan dicatat ke rekening pembiayaan.",
+    status: "Selesai",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-01",
+    lampiranFilePath: "/contoh-dok/akad-pembiayaan.pdf",
+    lampiranFileName: "akad-pembiayaan.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 26461,
+  },
+  {
+    id: "LP004",
+    debiturId: "DBT001",
+    tanggal: "2026-02-05",
+    langkah: "Surat peringatan pertama diterbitkan",
+    hasilPenanganan: "SP1 diterbitkan sambil menunggu hasil restrukturisasi.",
+    status: "Selesai",
+    createdBy: "Rudi Hartono",
+    timelineGroupId: "DBT001-TL-02",
+    lampiranFilePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileName: "surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileType: "pdf",
+    lampiranFileSize: 26461,
   },
 ];
 
@@ -858,6 +1249,7 @@ export function formatCurrency(amount: number): string {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
@@ -1091,86 +1483,6 @@ export const dummyNasabahLegal: NasabahLegal[] = [
   },
 ];
 
-export interface BPRSLain {
-  id: number;
-  nik: string;
-  nama: string;
-  namaBPRS: string;
-  lokasi: string;
-  produk: string;
-  plafond: number;
-  status: "Aktif" | "Lunas" | "Bermasalah";
-  kolektibilitas: number;
-  lastUpdate: string;
-  keterangan?: string;
-}
-
-export interface HistoryCekBPRS {
-  id: number;
-  tanggal: string;
-  keyword: string;
-  hasilDitemukan: number;
-  user: string;
-}
-
-export const dummyBPRSLain: BPRSLain[] = [
-  {
-    id: 1,
-    nik: "3201234567890001",
-    nama: "Ahmad Suryanto",
-    namaBPRS: "BPRS Sejahtera",
-    lokasi: "Bandung",
-    produk: "Pembiayaan Kendaraan",
-    plafond: 120000000,
-    status: "Aktif",
-    kolektibilitas: 2,
-    lastUpdate: "2026-02-01",
-    keterangan: "Terdapat tunggakan 1x angsuran",
-  },
-  {
-    id: 2,
-    nik: "3201234567890099",
-    nama: "Rina Kartika",
-    namaBPRS: "BPRS Amanah",
-    lokasi: "Jakarta",
-    produk: "Pembiayaan Multiguna",
-    plafond: 80000000,
-    status: "Bermasalah",
-    kolektibilitas: 4,
-    lastUpdate: "2026-01-27",
-    keterangan: "Dalam proses penagihan",
-  },
-  {
-    id: 3,
-    nik: "3201234567890011",
-    nama: "Doni Pratama",
-    namaBPRS: "BPRS Mitra",
-    lokasi: "Bekasi",
-    produk: "Pembiayaan Modal Kerja",
-    plafond: 150000000,
-    status: "Lunas",
-    kolektibilitas: 1,
-    lastUpdate: "2025-12-30",
-  },
-];
-
-export const dummyHistoryCekBPRS: HistoryCekBPRS[] = [
-  {
-    id: 1,
-    tanggal: "2026-01-25",
-    keyword: "3201234567890001",
-    hasilDitemukan: 1,
-    user: "Faisal",
-  },
-  {
-    id: 2,
-    tanggal: "2026-02-01",
-    keyword: "Rina",
-    hasilDitemukan: 1,
-    user: "Faisal",
-  },
-];
-
 export interface LinkedDocument {
   id: number;
   noKontrak: string;
@@ -1346,8 +1658,8 @@ export const dummyKlaimAsuransi: KlaimAsuransi[] = [
     status: "Verifikasi",
     userInput: "Faisal",
     catatan: "Menunggu kelengkapan dokumen",
-    lampiranFilePath: "/documents/contoh-dok.pdf",
-    lampiranFileName: "tracking_claim_ahmad.pdf",
+    lampiranFilePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    lampiranFileName: "surat-pernyataan-restrukturisasi.pdf",
     lampiranFileType: "pdf",
     lampiranFileSize: 315000,
   },
@@ -1791,3 +2103,841 @@ export function getSaldoDanaTitipanByNoKontrak(noKontrak: string): number {
     .filter((item) => item.status !== "Dikembalikan")
     .reduce((total, item) => total + item.saldoAkhir, 0);
 }
+
+const IDEB_MONTH_NAMES = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+] as const;
+
+const pihakKetigaSeed = {
+  NOTARIS: [
+    {
+      id: "PTK-NTR-001",
+      nama: "Notaris Sinta Permata, S.H.",
+      kodeDokumen: "NTR-001",
+      jenisDokumen: "Akta",
+      namaDokumen: "Akta Pembiayaan Musyarakah",
+      detailDokumen: "Akta pembiayaan Musyarakah No. 12 untuk nasabah prioritas",
+      tanggalInput: "2026-01-21",
+      userInput: "Faisal",
+      fileUrl: "/contoh-dok/akad-pembiayaan.pdf",
+      fileType: "pdf",
+      prosesBerjalan: 12,
+      laporanSelesai: 28,
+      lewatExpired: 1,
+    },
+    {
+      id: "PTK-NTR-002",
+      nama: "Notaris Arif Rahman, S.H., M.Kn.",
+      kodeDokumen: "NTR-002",
+      jenisDokumen: "Jaminan",
+      namaDokumen: "Sertifikat Hak Tanggungan",
+      detailDokumen: "Pengikatan jaminan pembiayaan ruko nasabah komersial",
+      tanggalInput: "2026-01-24",
+      userInput: "Annas",
+      fileUrl: "/contoh-dok/sertifikat-jaminan.pdf",
+      fileType: "pdf",
+      prosesBerjalan: 8,
+      laporanSelesai: 19,
+      lewatExpired: 0,
+    },
+  ],
+  ASURANSI: [
+    {
+      id: "PTK-ASR-001",
+      nama: "Askrindo Syariah",
+      kodeDokumen: "ASR-001",
+      jenisDokumen: "Polis",
+      namaDokumen: "Polis Penjaminan Pembiayaan",
+      detailDokumen: "Polis penjaminan batch Januari 2026 untuk nasabah UMKM",
+      tanggalInput: "2026-01-22",
+      userInput: "Anggita",
+      fileUrl: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+      fileType: "pdf",
+      prosesBerjalan: 15,
+      laporanSelesai: 36,
+      lewatExpired: 2,
+    },
+    {
+      id: "PTK-ASR-002",
+      nama: "Jamkrindo Syariah",
+      kodeDokumen: "ASR-002",
+      jenisDokumen: "Klaim",
+      namaDokumen: "Dokumen Klaim Asuransi",
+      detailDokumen: "Pengajuan klaim pembiayaan atas agunan kendaraan bermotor",
+      tanggalInput: "2026-01-26",
+      userInput: "Burhan",
+      prosesBerjalan: 9,
+      laporanSelesai: 24,
+      lewatExpired: 1,
+    },
+  ],
+  KJPP: [
+    {
+      id: "PTK-KJPP-001",
+      nama: "KJPP Nusantara Appraisal",
+      kodeDokumen: "KJP-001",
+      jenisDokumen: "Appraisal",
+      namaDokumen: "Laporan Penilaian Agunan Ruko",
+      detailDokumen: "Penilaian agunan ruko pusat perdagangan Kota Bandung",
+      tanggalInput: "2026-01-23",
+      userInput: "Annas",
+      fileUrl: "/contoh-dok/npwp.pdf",
+      fileType: "pdf",
+      prosesBerjalan: 6,
+      laporanSelesai: 14,
+      lewatExpired: 0,
+    },
+    {
+      id: "PTK-KJPP-002",
+      nama: "KJPP Mitra Properti",
+      kodeDokumen: "KJP-002",
+      jenisDokumen: "Review",
+      namaDokumen: "Review Nilai Agunan Tanah",
+      detailDokumen: "Review nilai pasar agunan tanah kavling pembiayaan produktif",
+      tanggalInput: "2026-01-27",
+      userInput: "Faisal",
+      prosesBerjalan: 4,
+      laporanSelesai: 11,
+      lewatExpired: 1,
+    },
+  ],
+} satisfies Record<
+  PihakKetigaKategori,
+  Array<{
+    id: string;
+    nama: string;
+    kodeDokumen: string;
+    jenisDokumen: string;
+    namaDokumen: string;
+    detailDokumen: string;
+    tanggalInput: string;
+    userInput: string;
+    fileUrl?: string;
+    fileType?: "pdf" | "image";
+    prosesBerjalan: number;
+    laporanSelesai: number;
+    lewatExpired: number;
+  }>
+>;
+
+export const pihakKetigaKategoriOrder: PihakKetigaKategori[] = [
+  "NOTARIS",
+  "ASURANSI",
+  "KJPP",
+];
+
+export const pihakKetigaKategoriSlugs: Record<PihakKetigaKategori, string> = {
+  NOTARIS: "notaris",
+  ASURANSI: "asuransi",
+  KJPP: "kjpp",
+};
+
+export const pihakKetigaData: PihakKetiga[] = pihakKetigaKategoriOrder.flatMap(
+  (kategori) =>
+    pihakKetigaSeed[kategori].map((item) => ({
+      ...item,
+      kategori,
+    })),
+);
+
+export const pihakKetigaSummary: PihakKetigaSummary[] =
+  pihakKetigaKategoriOrder.map((kategori) => {
+    const items = pihakKetigaData.filter((item) => item.kategori === kategori);
+
+    return {
+      kategori,
+      jumlahPihakKetiga: items.length,
+      prosesBerjalan: items.reduce(
+        (total, item) => total + item.prosesBerjalan,
+        0,
+      ),
+      laporanSelesai: items.reduce(
+        (total, item) => total + item.laporanSelesai,
+        0,
+      ),
+      lewatExpired: items.reduce((total, item) => total + item.lewatExpired, 0),
+    };
+  });
+
+export function getPihakKetigaKategoriBySlug(
+  slug: string,
+): PihakKetigaKategori | null {
+  return (
+    pihakKetigaKategoriOrder.find(
+      (kategori) => pihakKetigaKategoriSlugs[kategori] === slug,
+    ) ?? null
+  );
+}
+
+export function getPihakKetigaByKategori(
+  kategori: PihakKetigaKategori,
+): PihakKetiga[] {
+  return pihakKetigaData.filter((item) => item.kategori === kategori);
+}
+
+export const npfKolektibilitasColors: Record<number, string> = {
+  1: "#22c55e",
+  2: "#eab308",
+  3: "#f97316",
+  4: "#ef4444",
+  5: "#991b1b",
+};
+
+export const kolektibilitasData: KolektibilitasItem[] = [
+  {
+    kol: 1,
+    label: "Kol 1 / Lancar",
+    jumlahNasabah: 132,
+    outstandingPokok: 28600000000,
+  },
+  {
+    kol: 2,
+    label: "Kol 2 / Dalam Perhatian",
+    jumlahNasabah: 21,
+    outstandingPokok: 3650000000,
+  },
+  {
+    kol: 3,
+    label: "Kol 3 / Kurang Lancar",
+    jumlahNasabah: 11,
+    outstandingPokok: 2140000000,
+  },
+  {
+    kol: 4,
+    label: "Kol 4 / Diragukan",
+    jumlahNasabah: 5,
+    outstandingPokok: 1190000000,
+  },
+  {
+    kol: 5,
+    label: "Kol 5 / Macet",
+    jumlahNasabah: 3,
+    outstandingPokok: 820000000,
+  },
+];
+
+export const riwayatNPFData: RiwayatNPF[] = [
+  {
+    tahun: 2025,
+    bulan: 7,
+    namaBulan: "Juli",
+    jumlahNasabah: 161,
+    outstandingPokok: 34610000000,
+    rasioNPF: 8.9,
+  },
+  {
+    tahun: 2025,
+    bulan: 8,
+    namaBulan: "Agustus",
+    jumlahNasabah: 163,
+    outstandingPokok: 34940000000,
+    rasioNPF: 8.7,
+  },
+  {
+    tahun: 2025,
+    bulan: 9,
+    namaBulan: "September",
+    jumlahNasabah: 165,
+    outstandingPokok: 35220000000,
+    rasioNPF: 8.3,
+  },
+  {
+    tahun: 2025,
+    bulan: 10,
+    namaBulan: "Oktober",
+    jumlahNasabah: 167,
+    outstandingPokok: 35650000000,
+    rasioNPF: 8.1,
+  },
+  {
+    tahun: 2025,
+    bulan: 11,
+    namaBulan: "November",
+    jumlahNasabah: 168,
+    outstandingPokok: 36030000000,
+    rasioNPF: 7.8,
+  },
+  {
+    tahun: 2025,
+    bulan: 12,
+    namaBulan: "Desember",
+    jumlahNasabah: 169,
+    outstandingPokok: 36380000000,
+    rasioNPF: 7.6,
+  },
+  {
+    tahun: 2026,
+    bulan: 1,
+    namaBulan: "Januari",
+    jumlahNasabah: 170,
+    outstandingPokok: 36640000000,
+    rasioNPF: 7.3,
+  },
+  {
+    tahun: 2026,
+    bulan: 2,
+    namaBulan: "Februari",
+    jumlahNasabah: 171,
+    outstandingPokok: 36920000000,
+    rasioNPF: 7.0,
+  },
+  {
+    tahun: 2026,
+    bulan: 3,
+    namaBulan: "Maret",
+    jumlahNasabah: 172,
+    outstandingPokok: 36400000000,
+    rasioNPF: 11.4,
+  },
+];
+
+const totalNasabahKolektibilitas = kolektibilitasData.reduce(
+  (total, item) => total + item.jumlahNasabah,
+  0,
+);
+const totalOutstandingKolektibilitas = kolektibilitasData.reduce(
+  (total, item) => total + item.outstandingPokok,
+  0,
+);
+const nasabahBermasalah = kolektibilitasData
+  .filter((item) => item.kol >= 3)
+  .reduce((total, item) => total + item.jumlahNasabah, 0);
+const outstandingBermasalah = kolektibilitasData
+  .filter((item) => item.kol >= 3)
+  .reduce((total, item) => total + item.outstandingPokok, 0);
+const latestRiwayatNPF = [...riwayatNPFData].sort((left, right) => {
+  if (left.tahun !== right.tahun) {
+    return right.tahun - left.tahun;
+  }
+
+  return right.bulan - left.bulan;
+})[0] ?? null;
+
+export const laporanNpfSummary: LaporanNpfSummary = {
+  totalNasabah: totalNasabahKolektibilitas,
+  totalOutstandingPokok: totalOutstandingKolektibilitas,
+  totalNasabahBermasalah: nasabahBermasalah,
+  totalOutstandingBermasalah: outstandingBermasalah,
+  rasioNpf:
+    totalOutstandingKolektibilitas === 0
+      ? 0
+      : Number(
+          (
+            (outstandingBermasalah / totalOutstandingKolektibilitas) *
+            100
+          ).toFixed(1),
+        ),
+  latestRasioNpf: latestRiwayatNPF?.rasioNPF ?? 0,
+  latestRiwayat: latestRiwayatNPF,
+};
+
+export const titipanNasabahData: TitipanNasabah[] = [
+  {
+    id: "TTP-NTR-001",
+    nama: "Ahmad Suryanto",
+    jenisTitipan: "NOTARIS",
+    totalTitipan: 50000000,
+    saldoTerbayar: 30000000,
+    sisaSaldo: 20000000,
+  },
+  {
+    id: "TTP-NTR-002",
+    nama: "Siti Rahayu",
+    jenisTitipan: "NOTARIS",
+    totalTitipan: 35000000,
+    saldoTerbayar: 35000000,
+    sisaSaldo: 0,
+  },
+  {
+    id: "TTP-ASR-001",
+    nama: "Hendra Wijaya",
+    jenisTitipan: "ASURANSI",
+    totalTitipan: 12500000,
+    saldoTerbayar: 7000000,
+    sisaSaldo: 5500000,
+  },
+  {
+    id: "TTP-ASR-002",
+    nama: "Dewi Kartika",
+    jenisTitipan: "ASURANSI",
+    totalTitipan: 9800000,
+    saldoTerbayar: 9800000,
+    sisaSaldo: 0,
+  },
+  {
+    id: "TTP-ANG-001",
+    nama: "Budi Santoso",
+    jenisTitipan: "ANGSURAN",
+    totalTitipan: 4500000,
+    saldoTerbayar: 1500000,
+    sisaSaldo: 3000000,
+  },
+  {
+    id: "TTP-ANG-002",
+    nama: "Rina Kartika",
+    jenisTitipan: "ANGSURAN",
+    totalTitipan: 6200000,
+    saldoTerbayar: 6200000,
+    sisaSaldo: 0,
+  },
+];
+
+const titipanSummaryOrder: JenisTitipan[] = ["NOTARIS", "ASURANSI", "ANGSURAN"];
+
+export const titipanSummary: TitipanSummary[] = titipanSummaryOrder.map(
+  (jenisTitipan) => {
+    const items = titipanNasabahData.filter(
+      (item) => item.jenisTitipan === jenisTitipan,
+    );
+    const totalTitipan = items.reduce(
+      (total, item) => total + item.totalTitipan,
+      0,
+    );
+    const saldoTerbayar = items.reduce(
+      (total, item) => total + item.saldoTerbayar,
+      0,
+    );
+    const sisaSaldo = items.reduce((total, item) => total + item.sisaSaldo, 0);
+
+    return {
+      jenisTitipan,
+      totalTitipan,
+      saldoTerbayar,
+      sisaSaldo,
+      jumlahNasabah: items.length,
+      lunas: sisaSaldo === 0,
+    };
+  },
+);
+
+function deriveIdebRiwayatBprsLain(debiturId: string): RiwayatBPRSLain[] {
+  const shortMonthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Agu",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+  ] as const;
+
+  return dummyPengecekanBPRS
+    .filter((item) => item.debiturId === debiturId && item.status !== "Tidak Ada")
+    .map((item) => ({
+      namaBPRS: item.namaBPRS,
+      kolektibilitas: Number(item.kolektibilitas),
+      osPokok: item.outstanding,
+      periode: (() => {
+        const [year, month] = item.tanggalCek.split("-");
+        const monthIndex = Number(month);
+
+        if (!year || !Number.isFinite(monthIndex) || monthIndex < 1 || monthIndex > 12) {
+          return item.tanggalCek;
+        }
+
+        return `${shortMonthNames[monthIndex - 1]} ${year}`;
+      })(),
+    }));
+}
+
+const idebRingkasanTemplates: Partial<Record<string, IdebRingkasan>> = {
+  DBT001: {
+    kolektibilitasBerjalan: 1,
+    osPokok: 120000000,
+    statusPembiayaan: "Lancar",
+    riwayatBPRSLain: [
+      {
+        namaBPRS: "BPRS Amanah Sejahtera",
+        kolektibilitas: 1,
+        osPokok: 45000000,
+        periode: "Des 2024",
+      },
+      {
+        namaBPRS: "BPRS Barokah Mandiri",
+        kolektibilitas: 1,
+        osPokok: 0,
+        periode: "Nov 2024",
+      },
+    ],
+    kesimpulan: "AMAN",
+  },
+  DBT002: {
+    kolektibilitasBerjalan: 2,
+    osPokok: 0,
+    statusPembiayaan: "Dalam perhatian khusus",
+    riwayatBPRSLain: [
+      {
+        namaBPRS: "BPRS Dana Syariah",
+        kolektibilitas: 2,
+        osPokok: 18000000,
+        periode: "Agu 2025",
+      },
+    ],
+    kesimpulan: "PERHATIAN",
+  },
+  DBT004: {
+    kolektibilitasBerjalan: 3,
+    osPokok: 50000000,
+    statusPembiayaan: "Perlu penanganan",
+    riwayatBPRSLain: [
+      {
+        namaBPRS: "BPRS Mitra Syariah",
+        kolektibilitas: 3,
+        osPokok: 25000000,
+        periode: "Feb 2025",
+      },
+      {
+        namaBPRS: "BPRS Sejahtera",
+        kolektibilitas: 2,
+        osPokok: 12000000,
+        periode: "Jan 2025",
+      },
+    ],
+    kesimpulan: "BERMASALAH",
+  },
+  DBT005: {
+    kolektibilitasBerjalan: 1,
+    osPokok: 400000000,
+    statusPembiayaan: "Lancar",
+    riwayatBPRSLain: [],
+    kesimpulan: "AMAN",
+  },
+};
+
+function cloneIdebRingkasan(ringkasan: IdebRingkasan): IdebRingkasan {
+  return {
+    ...ringkasan,
+    riwayatBPRSLain: ringkasan.riwayatBPRSLain.map((item) => ({ ...item })),
+  };
+}
+
+export function buildIdebRingkasanByDebiturId(debiturId: string): IdebRingkasan {
+  const debitur = getDebiturById(debiturId);
+  const template = idebRingkasanTemplates[debiturId];
+
+  if (template) {
+    return cloneIdebRingkasan(template);
+  }
+
+  const kolektibilitasBerjalan = Number(debitur?.kolektibilitas ?? 1);
+  const riwayatBPRSLain = deriveIdebRiwayatBprsLain(debiturId);
+
+  let kesimpulan: IdebRingkasan["kesimpulan"] = "AMAN";
+  if (
+    kolektibilitasBerjalan >= 3 ||
+    riwayatBPRSLain.some((item) => item.kolektibilitas >= 3)
+  ) {
+    kesimpulan = "BERMASALAH";
+  } else if (
+    kolektibilitasBerjalan === 2 ||
+    riwayatBPRSLain.some((item) => item.kolektibilitas === 2)
+  ) {
+    kesimpulan = "PERHATIAN";
+  }
+
+  return {
+    kolektibilitasBerjalan,
+    osPokok: debitur?.osPokok ?? 0,
+    statusPembiayaan:
+      kolektibilitasBerjalan >= 3
+        ? "Perlu penanganan"
+        : kolektibilitasBerjalan === 2
+          ? "Dalam perhatian"
+          : "Lancar",
+    riwayatBPRSLain,
+    kesimpulan,
+  };
+}
+
+export const dummyIdebRecords: IdebRecord[] = [
+  {
+    id: "IDEB-2025-01-DBT001",
+    debiturId: "DBT001",
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    bulan: 1,
+    namaBulan: IDEB_MONTH_NAMES[0],
+    tahun: 2025,
+    tanggalUpload: "2025-01-20",
+    status: "CHECKED",
+    ringkasan: buildIdebRingkasanByDebiturId("DBT001"),
+  },
+  {
+    id: "IDEB-2025-03-DBT004",
+    debiturId: "DBT004",
+    namaNasabah: "Budi Santoso",
+    noKontrak: "PB/2022/000456",
+    bulan: 3,
+    namaBulan: IDEB_MONTH_NAMES[2],
+    tahun: 2025,
+    tanggalUpload: "2025-03-14",
+    status: "CHECKED",
+    ringkasan: buildIdebRingkasanByDebiturId("DBT004"),
+  },
+  {
+    id: "IDEB-2025-06-DBT005",
+    debiturId: "DBT005",
+    namaNasabah: "Dewi Kartika",
+    noKontrak: "PB/2021/000789",
+    bulan: 6,
+    namaBulan: IDEB_MONTH_NAMES[5],
+    tahun: 2025,
+    tanggalUpload: "2025-06-11",
+    status: "PENDING",
+  },
+  {
+    id: "IDEB-2025-09-DBT002",
+    debiturId: "DBT002",
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    bulan: 9,
+    namaBulan: IDEB_MONTH_NAMES[8],
+    tahun: 2025,
+    tanggalUpload: "2025-09-18",
+    status: "CHECKED",
+    ringkasan: buildIdebRingkasanByDebiturId("DBT002"),
+  },
+];
+
+const legalNasabahIdByNoKontrak = new Map(
+  dummyNasabahLegal.map((item) => [item.noKontrak, String(item.id)]),
+);
+
+function getLegalNasabahId(noKontrak: string) {
+  return legalNasabahIdByNoKontrak.get(noKontrak) ?? noKontrak;
+}
+
+function mapCetakJenisDokumen(jenis: string): CetakDokumenLegalType {
+  switch (jenis.toUpperCase()) {
+    case "AKAD":
+      return "AKAD";
+    case "HAFTSHEET":
+      return "HAFTSHEET";
+    case "SURAT PERINGATAN":
+      return "SURAT_PERINGATAN";
+    case "FORMULIR ASURANSI":
+      return "FORMULIR_ASURANSI";
+    case "SURAT KETERANGAN LUNAS":
+      return "SKL";
+    case "SAMSAT":
+    case "SURAT SAMSAT":
+      return "SAMSAT";
+    default:
+      return "AKAD";
+  }
+}
+
+export const cetakDokumenLegalData: CetakDokumenRecord[] = [
+  ...dummyHistoryCetak.map((item) => ({
+    id: `CETAK-${item.id}`,
+    nasabahId: getLegalNasabahId(item.noKontrak),
+    namaNasabah: item.namaNasabah,
+    noKontrak: item.noKontrak,
+    jenisDokumen: mapCetakJenisDokumen(item.jenis),
+    tanggalCetak: item.tanggal,
+    dicetakOleh: item.user,
+    keterangan: item.detail,
+  })),
+  {
+    id: "CETAK-LEGAL-002",
+    nasabahId: getLegalNasabahId("PB/2024/001234"),
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    jenisDokumen: "AKAD",
+    tanggalCetak: "2026-03-03",
+    dicetakOleh: "Faisal",
+    keterangan: "Akad Murabahah pembiayaan kendaraan dicetak ulang.",
+  },
+  {
+    id: "CETAK-LEGAL-003",
+    nasabahId: getLegalNasabahId("PB/2024/001235"),
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    jenisDokumen: "SURAT_PERINGATAN",
+    tanggalCetak: "2026-03-05",
+    dicetakOleh: "Annas",
+    keterangan: "Surat peringatan tahap pertama untuk monitoring kolektibilitas.",
+  },
+  {
+    id: "CETAK-LEGAL-004",
+    nasabahId: getLegalNasabahId("PB/2023/000987"),
+    namaNasabah: "Hendra Wijaya",
+    noKontrak: "PB/2023/000987",
+    jenisDokumen: "FORMULIR_ASURANSI",
+    tanggalCetak: "2026-02-19",
+    dicetakOleh: "Faisal",
+    keterangan: "Formulir klaim asuransi kendaraan.",
+  },
+  {
+    id: "CETAK-LEGAL-005",
+    nasabahId: getLegalNasabahId("PB/2024/001234"),
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    jenisDokumen: "SAMSAT",
+    tanggalCetak: "2026-03-01",
+    dicetakOleh: "Anggita",
+    keterangan: "Surat pengantar pengurusan samsat tahunan.",
+  },
+  {
+    id: "CETAK-LEGAL-006",
+    nasabahId: getLegalNasabahId("PB/2024/001235"),
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    jenisDokumen: "SKL",
+    tanggalCetak: "2026-01-22",
+    dicetakOleh: "Burhan",
+    keterangan: "Surat keterangan lunas pembiayaan modal kerja.",
+  },
+  {
+    id: "CETAK-LEGAL-007",
+    nasabahId: getLegalNasabahId("PB/2023/000987"),
+    namaNasabah: "Hendra Wijaya",
+    noKontrak: "PB/2023/000987",
+    jenisDokumen: "AKAD",
+    tanggalCetak: "2025-12-17",
+    dicetakOleh: "Faisal",
+    keterangan: "Draft akad pembiayaan multiguna untuk arsip legal.",
+  },
+  {
+    id: "CETAK-LEGAL-008",
+    nasabahId: getLegalNasabahId("PB/2024/001234"),
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    jenisDokumen: "HAFTSHEET",
+    tanggalCetak: "2026-02-12",
+    dicetakOleh: "Annas",
+    keterangan: "Checklist kelengkapan dokumen akad kendaraan.",
+  },
+  {
+    id: "CETAK-LEGAL-009",
+    nasabahId: getLegalNasabahId("PB/2024/001235"),
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    jenisDokumen: "FORMULIR_ASURANSI",
+    tanggalCetak: "2026-03-06",
+    dicetakOleh: "Anggita",
+    keterangan: "Formulir asuransi kebakaran untuk pembaruan polis.",
+  },
+  {
+    id: "CETAK-LEGAL-010",
+    nasabahId: getLegalNasabahId("PB/2023/000987"),
+    namaNasabah: "Hendra Wijaya",
+    noKontrak: "PB/2023/000987",
+    jenisDokumen: "SURAT_PERINGATAN",
+    tanggalCetak: "2026-03-07",
+    dicetakOleh: "Burhan",
+    keterangan: "Surat peringatan kedua atas keterlambatan angsuran.",
+  },
+  {
+    id: "CETAK-LEGAL-011",
+    nasabahId: getLegalNasabahId("PB/2024/001234"),
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    jenisDokumen: "SKL",
+    tanggalCetak: "2025-11-08",
+    dicetakOleh: "Faisal",
+    keterangan: "Simulasi surat keterangan lunas untuk pelunasan dipercepat.",
+  },
+  {
+    id: "CETAK-LEGAL-012",
+    nasabahId: getLegalNasabahId("PB/2024/001235"),
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    jenisDokumen: "SAMSAT",
+    tanggalCetak: "2026-02-27",
+    dicetakOleh: "Annas",
+    keterangan: "Surat samsat untuk kendaraan operasional usaha.",
+  },
+];
+
+export const progresPHK3Data: ProgresPHK3Record[] = [
+  ...dummyProgressNotaris.map((item) => ({
+    id: `PHK3-NOTARIS-${item.id}`,
+    nasabahId: getLegalNasabahId(item.noKontrak),
+    namaNasabah: item.namaNasabah,
+    noKontrak: item.noKontrak,
+    kategori: "NOTARIS" as const,
+    status:
+      item.status === "Selesai"
+        ? ("SELESAI" as const)
+        : item.status === "Bermasalah"
+          ? ("PENDING" as const)
+          : ("AKTIF" as const),
+    tanggalInput: item.tanggalMasuk,
+    keterangan: item.catatan,
+  })),
+  ...dummyProgressAsuransi.map((item) => ({
+    id: `PHK3-ASURANSI-${item.id}`,
+    nasabahId: getLegalNasabahId(item.noKontrak),
+    namaNasabah: item.namaNasabah,
+    noKontrak: item.noKontrak,
+    kategori: "ASURANSI" as const,
+    status:
+      item.status === "Aktif" || item.status === "Proses"
+        ? ("AKTIF" as const)
+        : item.status === "Expired"
+          ? ("PENDING" as const)
+          : ("SELESAI" as const),
+    tanggalInput: item.periodeAwal,
+    keterangan: item.catatan,
+  })),
+  ...dummyKlaimAsuransi.map((item) => ({
+    id: `PHK3-KLAIM-${item.id}`,
+    nasabahId: getLegalNasabahId(item.noKontrak),
+    namaNasabah: item.namaNasabah,
+    noKontrak: item.noKontrak,
+    kategori: "TRACKING_CLAIM" as const,
+    status:
+      item.status === "Cair" || item.status === "Disetujui"
+        ? ("SELESAI" as const)
+        : ("PENDING" as const),
+    tanggalInput: item.tanggalPengajuan,
+    keterangan: item.catatan,
+  })),
+  {
+    id: "PHK3-NOTARIS-EXTRA-001",
+    nasabahId: getLegalNasabahId("PB/2024/001235"),
+    namaNasabah: "Siti Rahayu",
+    noKontrak: "PB/2024/001235",
+    kategori: "NOTARIS",
+    status: "PENDING",
+    tanggalInput: "2026-03-02",
+    keterangan: "Menunggu draft akta final dari notaris rekanan.",
+  },
+  {
+    id: "PHK3-ASURANSI-EXTRA-001",
+    nasabahId: getLegalNasabahId("PB/2023/000987"),
+    namaNasabah: "Hendra Wijaya",
+    noKontrak: "PB/2023/000987",
+    kategori: "ASURANSI",
+    status: "AKTIF",
+    tanggalInput: "2026-03-04",
+    keterangan: "Perpanjangan polis kendaraan sedang aktif diverifikasi.",
+  },
+  {
+    id: "PHK3-KLAIM-EXTRA-001",
+    nasabahId: getLegalNasabahId("PB/2024/001234"),
+    namaNasabah: "Ahmad Suryanto",
+    noKontrak: "PB/2024/001234",
+    kategori: "TRACKING_CLAIM",
+    status: "SELESAI",
+    tanggalInput: "2026-02-20",
+    keterangan: "Dokumen klaim lengkap dan pembayaran penggantian sudah diterima.",
+  },
+];

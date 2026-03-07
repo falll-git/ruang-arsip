@@ -1,6 +1,7 @@
 "use client";
 
 const STATUS_COLORS: Record<string, string> = {
+  Belum: "#6b7280",
   Pending: "#f59e0b",
   Proses: "#3b82f6",
   Selesai: "#10b981",

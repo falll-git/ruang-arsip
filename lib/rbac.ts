@@ -140,8 +140,12 @@ export function getDashboardRouteDecision(
     return canAccessLegalModule(role) ? allow() : deny("LEGAL_ONLY");
   }
 
-  if (pathname.startsWith("/dashboard/surat")) {
+  if (pathname.startsWith("/dashboard/manajemen-surat")) {
     return canAccessSuratModule(role) ? allow() : deny("UNKNOWN_ROUTE_DENIED");
+  }
+
+  if (pathname.startsWith("/dashboard/laporan")) {
+    return canAccessLegalModule(role) ? allow() : deny("LEGAL_ONLY");
   }
 
   if (pathname.startsWith("/dashboard/informasi-debitur")) {

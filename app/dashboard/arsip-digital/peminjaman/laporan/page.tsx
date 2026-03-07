@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   FileBarChart2,
   FileSpreadsheet,
-  Printer,
   Search,
   Filter,
 } from "lucide-react";
@@ -129,10 +128,6 @@ export default function LaporanPeminjamanPage() {
     });
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
       <FeatureHeader
@@ -140,24 +135,14 @@ export default function LaporanPeminjamanPage() {
         subtitle="Daftar riwayat peminjaman dan pengembalian dokumen fisik."
         icon={<FileBarChart2 />}
         actions={
-          <div className="flex gap-3">
-            <button
-              onClick={handleExport}
-              className="btn btn-export-excel"
-              title="Export Excel"
-            >
-              <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
-              <span>Export Excel</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="btn btn-outline"
-              title="Print"
-            >
-              <Printer className="w-4 h-4" aria-hidden="true" />
-              <span>Print</span>
-            </button>
-          </div>
+          <button
+            onClick={handleExport}
+            className="btn btn-export-excel"
+            title="Export Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
+            <span>Export Excel</span>
+          </button>
         }
       />
 

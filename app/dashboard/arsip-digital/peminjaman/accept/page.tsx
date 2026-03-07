@@ -45,6 +45,14 @@ export default function AcceptPeminjamanPage() {
   const [alasanAksi, setAlasanAksi] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+    setActionType(null);
+    setTanggalPenyerahan("");
+    setAlasanAksi("");
+  };
+
   const handleAction = (
     item: (typeof permohonanList)[0],
     type: "approve" | "reject",
@@ -58,20 +66,19 @@ export default function AcceptPeminjamanPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      setShowModal(false);
       setData(data.filter((d) => d.id !== selectedItem?.id));
 
       const message =
         actionType === "approve"
           ? selectedItem?.tipe === "Peminjaman"
             ? "Peminjaman berhasil disetujui!"
-            : "Pengembalian berhasil dikonfirmasi!"
-          : "Peminjaman ditolak!";
+            : "Pengembalian berhasil disetujui!"
+          : selectedItem?.tipe === "Peminjaman"
+            ? "Peminjaman berhasil ditolak!"
+            : "Pengembalian berhasil ditolak!";
 
       showToast(message, actionType === "reject" ? "warning" : "success");
-
-      setTanggalPenyerahan("");
-      setAlasanAksi("");
+      closeModal();
     }, 1500);
   };
 
@@ -221,15 +228,13 @@ export default function AcceptPeminjamanPage() {
                         >
                           <Check className="w-4 h-4" />
                         </button>
-                        {item.tipe === "Peminjaman" && (
-                          <button
-                            onClick={() => handleAction(item, "reject")}
-                            className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors tooltip tooltip-left"
-                            title="Tolak"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleAction(item, "reject")}
+                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors tooltip tooltip-left"
+                          title="Tolak"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -254,7 +259,7 @@ export default function AcceptPeminjamanPage() {
         <div
           data-dashboard-overlay="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
-          onClick={() => setShowModal(false)}
+          onClick={closeModal}
         >
           <div
             className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up"
@@ -276,11 +281,13 @@ export default function AcceptPeminjamanPage() {
                     ? selectedItem.tipe === "Peminjaman"
                       ? "Setujui Peminjaman"
                       : "Konfirmasi Pengembalian"
-                    : "Tolak Peminjaman"}
+                    : selectedItem.tipe === "Peminjaman"
+                      ? "Tolak Peminjaman"
+                      : "Tolak Pengembalian"}
                 </h2>
               </div>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={closeModal}
                 className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
@@ -359,7 +366,7 @@ export default function AcceptPeminjamanPage() {
 
             <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-end gap-3">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={closeModal}
                 className="btn btn-outline"
               >
                 Batal

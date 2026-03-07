@@ -5,7 +5,6 @@ import {
   Search,
   FileCheck,
   Download,
-  Eye,
   ChevronLeft,
   ChevronRight,
   X,
@@ -15,6 +14,7 @@ import { dummyNasabahLegal, dummyHistoryCetak, NasabahLegal } from "@/lib/data";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import LegalViewButton from "@/components/legal/LegalViewButton";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { downloadFile } from "@/lib/utils/downloadFile";
@@ -314,13 +314,7 @@ export default function CetakHaftsheetPage() {
                   checklistItems.legalitas,
                 )}
               </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handlePreview}
-                  className="btn btn-view-pdf flex-1"
-                >
-                  <Eye className="w-5 h-5" />
-                </button>
+              <div className="mt-6 flex items-center gap-3">
                 <button
                   onClick={handleGenerate}
                   className="btn btn-primary flex-1"
@@ -328,6 +322,7 @@ export default function CetakHaftsheetPage() {
                   <Download className="w-5 h-5" />
                   Generate PDF
                 </button>
+                <LegalViewButton onClick={handlePreview} className="shrink-0" />
               </div>
             </div>
           )}

@@ -110,7 +110,7 @@ export default function PengajuanDisposisiPage() {
           <button
             onClick={() => setShowModal(true)}
             disabled={selectedDocs.length === 0}
-            className="btn btn-primary px-6 py-2.5 shadow-md shadow-primary-600/20 disabled:shadow-none transition-all"
+            className="btn btn-primary px-6 py-2.5 transition-all"
           >
             <Send className="w-4 h-4 mr-2" aria-hidden="true" />
             Ajukan Disposisi{" "}

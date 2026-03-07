@@ -5,7 +5,6 @@ import {
   Search,
   FileText,
   Download,
-  Eye,
   ChevronLeft,
   ChevronRight,
   X,
@@ -20,6 +19,7 @@ import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContex
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import LegalViewButton from "@/components/legal/LegalViewButton";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { downloadFile } from "@/lib/utils/downloadFile";
 import {
@@ -409,13 +409,7 @@ export default function CetakAkadPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handlePreview}
-                className="btn btn-view-pdf flex-1"
-              >
-                <Eye className="w-5 h-5" />
-              </button>
+            <div className="mt-6 flex items-center gap-3">
               <button
                 onClick={handleGenerate}
                 className="btn btn-primary flex-1"
@@ -423,6 +417,7 @@ export default function CetakAkadPage() {
                 <Download className="w-5 h-5" />
                 Generate & Download
               </button>
+              <LegalViewButton onClick={handlePreview} className="shrink-0" />
             </div>
           </div>
         </div>
@@ -444,7 +439,7 @@ export default function CetakAkadPage() {
             </button>
             <button
               onClick={handleExportPDF}
-              className="btn btn-primary btn-sm"
+              className="btn btn-export-pdf btn-sm"
             >
               <Download className="w-4 h-4" />
               Export PDF

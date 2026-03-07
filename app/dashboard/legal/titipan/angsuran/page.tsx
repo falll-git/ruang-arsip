@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import {
   Wallet,
   Download,
-  Eye,
   Plus,
   X,
   ChevronLeft,
@@ -290,7 +289,7 @@ export default function TitipanAngsuranPage() {
         </p>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
+          className="btn btn-upload"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Tambah Titipan
@@ -439,10 +438,10 @@ export default function TitipanAngsuranPage() {
                           setDetailItem(item);
                           setShowDetailModal(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-gray-100"
+                        className="btn btn-outline btn-sm"
                         title="Detail"
                       >
-                        <Eye className="w-4 h-4 text-gray-500" />
+                        Detail
                       </button>
                       {(item.status === "Pending" ||
                         item.status === "Sebagian Diproses") && (
@@ -630,7 +629,7 @@ export default function TitipanAngsuranPage() {
               >
                 Batal
               </button>
-              <button onClick={handleAdd} className="btn btn-primary flex-1">
+              <button onClick={handleAdd} className="btn btn-upload flex-1">
                 Simpan
               </button>
             </div>

@@ -244,7 +244,19 @@ export default function PermintaanDisposisiPage() {
           actionType === "approve" ? "Approve Disposisi" : "Reject Disposisi"
         }
         type={actionType === "approve" ? "success" : "danger"}
-        confirmText={actionType === "approve" ? "Approve" : "Reject"}
+        confirmText={
+          actionType === "approve" ? (
+            <>
+              <Check className="w-4 h-4" />
+              Approve
+            </>
+          ) : (
+            <>
+              <X className="w-4 h-4" />
+              Reject
+            </>
+          )
+        }
         cancelText="Batal"
         isLoading={isLoading}
         isConfirmDisabled={

@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react";
 import {
-  FileText,
   Download,
-  Eye,
   Plus,
+  Scale,
   X,
   ChevronLeft,
   ChevronRight,
@@ -266,7 +265,7 @@ export default function TitipanNotarisPage() {
       <FeatureHeader
         title="Dana Titipan Notaris"
         subtitle="Kelola dana titipan biaya notaris nasabah"
-        icon={<FileText />}
+        icon={<Scale />}
       />
 
       <div className="card p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -275,7 +274,7 @@ export default function TitipanNotarisPage() {
         </p>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
+          className="btn btn-upload"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Tambah Titipan
@@ -336,7 +335,7 @@ export default function TitipanNotarisPage() {
       <div className="card p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
+            <Scale className="w-5 h-5 text-primary" />
             Daftar Titipan Notaris
           </h2>
           <button
@@ -442,10 +441,10 @@ export default function TitipanNotarisPage() {
                           setDetailItem(item);
                           setShowDetailModal(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-gray-100"
+                        className="btn btn-outline btn-sm"
                         title="Detail"
                       >
-                        <Eye className="w-4 h-4 text-gray-500" />
+                        Detail
                       </button>
                       {item.status === "Sudah Dibayar" && !item.noAkta && (
                         <button
@@ -666,7 +665,7 @@ export default function TitipanNotarisPage() {
               >
                 Batal
               </button>
-              <button onClick={handleAdd} className="btn btn-primary flex-1">
+              <button onClick={handleAdd} className="btn btn-upload flex-1">
                 Simpan
               </button>
             </div>
@@ -916,7 +915,7 @@ export default function TitipanNotarisPage() {
                       "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
                   }}
                 >
-                  <FileText className="w-6 h-6 text-white" aria-hidden="true" />
+                  <Scale className="w-6 h-6 text-white" aria-hidden="true" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">

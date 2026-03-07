@@ -256,7 +256,7 @@ export default function ManajemenUserPage() {
           </div>
           <button
             onClick={handleAdd}
-            className="btn btn-primary w-full lg:w-auto"
+            className="btn btn-upload w-full lg:w-auto"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Tambah User</span>
@@ -264,22 +264,38 @@ export default function ManajemenUserPage() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-230">
             <thead>
-              <tr>
-                <th>No</th>
-                <th>Nama</th>
-                <th>Username</th>
-                <th>Divisi</th>
-                <th>Tipe Akun</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Aksi</th>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  No
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Nama
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Username
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Divisi
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Tipe Akun
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Role
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Aksi
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredUsers.map((u, idx) => {
                 const roleBadge =
                   u.role === USER_ROLES.MASTER_USER
@@ -291,35 +307,41 @@ export default function ManajemenUserPage() {
                         : "badge-warning";
 
                 return (
-                  <tr key={u.id}>
-                    <td>{idx + 1}</td>
-                    <td className="font-medium text-gray-900">
+                  <tr key={u.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {idx + 1}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">
                       {u.namaLengkap}
                     </td>
-                    <td>
-                      <span className="font-mono text-sm px-2 py-1 rounded bg-gray-100 text-gray-800">
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-md bg-gray-100 px-2 py-1 font-mono text-sm text-gray-800">
                         {u.username}
                       </span>
                     </td>
-                    <td>{u.divisi}</td>
-                    <td>{u.tipeAkun}</td>
-                    <td>
+                    <td className="px-4 py-3 text-sm text-gray-700">
+                      {u.divisi}
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-600">
+                      {u.tipeAkun}
+                    </td>
+                    <td className="px-4 py-3 text-center">
                       <span className={`badge ${roleBadge}`}>
                         {USER_ROLE_LABEL[u.role]}
                       </span>
                     </td>
-                    <td>
+                    <td className="px-4 py-3 text-center">
                       <span
                         className={`badge ${u.status === "Aktif" ? "badge-success" : "badge-danger"}`}
                       >
                         {u.status}
                       </span>
                     </td>
-                    <td>
-                      <div className="flex items-center gap-2 justify-center">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleEdit(u)}
-                          className="p-2 hover:bg-gray-100 rounded-lg"
+                          className="rounded-lg p-2 transition-colors hover:bg-gray-100"
                           title="Edit"
                         >
                           <Pencil
@@ -329,13 +351,10 @@ export default function ManajemenUserPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(u)}
-                          className="p-2 hover:bg-red-50 rounded-lg"
+                          className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                           title="Hapus"
                         >
-                          <Trash2
-                            className="w-4 h-4 text-red-600"
-                            aria-hidden="true"
-                          />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     </td>
@@ -344,7 +363,10 @@ export default function ManajemenUserPage() {
               })}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-gray-500">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-10 text-center text-sm text-gray-500"
+                  >
                     Tidak ada user yang cocok.
                   </td>
                 </tr>
@@ -578,7 +600,7 @@ export default function ManajemenUserPage() {
                   (!editUser && !formData.password) ||
                   isLoading
                 }
-                className="btn btn-primary"
+                className={editUser ? "btn btn-primary" : "btn btn-upload"}
               >
                 {isLoading ? (
                   <>

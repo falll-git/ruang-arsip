@@ -102,9 +102,19 @@ export default function HistorisPeminjamanPage() {
         title="Historis Peminjaman Dokumen"
         subtitle="Riwayat lengkap peminjaman dokumen yang sudah dikembalikan"
         icon={<History />}
+        actions={
+          <button
+            onClick={handleExport}
+            className="btn btn-export-excel"
+            title="Export Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
+            <span>Export Excel</span>
+          </button>
+        }
       />
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="card p-4 text-center">
           <p className="text-3xl font-bold text-gray-900">{totalPeminjaman}</p>
           <p className="text-sm text-gray-500">Total Riwayat</p>
@@ -155,66 +165,76 @@ export default function HistorisPeminjamanPage() {
               ))}
             </select>
           </div>
-          <button
-            onClick={handleExport}
-            className="btn btn-export-excel"
-            title="Export Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
-            Export Excel
-          </button>
         </div>
       </div>
 
-      <div className="card">
-        <div className="p-4 border-b border-gray-100">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 p-4">
           <p className="text-sm text-gray-600">
             Menampilkan{" "}
             <span className="font-semibold">{filteredData.length}</span> dari{" "}
             {historisPeminjaman.length} riwayat
           </p>
         </div>
-        <div className="table-container">
-          <table>
-            <thead>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
-                <th>No</th>
-                <th>Kode</th>
-                <th>Nama Dokumen</th>
-                <th>Peminjam</th>
-                <th>Tgl Pinjam</th>
-                <th>Tgl Kembali</th>
-                <th>Durasi</th>
-                <th>Approved By</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  No
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Kode
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Nama Dokumen
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Peminjam
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Tgl Pinjam
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Tgl Kembali
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Durasi
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Approved By
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredData.map((item, idx) => (
-                <tr key={item.id}>
-                  <td>{idx + 1}</td>
-                  <td>
-                    <span
-                      className="font-mono text-sm px-2 py-1 rounded"
-                      style={{
-                        background: "rgba(21, 126, 195, 0.1)",
-                        color: "#157ec3",
-                      }}
-                    >
+                <tr key={item.id} className="transition-colors hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-500">{idx + 1}</td>
+                  <td className="px-6 py-4">
+                    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs font-medium text-gray-700">
                       {item.kode}
                     </span>
                   </td>
-                  <td className="font-medium">{item.namaDokumen}</td>
-                  <td>
-                    <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {item.namaDokumen}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                       {item.peminjam}
                     </span>
                   </td>
-                  <td>{item.tglPinjam}</td>
-                  <td>{item.tglKembali}</td>
-                  <td>
-                    <span className="badge badge-info">{item.durasi}</span>
+                  <td className="px-6 py-4 text-sm text-gray-600">{item.tglPinjam}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {item.tglKembali}
                   </td>
-                  <td>{item.approvedBy}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                      {item.durasi}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {item.approvedBy}
+                  </td>
                 </tr>
               ))}
             </tbody>

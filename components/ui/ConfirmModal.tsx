@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 
 type ModalType = "danger" | "warning" | "info" | "success";
@@ -12,8 +12,8 @@ interface ConfirmModalProps {
   title: string;
   message?: string | ReactNode;
   children?: ReactNode;
-  confirmText?: string;
-  cancelText?: string;
+  confirmText?: ReactNode;
+  cancelText?: ReactNode;
   type?: ModalType;
   isLoading?: boolean;
   isConfirmDisabled?: boolean;
@@ -40,14 +40,14 @@ const modalStyles = {
     icon: "text-emerald-500",
     btn: "bg-emerald-500 hover:bg-emerald-600",
   },
-};
+} as const;
 
 const modalIcons = {
-  danger: <AlertTriangle className="w-6 h-6" />,
-  warning: <AlertTriangle className="w-6 h-6" />,
-  info: <Info className="w-6 h-6" />,
-  success: <CheckCircle2 className="w-6 h-6" />,
-};
+  danger: <AlertTriangle className="h-6 w-6" />,
+  warning: <AlertTriangle className="h-6 w-6" />,
+  info: <Info className="h-6 w-6" />,
+  success: <CheckCircle2 className="h-6 w-6" />,
+} as const;
 
 export default function ConfirmModal({
   isOpen,
@@ -79,81 +79,59 @@ export default function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 p-4"
-      style={{
-        background: "rgba(0, 0, 0, 0.5)",
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ background: "rgba(0, 0, 0, 0.5)", zIndex: 9999 }}
       onClick={handleClose}
     >
       <div
-        className={`bg-white rounded-2xl shadow-2xl max-w-2xl w-full transform transition-all duration-300 ${
+        className={`w-full max-w-2xl transform rounded-2xl bg-white shadow-2xl transition-all duration-300 ${
           isClosing ? "scale-95 opacity-0" : "scale-100 opacity-100"
         }`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className={`${style.bg} p-6 rounded-t-2xl`}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "1rem",
-            }}
-          >
-            <div className={style.icon} style={{ flexShrink: 0 }}>
-              {modalIcons[type]}
-            </div>
-            <div style={{ flex: 1 }}>
+        <div className={`${style.bg} rounded-t-2xl p-6`}>
+          <div className="flex items-start gap-4">
+            <div className={`${style.icon} shrink-0`}>{modalIcons[type]}</div>
+            <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900">{title}</h3>
             </div>
           </div>
         </div>
 
         <div className="p-6">
-          {message && (
-            <div className="text-gray-700 mb-4">
+          {message ? (
+            <div className="mb-4 text-gray-700">
               {typeof message === "string" ? <p>{message}</p> : message}
             </div>
-          )}
-          {children && <div>{children}</div>}
+          ) : null}
+          {children ? <div>{children}</div> : null}
         </div>
 
-        <div
-          className="p-6 bg-gray-50 rounded-b-2xl"
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className="flex justify-end gap-3 rounded-b-2xl bg-gray-50 p-6">
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="px-6 py-2.5 rounded-xl font-medium text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="rounded-xl border-2 border-gray-300 bg-white px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading || isConfirmDisabled}
-            className={`${style.btn} px-6 py-2.5 rounded-xl font-medium text-white disabled:opacity-70 disabled:grayscale-[0.5] disabled:cursor-not-allowed transition-all`}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+            className={`${style.btn} flex items-center gap-2 rounded-xl px-6 py-2.5 font-medium text-white transition-all disabled:cursor-not-allowed disabled:grayscale-[0.5] disabled:opacity-70`}
           >
-            {isLoading && (
+            {isLoading ? (
               <div
                 className="button-spinner"
                 style={
                   {
                     ["--spinner-size"]: "16px",
                     ["--spinner-border"]: "2px",
-                  } as React.CSSProperties
+                  } as CSSProperties
                 }
                 aria-hidden="true"
               />
-            )}
+            ) : null}
             {confirmText}
           </button>
         </div>

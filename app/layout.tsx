@@ -1,12 +1,6 @@
 import "./globals.css";
-import { Roboto } from "next/font/google";
-import AppProviders from "@/components/providers/AppProviders";
-
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700", "900"],
-  subsets: ["latin"],
-  display: "swap",
-});
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AppToastProvider } from "@/components/ui/AppToastProvider";
 
 export const metadata = {
   title: "Ruwang Arsip - Sistem Manajemen Arsip Digital",
@@ -20,8 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className={roboto.className}>
-        <AppProviders>{children}</AppProviders>
+      <body>
+        <AuthProvider>
+          <AppToastProvider>{children}</AppToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

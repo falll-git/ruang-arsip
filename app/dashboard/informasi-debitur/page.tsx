@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, type CSSProperties } from "react";
 import {
   ChevronUp,
-  Eye,
   FileDown,
   FileSpreadsheet,
   Search,
@@ -116,7 +115,7 @@ export default function ListDebiturPage() {
     <div className="space-y-6">
       <FeatureHeader
         title="List Debitur"
-        subtitle={`Daftar nasabah pembiayaan (${filteredData.length} data)`}
+        subtitle="Daftar nasabah pembiayaan"
         icon={<Users />}
         actions={
           <div className="flex gap-2">
@@ -145,7 +144,7 @@ export default function ListDebiturPage() {
             <button
               onClick={() => handleExport("pdf")}
               disabled={exportLoading !== null}
-              className="btn btn-danger"
+              className="btn btn-export-pdf"
               title="Export PDF"
             >
               {exportLoading === "pdf" ? (
@@ -324,9 +323,8 @@ export default function ListDebiturPage() {
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="btn btn-outline btn-sm"
                     >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
                       Detail
                     </Link>
                   </td>

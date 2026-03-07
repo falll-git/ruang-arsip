@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 
-type StatusValue = "Pending" | "Proses" | "Selesai";
+type StatusValue = "Belum" | "Pending" | "Proses" | "Selesai";
 
 interface StatusEditModalProps {
   isOpen: boolean;
@@ -58,10 +58,10 @@ function StatusEditModalContent({
         aria-hidden="true"
       />
       <div
-        className="relative bg-white rounded-xl p-6 w-full max-w-sm mx-4 shadow-2xl animate-scale-in"
+        className="relative mx-4 w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-6 py-4">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button
             type="button"
@@ -73,8 +73,8 @@ function StatusEditModalContent({
             <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
+          <div className="space-y-3">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Status
             </label>
@@ -83,6 +83,7 @@ function StatusEditModalContent({
               onChange={(e) => setStatus(e.target.value as StatusValue)}
               className="select w-full"
             >
+              <option value="Belum">Belum</option>
               <option value="Pending">Pending</option>
               <option value="Proses">Proses</option>
               <option value="Selesai">Selesai</option>
@@ -91,17 +92,17 @@ function StatusEditModalContent({
               <StatusBadge status={status} />
             </div>
           </div>
-          <div className="flex gap-3 pt-2">
+          <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="btn btn-outline"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 btn btn-primary px-4 py-2.5 text-sm"
+              className="btn btn-primary"
             >
               Simpan
             </button>

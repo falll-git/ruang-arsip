@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Clock,
-  Eye,
   FileSpreadsheet,
   FileText,
   MapPin,
@@ -26,6 +25,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton";
 import {
   RBAC_DENIED_MESSAGE,
   filterDigitalDocuments,
@@ -472,26 +472,23 @@ export default function ListDokumenPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
-                      Action
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedDoc.fileUrl) return;
-                        openPreview(
-                          selectedDoc.fileUrl,
-                          selectedDoc.namaDokumen,
-                        );
-                      }}
-                      disabled={!selectedDoc.fileUrl}
-                      className="w-full btn btn-view-pdf flex items-center justify-center"
-                      title="Lihat file dokumen"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                  </div>
+                  {selectedDoc.fileUrl ? (
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                        Action
+                      </label>
+                      <DocumentViewButton
+                        onClick={() => {
+                          openPreview(
+                            selectedDoc.fileUrl!,
+                            selectedDoc.namaDokumen,
+                          );
+                        }}
+                        className="w-full justify-center"
+                        title="View dokumen"
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </div>
 

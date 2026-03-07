@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Eye, FileText, UserX } from "lucide-react";
+import { ArrowLeft, FileText, UserX } from "lucide-react";
 import {
   dummyDokumen,
   formatCurrency,
@@ -12,17 +12,19 @@ import {
   getKolektibilitasColor,
   getKolektibilitasLabel,
   getLangkahPenangananByDebiturId,
-  getPengecekanBPRSByDebiturId,
   getHasilKunjunganByDebiturId,
   getSuratPeringatanByDebiturId,
 } from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
-import { formatDateDisplay } from "@/lib/utils/date";
+import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import KolBadge from "@/components/marketing/KolBadge";
+import {
+  formatInformasiDebiturDate,
+  normalizeDebiturDocumentUrl,
+} from "@/lib/utils/informasi-debitur";
 
 type FeatureType =
-  | "bprs"
   | "historis"
   | "actionplan"
   | "kunjungan"
@@ -30,7 +32,6 @@ type FeatureType =
   | "sp";
 
 const featureLabels: Record<FeatureType, string> = {
-  bprs: "Cek BPRS Lain",
   historis: "Historis Kolektibilitas",
   actionplan: "Action Plan",
   kunjungan: "Hasil Kunjungan",
@@ -56,6 +57,7 @@ const DetailRow = ({
 
 const StatusBadge = ({ status }: { status: string }) => {
   const colors: Record<string, string> = {
+    Belum: "#6b7280",
     Pending: "#f59e0b",
     Proses: "#3b82f6",
     Selesai: "#10b981",
@@ -120,9 +122,6 @@ export default function DetailFiturDebiturPage() {
     );
   }
 
-  const bprsItem = getPengecekanBPRSByDebiturId(debiturId).find(
-    (item) => item.id === itemId,
-  );
   const historisItem = getHistorisKolektibilitasByDebiturId(debiturId).find(
     (item) => item.id === itemId,
   );
@@ -144,17 +143,15 @@ export default function DetailFiturDebiturPage() {
   );
 
   const selectedItem =
-    feature === "bprs"
-      ? bprsItem
-      : feature === "historis"
-        ? historisItem
-        : feature === "actionplan"
-          ? actionPlanItem
-          : feature === "kunjungan"
-            ? kunjunganItem
-            : feature === "penanganan"
-              ? penangananItem
-              : spItem;
+    feature === "historis"
+      ? historisItem
+      : feature === "actionplan"
+        ? actionPlanItem
+        : feature === "kunjungan"
+          ? kunjunganItem
+          : feature === "penanganan"
+            ? penangananItem
+            : spItem;
 
   if (!selectedItem) {
     return (
@@ -183,7 +180,7 @@ export default function DetailFiturDebiturPage() {
     <div className="space-y-6">
       <FeatureHeader
         title={`Detail ${featureLabels[feature]}`}
-        subtitle={`${debitur.namaNasabah} • ${debitur.noKontrak}`}
+        subtitle={`${debitur.namaNasabah} - ${debitur.noKontrak}`}
         icon={<FileText />}
         actions={
           <div className="flex items-center gap-3">
@@ -211,29 +208,6 @@ export default function DetailFiturDebiturPage() {
         className="bg-white rounded-xl p-6"
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
       >
-        {feature === "bprs" && bprsItem && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <DetailRow label="Nama BPRS" value={bprsItem.namaBPRS} />
-              <DetailRow label="Status" value={bprsItem.status} />
-              <DetailRow
-                label="Outstanding"
-                value={formatCurrency(bprsItem.outstanding)}
-              />
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <DetailRow
-                label="Kolektibilitas"
-                value={<KolBadge kol={bprsItem.kolektibilitas} />}
-              />
-              <DetailRow
-                label="Tanggal Cek"
-                value={formatDateDisplay(bprsItem.tanggalCek)}
-              />
-            </div>
-          </div>
-        )}
-
         {feature === "historis" && historisItem && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="bg-gray-50 rounded-lg p-4">
@@ -261,12 +235,12 @@ export default function DetailFiturDebiturPage() {
           <div className="bg-gray-50 rounded-lg p-4">
             <DetailRow
               label="Tanggal Input"
-              value={formatDateDisplay(actionPlanItem.tanggal)}
+              value={formatInformasiDebiturDate(actionPlanItem.tanggal)}
             />
             <DetailRow label="Rencana" value={actionPlanItem.rencana} />
             <DetailRow
               label="Target Tanggal"
-              value={formatDateDisplay(actionPlanItem.targetTanggal)}
+              value={formatInformasiDebiturDate(actionPlanItem.targetTanggal)}
             />
             <DetailRow
               label="Status"
@@ -276,8 +250,7 @@ export default function DetailFiturDebiturPage() {
               label="Lampiran"
               value={
                 actionPlanItem.lampiranFilePath ? (
-                  <button
-                    type="button"
+                  <DebiturViewButton
                     onClick={() =>
                       openPreview(
                         normalizeFileUrl(actionPlanItem.lampiranFilePath!),
@@ -286,11 +259,8 @@ export default function DetailFiturDebiturPage() {
                         "pdf",
                       )
                     }
-                    className="btn btn-view-pdf btn-sm inline-flex"
-                    title="Lihat lampiran"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                    title="View lampiran"
+                  />
                 ) : (
                   "-"
                 )
@@ -303,7 +273,7 @@ export default function DetailFiturDebiturPage() {
           <div className="bg-gray-50 rounded-lg p-4">
             <DetailRow
               label="Tanggal Kunjungan"
-              value={formatDateDisplay(kunjunganItem.tanggalKunjungan)}
+              value={formatInformasiDebiturDate(kunjunganItem.tanggalKunjungan)}
             />
             <DetailRow label="Alamat" value={kunjunganItem.alamat || "-"} />
             <DetailRow
@@ -315,8 +285,7 @@ export default function DetailFiturDebiturPage() {
               label="Lampiran"
               value={
                 kunjunganItem.fotoKunjungan ? (
-                  <button
-                    type="button"
+                  <DebiturViewButton
                     onClick={() =>
                       openPreview(
                         normalizeFileUrl(kunjunganItem.fotoKunjungan!),
@@ -330,11 +299,8 @@ export default function DetailFiturDebiturPage() {
                             : "image"),
                       )
                     }
-                    className="btn btn-view-pdf btn-sm inline-flex"
-                    title="Lihat lampiran"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                    title="View lampiran"
+                  />
                 ) : (
                   "-"
                 )
@@ -347,7 +313,7 @@ export default function DetailFiturDebiturPage() {
           <div className="bg-gray-50 rounded-lg p-4">
             <DetailRow
               label="Tanggal Input"
-              value={formatDateDisplay(penangananItem.tanggal)}
+              value={formatInformasiDebiturDate(penangananItem.tanggal)}
             />
             <DetailRow label="Langkah" value={penangananItem.langkah} />
             <DetailRow
@@ -362,8 +328,7 @@ export default function DetailFiturDebiturPage() {
               label="Lampiran"
               value={
                 penangananItem.lampiranFilePath ? (
-                  <button
-                    type="button"
+                  <DebiturViewButton
                     onClick={() =>
                       openPreview(
                         normalizeFileUrl(penangananItem.lampiranFilePath!),
@@ -372,11 +337,8 @@ export default function DetailFiturDebiturPage() {
                         "pdf",
                       )
                     }
-                    className="btn btn-view-pdf btn-sm inline-flex"
-                    title="Lihat lampiran"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
+                    title="View lampiran"
+                  />
                 ) : (
                   "-"
                 )
@@ -390,11 +352,11 @@ export default function DetailFiturDebiturPage() {
             <DetailRow label="Jenis Surat" value={spItem.jenisSurat} />
             <DetailRow
               label="Tanggal Terbit"
-              value={formatDateDisplay(spItem.tanggalTerbit)}
+              value={formatInformasiDebiturDate(spItem.tanggalTerbit)}
             />
             <DetailRow
               label="Tanggal Kirim"
-              value={formatDateDisplay(spItem.tanggalKirim)}
+              value={formatInformasiDebiturDate(spItem.tanggalKirim)}
             />
             <DetailRow
               label="Status Kirim"
@@ -404,8 +366,7 @@ export default function DetailFiturDebiturPage() {
             <DetailRow
               label="Dokumen"
               value={
-                <button
-                  type="button"
+                <DebiturViewButton
                   onClick={() => {
                     const suratDoc = arsipDigitalTerkait.find(
                       (doc) =>
@@ -413,20 +374,18 @@ export default function DetailFiturDebiturPage() {
                         doc.namaDokumen.includes(spItem.jenisSurat),
                     );
                     const fileUrl =
-                      suratDoc?.fileUrl ?? "/documents/contoh-dok.pdf";
+                      suratDoc?.fileUrl ??
+                      "/contoh-dok/surat-pernyataan-restrukturisasi.pdf";
                     openPreview(
-                      fileUrl,
+                      normalizeDebiturDocumentUrl(fileUrl),
                       suratDoc
                         ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
-                        : `Surat Peringatan ${spItem.jenisSurat}`,
+                      : `Surat Peringatan ${spItem.jenisSurat}`,
                       "pdf",
                     );
                   }}
-                  className="btn btn-view-pdf btn-sm inline-flex"
-                  title="Lihat dokumen"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
+                  title="View dokumen"
+                />
               }
             />
           </div>

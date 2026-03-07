@@ -1,14 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, Pencil, Plus, UploadCloud, X } from "lucide-react";
+import { FileText, Pencil, Plus, UploadCloud, X } from "lucide-react";
+import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import { dummyDebiturList, dummyHasilKunjungan } from "@/lib/data";
 import type { HasilKunjungan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { formatDateDisplay } from "@/lib/utils/date";
+import {
+  formatInformasiDebiturDate,
+  getDebiturDocumentPreviewType,
+  normalizeDebiturDocumentUrl,
+} from "@/lib/utils/informasi-debitur";
 import DetailModal, {
   DetailSection,
   DetailRow,
@@ -171,27 +176,14 @@ export default function HasilKunjunganPage() {
     return debitur?.kolektibilitas || "1";
   };
 
-  const normalizeFileUrl = (filePath: string) => {
-    if (/^https?:\/\//i.test(filePath)) return filePath;
-    if (/^(blob:|data:)/i.test(filePath)) return filePath;
-    if (filePath.startsWith("/")) {
-      return filePath.startsWith("/documents/")
-        ? filePath
-        : `/documents${filePath}`;
-    }
-    return filePath.startsWith("documents/")
-      ? `/${filePath}`
-      : `/documents/${filePath}`;
-  };
-
   const handleViewDocument = (item: HasilKunjungan, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!item.fotoKunjungan) return;
     openPreview(
-      normalizeFileUrl(item.fotoKunjungan),
+      normalizeDebiturDocumentUrl(item.fotoKunjungan),
       `Lampiran Kunjungan - ${getDebiturName(item.debiturId)}${item.fotoKunjunganNama ? ` (${item.fotoKunjunganNama})` : ""}`,
       item.fotoKunjunganTipe ??
-        (item.fotoKunjungan.toLowerCase().endsWith(".pdf") ? "pdf" : "image"),
+        getDebiturDocumentPreviewType(item.fotoKunjungan),
     );
   };
 
@@ -215,7 +207,7 @@ export default function HasilKunjunganPage() {
       <FeatureHeader
         title="Hasil Kunjungan"
         subtitle="Dokumentasi hasil kunjungan ke nasabah"
-        icon={<Eye />}
+        icon={<FileText />}
         actions={
           <button
             onClick={() => {
@@ -230,7 +222,7 @@ export default function HasilKunjunganPage() {
               setFile(null);
               setIsModalOpen(true);
             }}
-            className="btn btn-primary"
+            className="btn btn-upload"
             title="Tambah Hasil Kunjungan"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
@@ -277,7 +269,7 @@ export default function HasilKunjunganPage() {
                 className="hover:bg-blue-50/30 transition-colors cursor-pointer"
               >
                 <td className="px-5 py-4 text-sm text-gray-600 text-center">
-                  {formatDateDisplay(item.tanggalKunjungan)}
+                  {formatInformasiDebiturDate(item.tanggalKunjungan)}
                 </td>
                 <td className="px-5 py-4 text-center">
                   <div className="flex flex-col items-center gap-1">
@@ -301,14 +293,10 @@ export default function HasilKunjunganPage() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   {item.fotoKunjungan ? (
-                    <button
-                      type="button"
-                      onClick={(ev) => handleViewDocument(item, ev)}
-                      className="btn btn-view-pdf btn-sm inline-flex"
-                      title="Lihat lampiran"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
+                    <DebiturViewButton
+                      onClick={(event) => handleViewDocument(item, event)}
+                      title="View lampiran"
+                    />
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
                   )}
@@ -509,7 +497,7 @@ export default function HasilKunjunganPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn btn-primary px-4 py-2.5 text-sm"
+                  className={`flex-1 btn ${isEditMode ? "btn-primary" : "btn-upload"} px-4 py-2.5 text-sm`}
                 >
                   {isEditMode ? "Simpan Perubahan" : "Simpan"}
                 </button>
@@ -538,7 +526,7 @@ export default function HasilKunjunganPage() {
               />
               <DetailRow
                 label="Tanggal Kunjungan"
-                value={formatDateDisplay(detailItem.tanggalKunjungan)}
+                value={formatInformasiDebiturDate(detailItem.tanggalKunjungan)}
               />
               <DetailRow label="Alamat" value={detailItem.alamat} />
               <DetailRow
@@ -553,25 +541,19 @@ export default function HasilKunjunganPage() {
             {detailItem.fotoKunjungan && (
               <div className="md:col-span-2">
                 <DetailSection title="File / Lampiran">
-                  <button
-                    type="button"
+                  <DebiturViewButton
                     onClick={() => {
                       openPreview(
-                        normalizeFileUrl(detailItem.fotoKunjungan!),
+                        normalizeDebiturDocumentUrl(detailItem.fotoKunjungan!),
                         `Lampiran - ${getDebiturName(detailItem.debiturId)}${detailItem.fotoKunjunganNama ? ` (${detailItem.fotoKunjunganNama})` : ""}`,
                         detailItem.fotoKunjunganTipe ??
-                          (detailItem
-                            .fotoKunjungan!.toLowerCase()
-                            .endsWith(".pdf")
-                            ? "pdf"
-                            : "image"),
+                          getDebiturDocumentPreviewType(
+                            detailItem.fotoKunjungan!,
+                          ),
                       );
                     }}
-                    className="btn btn-view-pdf btn-sm inline-flex"
-                    title="Lihat dokumen"
-                  >
-                    <Eye className="w-4 h-4" aria-hidden="true" />
-                  </button>
+                    title="View dokumen"
+                  />
                 </DetailSection>
               </div>
             )}

@@ -43,9 +43,21 @@ export interface DokumenDebitur {
   id: string;
   debiturId: string;
   namaDokumen: string;
-  jenisDokumen: "KTP" | "KK" | "Akad" | "Jaminan" | "Lainnya";
+  jenisDokumen:
+    | "KTP"
+    | "KK"
+    | "NPWP"
+    | "Akad"
+    | "Jaminan"
+    | "BPKB"
+    | "Penghasilan"
+    | "Foto"
+    | "Lainnya";
+  kategori?: "AWAL" | "LAINNYA";
+  keterangan?: string;
   tanggalUpload: string;
   filePath: string;
+  fileType?: "pdf" | "jpg" | "png" | "image";
 }
 
 export interface ActionPlan {
@@ -54,8 +66,9 @@ export interface ActionPlan {
   tanggal: string;
   rencana: string;
   targetTanggal: string;
-  status: "Pending" | "Proses" | "Selesai";
+  status: "Belum" | "Pending" | "Proses" | "Selesai";
   createdBy: string;
+  timelineGroupId?: string;
   lampiranFilePath?: string;
   lampiranFileName?: string;
   lampiranFileType?: "pdf";
@@ -69,10 +82,12 @@ export interface HasilKunjungan {
   alamat: string;
   hasilKunjungan: string;
   kesimpulan: string;
+  status?: "Positif" | "Negatif" | "Netral";
   fotoKunjungan?: string;
   fotoKunjunganNama?: string;
   fotoKunjunganTipe?: "pdf" | "image";
   createdBy: string;
+  timelineGroupId?: string;
 }
 
 export interface LangkahPenanganan {
@@ -81,8 +96,9 @@ export interface LangkahPenanganan {
   tanggal: string;
   langkah: string;
   hasilPenanganan: string;
-  status: "Pending" | "Proses" | "Selesai";
+  status: "Belum" | "Pending" | "Proses" | "Selesai";
   createdBy: string;
+  timelineGroupId?: string;
   lampiranFilePath?: string;
   lampiranFileName?: string;
   lampiranFileType?: "pdf";

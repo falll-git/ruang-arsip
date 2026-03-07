@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 
 const MOCK_NOTIFICATIONS = [
@@ -41,17 +41,23 @@ export default function Notification() {
         setIsOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const unreadCount = notifications.filter((notification) => notification.unread)
+    .length;
 
   const handleMarkAsRead = (id: number) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n)),
+      prev.map((notification) =>
+        notification.id === id
+          ? { ...notification, unread: false }
+          : notification,
+      ),
     );
   };
 
@@ -59,20 +65,20 @@ export default function Notification() {
     <div className="relative" ref={dropdownRef}>
       <button
         className="nav-notif-btn"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Notifikasi"
       >
         <Bell className="nav-notif-bell" />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full border border-white">
+        {unreadCount > 0 ? (
+          <span className="absolute right-0 top-0 inline-flex -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full border border-white bg-red-600 px-1.5 py-0.5 text-xs font-bold leading-none text-red-100">
             {unreadCount}
           </span>
-        )}
+        ) : null}
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 ring-1 ring-black ring-opacity-5 origin-top-right transition-all duration-200 ease-out animate-in fade-in zoom-in-95">
-          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+      {isOpen ? (
+        <div className="absolute right-0 z-50 mt-2 w-80 origin-top-right animate-in overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-out fade-in zoom-in-95">
+          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 p-4">
             <h3 className="text-sm font-bold text-gray-900">Notifikasi</h3>
             <span className="text-xs text-gray-500">
               {unreadCount} belum dibaca
@@ -87,35 +93,39 @@ export default function Notification() {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  className={`cursor-pointer border-b border-gray-50 p-4 transition-colors hover:bg-gray-50 ${
                     notification.unread ? "bg-blue-50/50" : ""
                   }`}
                   onClick={() => handleMarkAsRead(notification.id)}
                 >
-                  <div className="flex justify-between items-start mb-1">
+                  <div className="mb-1 flex items-start justify-between">
                     <p
-                      className={`text-sm ${notification.unread ? "font-bold text-blue-900" : "font-medium text-gray-900"}`}
+                      className={`text-sm ${
+                        notification.unread
+                          ? "font-bold text-blue-900"
+                          : "font-medium text-gray-900"
+                      }`}
                     >
                       {notification.title}
                     </p>
-                    <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                    <span className="ml-2 whitespace-nowrap text-[10px] text-gray-400">
                       {notification.time}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 line-clamp-2">
+                  <p className="line-clamp-2 text-xs text-gray-600">
                     {notification.message}
                   </p>
                 </div>
               ))
             )}
           </div>
-          <div className="p-3 bg-gray-50 text-center border-t border-gray-100">
-            <button className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors">
+          <div className="border-t border-gray-100 bg-gray-50 p-3 text-center">
+            <button className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-800">
               Lihat Semua Notifikasi
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import { FileSpreadsheet, UploadCloud } from "lucide-react";
 import { dummyUploadRestrik } from "@/lib/data";
 import type { UploadRestrik } from "@/lib/types/modul3";
+import StatusBadge from "@/components/marketing/StatusBadge";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+import { todayIsoDate } from "@/lib/utils/date";
+import { formatInformasiDebiturDate } from "@/lib/utils/informasi-debitur";
 
 export default function UploadRestrikPage() {
   const [data, setData] = useState<UploadRestrik[]>([...dummyUploadRestrik]);
@@ -75,23 +77,6 @@ export default function UploadRestrikPage() {
         showToast("Hanya file Excel (.xlsx/.xls) yang diperbolehkan", "error");
       }
     }
-  };
-
-  const StatusBadge = ({ status }: { status: string }) => {
-    const colors: Record<string, string> = {
-      Pending: "#f59e0b",
-      Diproses: "#3b82f6",
-      Selesai: "#10b981",
-    };
-    const color = colors[status] || "#6b7280";
-    return (
-      <span
-        className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
-        style={{ backgroundColor: `${color}20`, color }}
-      >
-        {status}
-      </span>
-    );
   };
 
   if (isLoading) {
@@ -224,7 +209,7 @@ export default function UploadRestrikPage() {
                   </div>
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-600">
-                  {formatDateDisplay(item.uploadDate)}
+                  {formatInformasiDebiturDate(item.uploadDate)}
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-600">
                   {item.uploadBy}

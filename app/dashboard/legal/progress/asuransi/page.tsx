@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   Trash2,
   Edit2,
-  Eye,
   UploadCloud,
 } from "lucide-react";
 import {
@@ -28,6 +27,7 @@ import {
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import LegalViewButton from "@/components/legal/LegalViewButton";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
@@ -298,7 +298,7 @@ export default function ProgressAsuransiPage() {
         </p>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
+          className="btn btn-upload"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Tambah Progress
@@ -474,8 +474,7 @@ export default function ProgressAsuransiPage() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     {item.lampiranFilePath ? (
-                      <button
-                        type="button"
+                      <LegalViewButton
                         onClick={() =>
                           openPreview(
                             normalizeFileUrl(item.lampiranFilePath!),
@@ -483,11 +482,9 @@ export default function ProgressAsuransiPage() {
                             "pdf",
                           )
                         }
-                        className="btn btn-view-pdf btn-sm inline-flex"
-                        title="Lihat lampiran"
-                      >
-                        <Eye className="w-3.5 h-3.5" aria-hidden="true" />
-                      </button>
+                        title="View lampiran"
+                        className="inline-flex"
+                      />
                     ) : (
                       <span className="text-xs text-gray-400">-</span>
                     )}
@@ -500,10 +497,10 @@ export default function ProgressAsuransiPage() {
                           setDetailItem(item);
                           setShowDetailModal(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-gray-100"
+                        className="btn btn-outline btn-sm"
                         title="Detail"
                       >
-                        <Eye className="w-4 h-4 text-gray-500" />
+                        Detail
                       </button>
                       <button
                         onClick={() => {
@@ -766,7 +763,7 @@ export default function ProgressAsuransiPage() {
               >
                 Batal
               </button>
-              <button onClick={handleAdd} className="btn btn-primary flex-1">
+              <button onClick={handleAdd} className="btn btn-upload flex-1">
                 Simpan
               </button>
             </div>
@@ -1039,8 +1036,7 @@ export default function ProgressAsuransiPage() {
             </div>
 
             {detailItem.lampiranFilePath && (
-              <button
-                type="button"
+              <LegalViewButton
                 onClick={() =>
                   openPreview(
                     normalizeFileUrl(detailItem.lampiranFilePath!),
@@ -1048,10 +1044,9 @@ export default function ProgressAsuransiPage() {
                     "pdf",
                   )
                 }
-                className="btn btn-view-pdf w-full mb-4"
-              >
-                <Eye className="w-4 h-4" aria-hidden="true" />
-              </button>
+                title="View lampiran"
+                className="mb-4 w-full justify-center"
+              />
             )}
 
             <button

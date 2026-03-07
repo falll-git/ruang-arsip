@@ -4,8 +4,6 @@ import { useState } from "react";
 import {
   Calendar,
   CheckCircle2,
-  Eye,
-  FileText,
   History,
   Send,
   User,
@@ -18,6 +16,8 @@ import {
   dummyTempatPenyimpanan,
 } from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton";
+import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 
 interface HistorisItem {
   id: number;
@@ -28,6 +28,10 @@ interface HistorisItem {
   tglInput: string;
   userInput: string;
   tempatPenyimpanan: string;
+  statusPinjam: string;
+  alasanPengajuan: string;
+  tglExpired: string | null;
+  alasanAksi: string | null;
   pemilik?: string;
   pemohon?: string;
   tglPengajuan: string;
@@ -59,6 +63,11 @@ const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
     tglInput: dokumen?.tglInput ?? "-",
     userInput: dokumen?.userInput ?? "-",
     tempatPenyimpanan: lokasi,
+    statusPinjam: dokumen?.statusPinjam ?? "-",
+    alasanPengajuan: d.alasanPengajuan,
+    tglExpired: d.tglExpired,
+    alasanAksi: d.alasanAksi,
+    pemohon: d.pemohon,
     pemilik: d.pemilik,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
@@ -86,6 +95,11 @@ const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
     tglInput: dokumen?.tglInput ?? "-",
     userInput: dokumen?.userInput ?? "-",
     tempatPenyimpanan: lokasi,
+    statusPinjam: dokumen?.statusPinjam ?? "-",
+    alasanPengajuan: d.alasanPengajuan,
+    tglExpired: d.tglExpired,
+    alasanAksi: d.alasanAksi,
+    pemilik: d.pemilik,
     pemohon: d.pemohon,
     tglPengajuan: d.tglPengajuan,
     status: d.status,
@@ -95,16 +109,12 @@ const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
 });
 
 export default function HistorisDisposisiPage() {
+  const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<"permohonan" | "persetujuan">(
     "permohonan",
   );
   const [selectedItem, setSelectedItem] = useState<HistorisItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [viewingDoc, setViewingDoc] = useState<HistorisItem | null>(null);
-  const viewingDocApproved = Boolean(
-    viewingDoc &&
-    ["approved", "disetujui"].includes(viewingDoc.status.toLowerCase()),
-  );
 
   const data =
     activeTab === "permohonan" ? historisPermohonan : historisPersetujuan;
@@ -217,6 +227,7 @@ export default function HistorisDisposisiPage() {
                 const isApproved =
                   statusNormalized === "approved" ||
                   statusNormalized === "disetujui";
+                const showView = isApproved && Boolean(item.fileUrl);
                 return (
                   <tr
                     key={item.id}
@@ -266,25 +277,25 @@ export default function HistorisDisposisiPage() {
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-6 py-4">
+                      <div className="relative ml-auto h-10 w-44">
                         <button
                           onClick={() => {
                             setSelectedItem(item);
                             setShowDetail(true);
                           }}
-                          className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           Detail
                         </button>
-                        {isApproved && (
-                          <button
-                            onClick={() => setViewingDoc(item)}
-                            className="btn btn-view-pdf btn-sm inline-flex items-center justify-center"
+                        {showView && (
+                          <DocumentViewButton
+                            onClick={() => {
+                              openPreview(item.fileUrl!, item.namaDokumen);
+                            }}
+                            className="absolute right-0 top-1/2 -translate-y-1/2"
                             title="View dokumen"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                          />
                         )}
                       </div>
                     </td>
@@ -303,7 +314,7 @@ export default function HistorisDisposisiPage() {
           onClick={() => setShowDetail(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -323,14 +334,22 @@ export default function HistorisDisposisiPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
                     Kode Dokumen
                   </label>
                   <p className="font-bold text-primary-600 mt-1">
                     {selectedItem.kode}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Jenis Dokumen
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {selectedItem.jenisDokumen}
                   </p>
                 </div>
                 <div>
@@ -343,14 +362,31 @@ export default function HistorisDisposisiPage() {
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    {activeTab === "permohonan" ? "Pemilik Dokumen" : "Pemohon"}
+                    Detail Dokumen
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {selectedItem.detail}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Pemohon
                   </label>
                   <div className="flex items-center gap-2 mt-1">
                     <User className="w-4 h-4 text-gray-400" />
                     <p className="font-medium text-gray-800">
-                      {activeTab === "permohonan"
-                        ? selectedItem.pemilik || "-"
-                        : selectedItem.pemohon || "-"}
+                      {selectedItem.pemohon || "-"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Pemilik Dokumen
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <p className="font-medium text-gray-800">
+                      {selectedItem.pemilik || "-"}
                     </p>
                   </div>
                 </div>
@@ -370,6 +406,16 @@ export default function HistorisDisposisiPage() {
                       {selectedItem.status === "Approved"
                         ? "Disetujui"
                         : "Ditolak"}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Status Dokumen
+                  </label>
+                  <div className="mt-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-gray-200 bg-gray-50 text-gray-700">
+                      {selectedItem.statusPinjam}
                     </span>
                   </div>
                 </div>
@@ -395,6 +441,60 @@ export default function HistorisDisposisiPage() {
                     </p>
                   </div>
                 </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tanggal Input
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <p className="font-medium text-gray-800">
+                      {selectedItem.tglInput}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    User Input
+                  </label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <p className="font-medium text-gray-800">
+                      {selectedItem.userInput}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Tempat Penyimpanan
+                  </label>
+                  <p className="mt-1 inline-flex items-center rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-sm font-semibold text-gray-800">
+                    {selectedItem.tempatPenyimpanan}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Akses Berlaku Sampai
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {selectedItem.tglExpired || "-"}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Alasan Pengajuan
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {selectedItem.alasanPengajuan}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
+                    Catatan Aksi
+                  </label>
+                  <p className="font-medium text-gray-800 mt-1">
+                    {selectedItem.alasanAksi || "-"}
+                  </p>
+                </div>
               </div>
 
               {selectedItem.status === "Approved" && (
@@ -407,7 +507,10 @@ export default function HistorisDisposisiPage() {
                       </p>
                       <p className="text-sm text-green-700 mt-1">
                         Anda memiliki akses penuh ke dokumen ini sampai tanggal{" "}
-                        <span className="font-bold">28-01-2026</span>.
+                        <span className="font-bold">
+                          {selectedItem.tglExpired || "-"}
+                        </span>
+                        .
                       </p>
                     </div>
                   </div>
@@ -418,179 +521,6 @@ export default function HistorisDisposisiPage() {
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
               <button
                 onClick={() => setShowDetail(false)}
-                className="btn btn-outline"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {viewingDoc && (
-        <div
-          data-dashboard-overlay="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
-          onClick={() => setViewingDoc(null)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate-scale-up"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800">
-                  View Dokumen
-                </h2>
-              </div>
-              <button
-                onClick={() => setViewingDoc(null)}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
-              >
-                <X className="w-5 h-5" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Kode Dokumen
-                  </label>
-                  <p className="font-bold text-primary-600 mt-1">
-                    {viewingDoc.kode}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Jenis Dokumen
-                  </label>
-                  <p className="font-medium text-gray-800 mt-1">
-                    {viewingDoc.jenisDokumen}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Nama Dokumen
-                  </label>
-                  <p className="font-medium text-gray-800 mt-1">
-                    {viewingDoc.namaDokumen}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Detail Dokumen
-                  </label>
-                  <p className="text-sm text-gray-800 mt-1 wrap-break-word">
-                    {viewingDoc.detail}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Tanggal Input
-                  </label>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>{viewingDoc.tglInput}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    User Input
-                  </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-800">
-                      {viewingDoc.userInput}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Tempat Penyimpanan
-                  </label>
-                  <p className="mt-1 inline-flex items-center px-2.5 py-1 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-800">
-                    {viewingDoc.tempatPenyimpanan}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Status
-                  </label>
-                  <div className="mt-1">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
-                        ${
-                          viewingDocApproved
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-red-50 text-red-700 border-red-200"
-                        }`}
-                    >
-                      {viewingDocApproved ? "Disetujui" : "Ditolak"}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Tanggal Pengajuan
-                  </label>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>{viewingDoc.tglPengajuan}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
-                    Tanggal Aksi
-                  </label>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-800">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>{viewingDoc.tglAksi}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      Preview / Link PDF
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Tampilkan dokumen atau buka di tab baru jika tersedia.
-                    </p>
-                  </div>
-                  {viewingDoc.fileUrl && (
-                    <a
-                      href={viewingDoc.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm font-semibold text-primary-700 hover:text-primary-800"
-                    >
-                      Buka Tab
-                    </a>
-                  )}
-                </div>
-                {viewingDoc.fileUrl ? (
-                  <iframe
-                    src={viewingDoc.fileUrl}
-                    title={`Preview ${viewingDoc.namaDokumen}`}
-                    className="w-full h-96 bg-white"
-                  />
-                ) : (
-                  <div className="p-6 text-center text-gray-500">
-                    File dokumen tidak tersedia.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button
-                onClick={() => setViewingDoc(null)}
                 className="btn btn-outline"
               >
                 Tutup

@@ -127,7 +127,7 @@ export default function SetupJenisDokumenPage() {
         subtitle="Kelola master jenis dokumen."
         icon={<Shield />}
         actions={
-          <button onClick={openCreate} className="btn btn-primary">
+          <button onClick={openCreate} className="btn btn-upload">
             <Plus className="w-4 h-4" aria-hidden="true" />
             Tambah Jenis
           </button>
@@ -142,88 +142,107 @@ export default function SetupJenisDokumenPage() {
           </div>
         </div>
 
-        <div className="table-container mt-6">
-          <table>
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Kode</th>
-                <th>Nama Jenis Dokumen</th>
-                <th>Keterangan</th>
-                <th className="text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((j, idx) => (
-                <tr key={j.id}>
-                  <td className="text-sm text-gray-600">{idx + 1}</td>
-                  <td>
-                    <span className="font-mono text-sm px-2 py-1 rounded bg-gray-100 border border-gray-200">
-                      {j.kode}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-gray-900">
-                        {j.nama}
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          j.status === "Aktif"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-gray-100 text-gray-600 border border-gray-200"
-                        }`}
-                      >
-                        {j.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="text-sm text-gray-700">
-                      {j.keterangan || "-"}
-                    </div>
-                  </td>
-                  <td className="text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(j.id)}
-                        className="btn btn-outline btn-sm"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(j.id)}
-                        className="btn btn-outline btn-sm"
-                        title={
-                          j.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"
-                        }
-                      >
-                        {j.status === "Aktif" ? (
-                          <ToggleRight className="w-4 h-4" aria-hidden="true" />
-                        ) : (
-                          <ToggleLeft className="w-4 h-4" aria-hidden="true" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
+        <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-gray-500">
-                    Tidak ada data jenis dokumen.
-                  </td>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    No
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Kode
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Nama Jenis Dokumen
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Keterangan
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Aksi
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtered.map((j, idx) => (
+                  <tr
+                    key={j.id}
+                    className="transition-colors hover:bg-gray-50"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs font-medium text-gray-700">
+                        {j.kode}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {j.nama}
+                        </span>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                            j.status === "Aktif"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border-gray-200 bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {j.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {j.keterangan || "-"}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(j.id)}
+                          className="btn btn-outline btn-sm"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => toggleStatus(j.id)}
+                          className="btn btn-outline btn-sm"
+                          title={
+                            j.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"
+                          }
+                        >
+                          {j.status === "Aktif" ? (
+                            <ToggleRight className="w-4 h-4" aria-hidden="true" />
+                          ) : (
+                            <ToggleLeft className="w-4 h-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {filtered.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-sm text-gray-500"
+                    >
+                      Tidak ada data jenis dokumen.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {isModalOpen && (
         <div
+          data-dashboard-overlay="true"
           className="fixed inset-0 p-4"
           style={{
             background: "rgba(0, 0, 0, 0.55)",
@@ -302,7 +321,10 @@ export default function SetupJenisDokumenPage() {
               <button onClick={closeModal} className="btn btn-outline">
                 Batal
               </button>
-              <button onClick={handleSave} className="btn btn-primary">
+              <button
+                onClick={handleSave}
+                className={editingId ? "btn btn-primary" : "btn btn-upload"}
+              >
                 <Save className="w-4 h-4" aria-hidden="true" />
                 Simpan
               </button>

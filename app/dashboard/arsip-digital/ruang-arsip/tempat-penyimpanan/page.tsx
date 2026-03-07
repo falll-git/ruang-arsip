@@ -98,7 +98,7 @@ export default function TempatPenyimpananPage() {
       <FeatureHeader
         title="Ruang Arsip Digital"
         subtitle="Laporan visual penyimpanan dokumen fisik dan digital."
-        icon={<Archive />}
+        icon={<Warehouse />}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -117,7 +117,7 @@ export default function TempatPenyimpananPage() {
                     "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
                 }}
               >
-                <Archive className="w-7 h-7 text-white" aria-hidden="true" />
+                <Warehouse className="w-7 h-7 text-white" aria-hidden="true" />
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
@@ -188,7 +188,7 @@ export default function TempatPenyimpananPage() {
                       "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
                   }}
                 >
-                  <Archive className="w-6 h-6 text-white" aria-hidden="true" />
+                  <Warehouse className="w-6 h-6 text-white" aria-hidden="true" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">

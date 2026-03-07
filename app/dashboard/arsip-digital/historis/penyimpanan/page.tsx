@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileSpreadsheet, History, Search } from "lucide-react";
+import { Archive, FileSpreadsheet, Search } from "lucide-react";
 import { dummyDokumen } from "@/lib/data";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -86,10 +86,20 @@ export default function HistorisPenyimpananPage() {
       <FeatureHeader
         title="Historis Penyimpanan"
         subtitle="Riwayat perubahan lokasi dan data penyimpanan dokumen"
-        icon={<History />}
+        icon={<Archive />}
+        actions={
+          <button
+            onClick={handleExport}
+            className="btn btn-export-excel"
+            title="Export Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
+            <span>Export Excel</span>
+          </button>
+        }
       />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="card p-4 text-center">
           <p className="text-3xl font-bold text-gray-900">
             {historisPenyimpanan.length}
@@ -154,68 +164,80 @@ export default function HistorisPenyimpananPage() {
               <option value="Edit Data">Edit Data</option>
             </select>
           </div>
-          <button
-            onClick={handleExport}
-            className="btn btn-export-excel"
-            title="Export Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
-            Export Excel
-          </button>
         </div>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table>
-            <thead>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
-                <th>No</th>
-                <th>Tanggal</th>
-                <th>Jam</th>
-                <th>Kode</th>
-                <th>Nama Dokumen</th>
-                <th>Aksi</th>
-                <th>Lokasi Lama</th>
-                <th>Lokasi Baru</th>
-                <th>User</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  No
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Tanggal
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Jam
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Kode
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Nama Dokumen
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Aksi
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Lokasi Lama
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Lokasi Baru
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  User
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredData.map((item, idx) => (
-                <tr key={item.id}>
-                  <td>{idx + 1}</td>
-                  <td>{formatDateDisplay(item.tanggal)}</td>
-                  <td>{item.jam}</td>
-                  <td>
-                    <span
-                      className="font-mono text-sm px-2 py-1 rounded"
-                      style={{
-                        background: "rgba(21, 126, 195, 0.1)",
-                        color: "#157ec3",
-                      }}
-                    >
+                <tr key={item.id} className="transition-colors hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-500">{idx + 1}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {formatDateDisplay(item.tanggal)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{item.jam}</td>
+                  <td className="px-6 py-4">
+                    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs font-medium text-gray-700">
                       {item.kode}
                     </span>
                   </td>
-                  <td className="font-medium">{item.namaDokumen}</td>
-                  <td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {item.namaDokumen}
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <span
-                      className={`badge ${
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
                         item.aksi === "Input Baru"
-                          ? "badge-success"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                           : item.aksi === "Pindah Lokasi"
-                            ? "badge-warning"
-                            : "badge-info"
+                            ? "border-amber-200 bg-amber-50 text-amber-700"
+                            : "border-gray-200 bg-gray-100 text-gray-700"
                       }`}
                     >
                       {item.aksi}
                     </span>
                   </td>
-                  <td className="text-gray-500">{item.lokasiLama}</td>
-                  <td className="font-medium">{item.lokasiBaru}</td>
-                  <td>
-                    <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {item.lokasiLama}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {item.lokasiBaru}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                       {item.user}
                     </span>
                   </td>

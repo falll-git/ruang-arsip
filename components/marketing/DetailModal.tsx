@@ -13,7 +13,7 @@ function DetailSection({ title, children }: DetailSectionProps) {
       <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
         {title}
       </h4>
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
         {children}
       </div>
     </div>
@@ -62,7 +62,7 @@ export default function DetailModal({
         aria-hidden="true"
       />
       <div
-        className="relative bg-white rounded-xl w-full max-w-2xl max-h-[90vh] mx-4 shadow-2xl overflow-hidden animate-scale-in flex flex-col"
+        className="relative mx-4 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50 shrink-0">

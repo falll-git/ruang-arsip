@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Send, X, FileText } from "lucide-react";
+import { BookOpen, Search, Send, X, FileText } from "lucide-react";
 import { dummyDokumen } from "@/lib/data";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
@@ -115,14 +115,14 @@ export default function RequestPeminjamanPage() {
       <FeatureHeader
         title="Request Peminjaman"
         subtitle="Ajukan permohonan peminjaman dokumen fisik."
-        icon={<Send />}
+        icon={<BookOpen />}
       />
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 max-w-2xl mb-8">
-        <h3 className="text-blue-800 font-semibold mb-2 text-sm flex items-center gap-2">
+        <h3 className="text-blue-800 font-semibold mb-2 flex items-center gap-2">
           Prosedur Peminjaman:
         </h3>
-        <ol className="list-decimal pl-5 space-y-1 text-xs text-blue-700">
+        <ol className="list-decimal pl-5 space-y-1 text-sm text-blue-700">
           <li>Pilih dokumen (status &quot;Tersedia&quot;).</li>
           <li>
             Klik tombol{" "}
@@ -156,7 +156,7 @@ export default function RequestPeminjamanPage() {
           <button
             onClick={() => setShowModal(true)}
             disabled={selectedDocs.length === 0}
-            className="btn btn-primary px-6 py-2.5 shadow-md shadow-primary-600/20 disabled:shadow-none transition-all"
+            className="btn btn-primary px-6 py-2.5 transition-all"
           >
             <Send className="w-4 h-4 mr-2" aria-hidden="true" />
             Ajukan Pinjam{" "}

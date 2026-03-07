@@ -3,20 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  CalendarDays,
-  CheckCircle2,
-  Eye,
-  FileText,
-  User,
-  UserX,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeft, User, UserX, Wallet } from "lucide-react";
 import {
   dummyDokumen,
   getDebiturById,
-  getPengecekanBPRSByDebiturId,
   getHistorisKolektibilitasByDebiturId,
   getDokumenByDebiturId,
   getActionPlanByDebiturId,
@@ -32,28 +22,31 @@ import {
 } from "@/lib/data";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { formatDateDisplay } from "@/lib/utils/date";
+import DebiturViewButton from "@/components/debitur/DebiturViewButton";
+import DokumenDebiturSection from "@/components/debitur/DokumenDebiturSection";
+import HasilIdebTab from "@/components/debitur/HasilIdebTab";
+import LaporanSummaryTimeline from "@/components/debitur/LaporanSummaryTimeline";
+import {
+  formatInformasiDebiturDate,
+  normalizeDebiturDocumentUrl,
+} from "@/lib/utils/informasi-debitur";
 
 type TabType =
   | "info"
+  | "summary"
   | "bprs"
   | "historis"
   | "dokumen"
-  | "actionplan"
-  | "kunjungan"
-  | "penanganan"
   | "sp"
   | "klaim"
   | "titipan";
 
 const tabs: { id: TabType; label: string }[] = [
   { id: "info", label: "Data Utama" },
-  { id: "bprs", label: "Cek BPRS Lain" },
+  { id: "summary", label: "Laporan Summary" },
+  { id: "bprs", label: "Hasil Ideb" },
   { id: "historis", label: "Historis Kol" },
   { id: "dokumen", label: "Dokumen" },
-  { id: "actionplan", label: "Action Plan" },
-  { id: "kunjungan", label: "Hasil Kunjungan" },
-  { id: "penanganan", label: "Langkah Penanganan" },
   { id: "sp", label: "Surat Peringatan" },
   { id: "klaim", label: "Progress Claim Asuransi" },
   { id: "titipan", label: "Dana Titipan" },
@@ -83,7 +76,6 @@ export default function DetailDebiturPage() {
   );
 
   const debitur = getDebiturById(id as string);
-  const pengecekanBPRS = getPengecekanBPRSByDebiturId(id as string);
   const historisKol = getHistorisKolektibilitasByDebiturId(id as string);
   const dokumen = getDokumenByDebiturId(id as string);
   const actionPlan = getActionPlanByDebiturId(id as string);
@@ -156,21 +148,9 @@ export default function DetailDebiturPage() {
     )
     .sort((a, b) => a.namaDokumen.localeCompare(b.namaDokumen));
 
-  const normalizeFileUrl = (filePath: string) => {
-    if (/^https?:\/\//i.test(filePath)) return filePath;
-    if (/^(blob:|data:)/i.test(filePath)) return filePath;
-    if (filePath.startsWith("/")) {
-      return filePath.startsWith("/documents/")
-        ? filePath
-        : `/documents${filePath}`;
-    }
-    return filePath.startsWith("documents/")
-      ? `/${filePath}`
-      : `/documents/${filePath}`;
-  };
-
   const StatusBadge = ({ status }: { status: string }) => {
     const colors: Record<string, string> = {
+      Belum: "#6b7280",
       Pending: "#f59e0b",
       Proses: "#3b82f6",
       Selesai: "#10b981",
@@ -288,103 +268,29 @@ export default function DetailDebiturPage() {
                   />
                   <InfoRow
                     label="Tanggal Akad"
-                    value={formatDateDisplay(debitur.tanggalAkad)}
+                    value={formatInformasiDebiturDate(debitur.tanggalAkad)}
                   />
                   <InfoRow
                     label="Jatuh Tempo"
-                    value={formatDateDisplay(debitur.tanggalJatuhTempo)}
+                    value={formatInformasiDebiturDate(
+                      debitur.tanggalJatuhTempo,
+                    )}
                   />
                 </div>
               </div>
             </div>
           )}
 
+          {activeTab === "summary" && (
+            <LaporanSummaryTimeline
+              actionPlans={actionPlan}
+              hasilKunjungans={hasilKunjungan}
+              langkahPenanganans={langkahPenanganan}
+            />
+          )}
+
           {activeTab === "bprs" && (
-            <div>
-              {pengecekanBPRS.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <CheckCircle2
-                    className="w-12 h-12 mx-auto mb-3 text-gray-300"
-                    aria-hidden="true"
-                  />
-                  <p className="font-medium">
-                    Tidak ada data pembiayaan di BPRS lain
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto -mx-2 sm:mx-0">
-                  <table className="min-w-180 w-full">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Nama BPRS
-                        </th>
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Status
-                        </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Outstanding
-                        </th>
-                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Kol
-                        </th>
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Tgl Cek
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {pengecekanBPRS.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-gray-50 cursor-pointer transition-colors"
-                          onClick={() =>
-                            router.push(
-                              `/dashboard/informasi-debitur/${debitur.id}/fitur/bprs/${item.id}`,
-                            )
-                          }
-                        >
-                          <td className="py-3 px-4 font-medium">
-                            {item.namaBPRS}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                item.status === "Tidak Ada"
-                                  ? "bg-green-100 text-green-700"
-                                  : item.status === "Ada - Lancar"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {item.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-medium">
-                            {formatCurrency(item.outstanding)}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <span
-                              className="inline-flex w-6 h-6 items-center justify-center rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-900"
-                              style={{
-                                borderColor: getKolektibilitasColor(
-                                  item.kolektibilitas,
-                                ),
-                              }}
-                            >
-                              {item.kolektibilitas}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-500">
-                            {formatDateDisplay(item.tanggalCek)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            <HasilIdebTab debiturId={debitur.id} />
           )}
 
           {activeTab === "historis" && (
@@ -460,318 +366,10 @@ export default function DetailDebiturPage() {
           )}
 
           {activeTab === "dokumen" && (
-            <div>
-              {dokumen.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Tidak ada dokumen tersedia</p>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {dokumen.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-colors cursor-pointer"
-                      onClick={() =>
-                        openPreview(
-                          normalizeFileUrl(doc.filePath),
-                          doc.namaDokumen,
-                          doc.filePath.toLowerCase().endsWith(".pdf")
-                            ? "pdf"
-                            : "image",
-                        )
-                      }
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-red-50">
-                          <FileText
-                            className="w-6 h-6 text-red-500"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
-                            {doc.namaDokumen}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {doc.jenisDokumen}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {formatDateDisplay(doc.tanggalUpload)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-8">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                  <FileText
-                    className="w-4 h-4 text-blue-600"
-                    aria-hidden="true"
-                  />
-                  Dokumen Arsip Digital Terkait Kontrak
-                </h3>
-                {arsipDigitalTerkait.length === 0 ? (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
-                    Belum ada dokumen arsip digital yang terhubung dengan nomor
-                    kontrak ini.
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {arsipDigitalTerkait.map((doc) => (
-                      <Link
-                        key={doc.id}
-                        href={`/dashboard/arsip-digital/ruang-arsip/list-dokumen?kode=${encodeURIComponent(doc.kode)}`}
-                        className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-colors"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-lg bg-blue-50">
-                            <FileText
-                              className="w-6 h-6 text-blue-600"
-                              aria-hidden="true"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {doc.namaDokumen}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {doc.jenisDokumen}
-                            </p>
-                            <p
-                              className="mt-2 inline-flex font-mono text-xs px-2 py-1 rounded"
-                              style={{
-                                background: "rgba(21, 126, 195, 0.10)",
-                                color: "#157ec3",
-                              }}
-                            >
-                              {doc.kode}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "actionplan" && (
-            <div>
-              {actionPlan.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Belum ada action plan</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {actionPlan.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/40 transition-colors cursor-pointer"
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/informasi-debitur/${debitur.id}/fitur/actionplan/${item.id}`,
-                        )
-                      }
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">
-                            {formatDateDisplay(item.tanggal)}
-                          </span>
-                          <StatusBadge status={item.status} />
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          Target: {formatDateDisplay(item.targetTanggal)}
-                        </span>
-                      </div>
-                      <p className="text-gray-900">{item.rencana}</p>
-                      {item.lampiranFilePath && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-center">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openPreview(
-                                normalizeFileUrl(item.lampiranFilePath!),
-                                item.lampiranFileName ||
-                                  "lampiran_action_plan.pdf",
-                                "pdf",
-                              );
-                            }}
-                            className="btn btn-view-pdf inline-flex items-center justify-center"
-                          >
-                            <Eye className="w-4 h-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "kunjungan" && (
-            <div>
-              {hasilKunjungan.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Belum ada hasil kunjungan</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {hasilKunjungan.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-colors cursor-pointer"
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/informasi-debitur/${debitur.id}/fitur/kunjungan/${item.id}`,
-                        )
-                      }
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <CalendarDays
-                          className="w-4 h-4 text-blue-600"
-                          aria-hidden="true"
-                        />
-                        <span className="text-sm font-medium">
-                          {formatDateDisplay(item.tanggalKunjungan)}
-                        </span>
-                      </div>
-                      <p className="text-gray-900 mb-2">
-                        {item.hasilKunjungan}
-                      </p>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs font-medium text-gray-600 mb-1">
-                          Alamat Kunjungan:
-                        </p>
-                        <p className="text-sm text-gray-800">
-                          {item.alamat || "-"}
-                        </p>
-                      </div>
-                      <div className="bg-blue-50 rounded-lg p-3 mt-3">
-                        <p className="text-xs font-medium text-blue-700 mb-1">
-                          Kesimpulan:
-                        </p>
-                        <p className="text-sm text-blue-900">
-                          {item.kesimpulan}
-                        </p>
-                      </div>
-                      {item.fotoKunjungan && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openPreview(
-                                normalizeFileUrl(item.fotoKunjungan!),
-                                `Lampiran Kunjungan - ${debitur.namaNasabah}`,
-                                item.fotoKunjunganTipe ??
-                                  (item
-                                    .fotoKunjungan!.toLowerCase()
-                                    .endsWith(".pdf")
-                                    ? "pdf"
-                                    : "image"),
-                              );
-                            }}
-                            className="btn btn-view-pdf inline-flex items-center justify-center"
-                          >
-                            <Eye className="w-4 h-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "penanganan" && (
-            <div>
-              {langkahPenanganan.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Belum ada langkah penanganan</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto -mx-2 sm:mx-0">
-                  <table className="min-w-180 w-full">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Tanggal
-                        </th>
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Langkah
-                        </th>
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Hasil
-                        </th>
-                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Lampiran
-                        </th>
-                        <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {langkahPenanganan.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-gray-50 cursor-pointer transition-colors"
-                          onClick={() =>
-                            router.push(
-                              `/dashboard/informasi-debitur/${debitur.id}/fitur/penanganan/${item.id}`,
-                            )
-                          }
-                        >
-                          <td className="py-3 px-4 text-sm">
-                            {formatDateDisplay(item.tanggal)}
-                          </td>
-                          <td className="py-3 px-4 font-medium">
-                            {item.langkah}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
-                            {item.hasilPenanganan}
-                          </td>
-                          <td
-                            className="py-3 px-4 text-center"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            {item.lampiranFilePath ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openPreview(
-                                    normalizeFileUrl(item.lampiranFilePath!),
-                                    item.lampiranFileName ||
-                                      "lampiran_langkah_penanganan.pdf",
-                                    "pdf",
-                                  )
-                                }
-                                className="btn btn-view-pdf btn-sm inline-flex"
-                              >
-                                <Eye className="w-4 h-4" aria-hidden="true" />
-                              </button>
-                            ) : (
-                              <span className="text-xs text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <StatusBadge status={item.status} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            <DokumenDebiturSection
+              debiturId={debitur.id}
+              initialDocuments={dokumen}
+            />
           )}
 
           {activeTab === "sp" && (
@@ -822,10 +420,10 @@ export default function DetailDebiturPage() {
                             </span>
                           </td>
                           <td className="py-3 px-4 text-sm">
-                            {formatDateDisplay(item.tanggalTerbit)}
+                            {formatInformasiDebiturDate(item.tanggalTerbit)}
                           </td>
                           <td className="py-3 px-4 text-sm">
-                            {formatDateDisplay(item.tanggalKirim)}
+                            {formatInformasiDebiturDate(item.tanggalKirim)}
                           </td>
                           <td className="py-3 px-4 text-center">
                             <StatusBadge status={item.statusKirim} />
@@ -834,8 +432,7 @@ export default function DetailDebiturPage() {
                             {item.keterangan || "-"}
                           </td>
                           <td className="py-3 px-4 text-center">
-                            <button
-                              type="button"
+                            <DebiturViewButton
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const suratDoc = arsipDigitalTerkait.find(
@@ -845,20 +442,17 @@ export default function DetailDebiturPage() {
                                 );
                                 const fileUrl =
                                   suratDoc?.fileUrl ??
-                                  "/documents/contoh-dok.pdf";
+                                  "/contoh-dok/surat-pernyataan-restrukturisasi.pdf";
                                 openPreview(
-                                  fileUrl,
+                                  normalizeDebiturDocumentUrl(fileUrl),
                                   suratDoc
                                     ? `${suratDoc.namaDokumen} (${suratDoc.kode})`
                                     : `Surat Peringatan ${item.jenisSurat}`,
                                   "pdf",
                                 );
                               }}
-                              className="btn btn-view-pdf btn-sm inline-flex"
-                              title={`Lihat dokumen ${item.jenisSurat}`}
-                            >
-                              <Eye className="w-4 h-4" aria-hidden="true" />
-                            </button>
+                              title={`View dokumen ${item.jenisSurat}`}
+                            />
                           </td>
                         </tr>
                       ))}
@@ -907,7 +501,7 @@ export default function DetailDebiturPage() {
                       {progressClaimAsuransi.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50">
                           <td className="py-3 px-4 text-sm">
-                            {formatDateDisplay(item.tanggalPengajuan)}
+                            {formatInformasiDebiturDate(item.tanggalPengajuan)}
                           </td>
                           <td className="py-3 px-4 text-sm font-medium">
                             {item.jenisKlaim}
@@ -926,24 +520,23 @@ export default function DetailDebiturPage() {
                               : "-"}
                           </td>
                           <td className="py-3 px-4 text-sm">
-                            {formatDateDisplay(item.tanggalCair)}
+                            {formatInformasiDebiturDate(item.tanggalCair)}
                           </td>
                           <td className="py-3 px-4 text-center">
                             {item.lampiranFilePath ? (
-                              <button
-                                type="button"
+                              <DebiturViewButton
                                 onClick={() =>
                                   openPreview(
-                                    normalizeFileUrl(item.lampiranFilePath!),
+                                    normalizeDebiturDocumentUrl(
+                                      item.lampiranFilePath!,
+                                    ),
                                     item.lampiranFileName ||
                                       "tracking_claim_asuransi.pdf",
                                     "pdf",
                                   )
                                 }
-                                className="btn btn-view-pdf btn-sm inline-flex"
-                              >
-                                <Eye className="w-4 h-4" aria-hidden="true" />
-                              </button>
+                                title="View lampiran"
+                              />
                             ) : (
                               <span className="text-xs text-gray-400">-</span>
                             )}
@@ -1024,9 +617,9 @@ export default function DetailDebiturPage() {
                                 : "hover:bg-gray-50"
                             }`}
                           >
-                            <td className="py-3 px-4 text-sm">
-                              {formatDateDisplay(item.tanggal)}
-                            </td>
+                              <td className="py-3 px-4 text-sm">
+                                {formatInformasiDebiturDate(item.tanggal)}
+                              </td>
                             <td className="py-3 px-4 text-sm font-medium">
                               {item.jenisTitipan}
                             </td>
@@ -1122,7 +715,7 @@ export default function DetailDebiturPage() {
                           .map((riwayat, idx) => (
                             <tr key={`${selectedTitipanDetail.id}-${idx}`}>
                               <td className="py-3 px-4 text-sm">
-                                {formatDateDisplay(riwayat.tanggal)}
+                                {formatInformasiDebiturDate(riwayat.tanggal)}
                               </td>
                               <td className="py-3 px-4 text-sm font-medium text-gray-800">
                                 {riwayat.aksi}

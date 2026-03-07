@@ -9,10 +9,9 @@ import {
   Clock,
   Download,
   Edit2,
-  Eye,
-  FileText,
   Filter,
   Plus,
+  Scale,
   Trash2,
   UploadCloud,
   X,
@@ -28,6 +27,7 @@ import {
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import LegalViewButton from "@/components/legal/LegalViewButton";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
@@ -312,7 +312,7 @@ export default function ProgressNotarisPage() {
       <FeatureHeader
         title="Progress Notaris"
         subtitle="Monitoring progress pengerjaan akta notaris"
-        icon={<FileText />}
+        icon={<Scale />}
       />
 
       <div className="card p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -322,7 +322,7 @@ export default function ProgressNotarisPage() {
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary"
+          className="btn btn-upload"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Tambah Progress
@@ -333,7 +333,7 @@ export default function ProgressNotarisPage() {
         <MiniCard
           label="Total"
           value={summary.total}
-          icon={<FileText className="w-6 h-6 text-blue-600" />}
+          icon={<Scale className="w-6 h-6 text-blue-600" />}
         />
         <MiniCard
           label="Proses"
@@ -355,7 +355,7 @@ export default function ProgressNotarisPage() {
       <div className="card p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
+            <Scale className="w-5 h-5 text-primary" />
             Daftar Progress
           </h2>
           <button
@@ -453,8 +453,7 @@ export default function ProgressNotarisPage() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     {item.lampiranFilePath ? (
-                      <button
-                        type="button"
+                      <LegalViewButton
                         onClick={() =>
                           openPreview(
                             normalizeFileUrl(item.lampiranFilePath!),
@@ -462,10 +461,8 @@ export default function ProgressNotarisPage() {
                             "pdf",
                           )
                         }
-                        className="btn btn-view-pdf btn-sm inline-flex"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
+                        className="inline-flex"
+                      />
                     ) : (
                       <span className="text-xs text-gray-400">-</span>
                     )}
@@ -479,10 +476,10 @@ export default function ProgressNotarisPage() {
                           setDetailItem(item);
                           setShowDetailModal(true);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-gray-100"
+                        className="btn btn-outline btn-sm"
                         title="Detail"
                       >
-                        <Eye className="w-4 h-4 text-gray-500" />
+                        Detail
                       </button>
                       {item.status !== "Selesai" && (
                         <button
@@ -596,7 +593,7 @@ export default function ProgressNotarisPage() {
                   <button
                     type="button"
                     onClick={addMasterNotaris}
-                    className="btn btn-outline"
+                    className="btn btn-upload"
                   >
                     <Plus className="w-4 h-4" />
                     Tambah Master
@@ -756,7 +753,7 @@ export default function ProgressNotarisPage() {
               <button
                 type="button"
                 onClick={handleAdd}
-                className="btn btn-primary flex-1"
+                className="btn btn-upload flex-1"
               >
                 Simpan
               </button>
@@ -947,8 +944,7 @@ export default function ProgressNotarisPage() {
             </div>
 
             {detailItem.lampiranFilePath && (
-              <button
-                type="button"
+              <LegalViewButton
                 onClick={() =>
                   openPreview(
                     normalizeFileUrl(detailItem.lampiranFilePath!),
@@ -956,10 +952,8 @@ export default function ProgressNotarisPage() {
                     "pdf",
                   )
                 }
-                className="btn btn-view-pdf w-full"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
+                className="w-full justify-center"
+              />
             )}
           </div>
         </div>

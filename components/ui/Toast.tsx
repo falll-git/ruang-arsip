@@ -97,8 +97,6 @@ function ToastItemComponent({
         role="alert"
         style={{
           background: config.background,
-          fontFamily:
-            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
           width: "340px",
           padding: "14px 16px",
           display: "flex",
@@ -244,8 +242,6 @@ export default function Toast({
         role="alert"
         style={{
           background: config.background,
-          fontFamily:
-            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
           width: "340px",
           padding: "14px 16px",
           display: "flex",

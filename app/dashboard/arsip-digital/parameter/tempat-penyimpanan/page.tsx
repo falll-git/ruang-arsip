@@ -165,7 +165,7 @@ export default function SetupTempatPenyimpananPage() {
         subtitle="Kelola master lokasi penyimpanan dokumen fisik."
         icon={<Warehouse />}
         actions={
-          <button onClick={openCreate} className="btn btn-primary">
+          <button onClick={openCreate} className="btn btn-upload">
             <Plus className="w-4 h-4" aria-hidden="true" />
             Tambah Tempat
           </button>
@@ -192,87 +192,120 @@ export default function SetupTempatPenyimpananPage() {
           </div>
         </div>
 
-        <div className="table-container mt-6">
-          <table>
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Kode Kantor</th>
-                <th>Nama Kantor</th>
-                <th>Kode Lemari</th>
-                <th>Rak</th>
-                <th>Kapasitas</th>
-                <th>Status</th>
-                <th className="text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((t, idx) => (
-                <tr key={t.id}>
-                  <td className="font-medium">{idx + 1}</td>
-                  <td>
-                    <span className="font-mono text-sm px-2 py-1 rounded bg-gray-100 border border-gray-200">
-                      {t.kodeKantor}
-                    </span>
-                  </td>
-                  <td className="font-semibold text-gray-900">
-                    {t.namaKantor}
-                  </td>
-                  <td className="font-mono text-sm">{t.kodeLemari}</td>
-                  <td className="font-mono text-sm">{t.rak}</td>
-                  <td className="tabular-nums">{t.kapasitas}</td>
-                  <td>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        t.status === "Aktif"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
-                    >
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(t.id)}
-                        className="btn btn-outline btn-sm"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(t.id)}
-                        className="btn btn-outline btn-sm"
-                        title={
-                          t.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"
-                        }
-                      >
-                        {t.status === "Aktif" ? (
-                          <ToggleRight className="w-4 h-4" aria-hidden="true" />
-                        ) : (
-                          <ToggleLeft className="w-4 h-4" aria-hidden="true" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
+        <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-gray-500">
-                    Tidak ada data tempat penyimpanan.
-                  </td>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    No
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Kode Kantor
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Nama Kantor
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Kode Lemari
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Rak
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Kapasitas
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Aksi
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtered.map((t, idx) => (
+                  <tr
+                    key={t.id}
+                    className="transition-colors hover:bg-gray-50"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs font-medium text-gray-700">
+                        {t.kodeKantor}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                      {t.namaKantor}
+                    </td>
+                    <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                      {t.kodeLemari}
+                    </td>
+                    <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                      {t.rak}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 tabular-nums">
+                      {t.kapasitas}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                          t.status === "Aktif"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-gray-200 bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {t.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(t.id)}
+                          className="btn btn-outline btn-sm"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          onClick={() => toggleStatus(t.id)}
+                          className="btn btn-outline btn-sm"
+                          title={
+                            t.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"
+                          }
+                        >
+                          {t.status === "Aktif" ? (
+                            <ToggleRight className="w-4 h-4" aria-hidden="true" />
+                          ) : (
+                            <ToggleLeft className="w-4 h-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {filtered.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-6 py-12 text-center text-sm text-gray-500"
+                    >
+                      Tidak ada data tempat penyimpanan.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {isModalOpen && (
         <div
+          data-dashboard-overlay="true"
           className="fixed inset-0 p-4"
           style={{
             background: "rgba(0, 0, 0, 0.55)",
@@ -398,7 +431,10 @@ export default function SetupTempatPenyimpananPage() {
               <button onClick={closeModal} className="btn btn-outline">
                 Batal
               </button>
-              <button onClick={handleSave} className="btn btn-primary">
+              <button
+                onClick={handleSave}
+                className={editingId ? "btn btn-primary" : "btn btn-upload"}
+              >
                 <Save className="w-4 h-4" aria-hidden="true" />
                 Simpan
               </button>

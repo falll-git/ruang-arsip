@@ -10,21 +10,27 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  AlertCircle,
   Archive,
   ArrowLeftRight,
+  Award,
+  BarChart2,
   BookOpen,
-  Briefcase,
   CalendarDays,
+  Car,
   ClipboardCheck,
+  ClipboardList,
   ChevronDown,
   Clock,
   FilePlus,
+  FileCheck,
+  FileUp,
   FileText,
+  UploadCloud,
   FolderOpen,
   History,
   Inbox,
   LayoutDashboard,
-  Link2,
   List,
   Menu,
   Settings,
@@ -99,9 +105,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [menuParameter, setMenuParameter] = useState(false);
 
   const [menuSurat, setMenuSurat] = useState(false);
-  const [menuSuratMasuk, setMenuSuratMasuk] = useState(false);
-  const [menuSuratKeluar, setMenuSuratKeluar] = useState(false);
-  const [menuMemorandum, setMenuMemorandum] = useState(false);
+  const [menuKelolaSurat, setMenuKelolaSurat] = useState(false);
 
   const [menuDebitur, setMenuDebitur] = useState(false);
   const [menuMarketing, setMenuMarketing] = useState(false);
@@ -110,7 +114,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [menuLegal, setMenuLegal] = useState(false);
   const [menuCetakDokumen, setMenuCetakDokumen] = useState(false);
   const [menuDataTitipan, setMenuDataTitipan] = useState(false);
-  const [menuLinkDokumen, setMenuLinkDokumen] = useState(false);
   const [menuInputProgress, setMenuInputProgress] = useState(false);
 
   const updateSidebarOpen = useCallback(
@@ -610,7 +613,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <div>
             <button
               onClick={() => setMenuSurat(!menuSurat)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/surat"]) ? "active" : ""}`}
+              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/manajemen-surat"]) ? "active" : ""}`}
             >
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5" />
@@ -629,102 +632,70 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <div className="mt-1 space-y-0.5">
                 <div>
                   <button
-                    onClick={() => setMenuSuratMasuk(!menuSuratMasuk)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/surat-masuk"]) ? "active" : ""}`}
+                    onClick={() => setMenuKelolaSurat(!menuKelolaSurat)}
+                    className={`sidebar-submenu-item w-full justify-between ${
+                      isActiveGroup([
+                        "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
+                        "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
+                        "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
+                      ])
+                        ? "active"
+                        : ""
+                    }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Inbox className="w-4 h-4" />
-                      <span>Surat Masuk</span>
+                      <FolderOpen className="w-4 h-4" />
+                      <span>Kelola Surat</span>
                     </div>
                     <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuSuratMasuk ? "rotate-180" : ""}`}
+                      className={`w-3 h-3 transition-transform duration-300 ${menuKelolaSurat ? "rotate-180" : ""}`}
                     />
                   </button>
-                  {menuSuratMasuk && (
+
+                  {menuKelolaSurat && (
                     <div className="ml-1 mt-0.5 space-y-0.5">
                       <ProtectedLink
-                        href="/dashboard/surat/surat-masuk/input"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/surat-masuk/input") ? "active" : ""}`}
+                        href="/dashboard/manajemen-surat/kelola-surat/input-surat-masuk"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-masuk") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Inbox className="w-4 h-4" />
                         <span>Input Surat Masuk</span>
                       </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/surat/surat-masuk/laporan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/surat-masuk/laporan") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Laporan Surat Masuk</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
 
-                <div>
-                  <button
-                    onClick={() => setMenuSuratKeluar(!menuSuratKeluar)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/surat-keluar"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Send className="w-4 h-4" />
-                      <span>Surat Keluar</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuSuratKeluar ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuSuratKeluar && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
                       <ProtectedLink
-                        href="/dashboard/surat/surat-keluar/input"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/surat-keluar/input") ? "active" : ""}`}
+                        href="/dashboard/manajemen-surat/kelola-surat/input-surat-keluar"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-keluar") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Send className="w-4 h-4" />
                         <span>Input Surat Keluar</span>
                       </ProtectedLink>
+
                       <ProtectedLink
-                        href="/dashboard/surat/surat-keluar/laporan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/surat-keluar/laporan") ? "active" : ""}`}
+                        href="/dashboard/manajemen-surat/kelola-surat/input-memorandum"
+                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-memorandum") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Laporan Surat Keluar</span>
+                        <FileText className="w-4 h-4" />
+                        <span>Input Memorandum</span>
                       </ProtectedLink>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <button
-                    onClick={() => setMenuMemorandum(!menuMemorandum)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/memorandum"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      <span>Memorandum</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuMemorandum ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuMemorandum && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/surat/memorandum/input"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/memorandum/input") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Input Memorandum</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/surat/memorandum/laporan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/surat/memorandum/laporan") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Laporan Memorandum</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
+                <ProtectedLink
+                  href="/dashboard/manajemen-surat/laporan"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/laporan") ? "active" : ""}`}
+                >
+                  <List className="w-4 h-4" />
+                  <span>Laporan Persuratan</span>
+                </ProtectedLink>
+
+                <ProtectedLink
+                  href="/dashboard/manajemen-surat/cetak-dokumen"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/cetak-dokumen") ? "active" : ""}`}
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Dokumen</span>
+                </ProtectedLink>
               </div>
             )}
           </div>
@@ -763,8 +734,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/marketing"]) ? "active" : ""}`}
                   >
                     <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      <span>Marketing</span>
+                      <ClipboardCheck className="w-4 h-4" />
+                      <span>Input Progress</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuMarketing ? "rotate-180" : ""}`}
@@ -776,59 +747,27 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/informasi-debitur/marketing/action-plan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/action-plan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <ClipboardCheck className="w-4 h-4" />
                         <span>Input Action Plan</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/informasi-debitur/marketing/hasil-kunjungan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/hasil-kunjungan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <FileText className="w-4 h-4" />
                         <span>Input Hasil Kunjungan</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/informasi-debitur/marketing/langkah-penanganan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/langkah-penanganan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <ClipboardList className="w-4 h-4" />
                         <span>Input Langkah Penanganan</span>
                       </ProtectedLink>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <button
-                    onClick={() => setMenuAdmin(!menuAdmin)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/admin"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      <span>Admin</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuAdmin ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuAdmin && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/admin/upload-slik"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Upload Data SLIK</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/admin/upload-restrik"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Upload Data Restrik</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
@@ -861,7 +800,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <div className="flex items-center gap-2">
                       <Printer className="w-4 h-4" aria-hidden="true" />
-                      <span>Cetak Dokumen</span>
+                      <span>Cetak Dokumen Legal</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuCetakDokumen ? "rotate-180" : ""}`}
@@ -874,42 +813,42 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/legal/cetak/akad"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <FileText className="w-4 h-4" aria-hidden="true" />
                         <span>Dokumen Akad</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/cetak/haftsheet"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <FileCheck className="w-4 h-4" aria-hidden="true" />
                         <span>Haftsheet</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/cetak/surat-peringatan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Mail className="w-4 h-4" aria-hidden="true" />
                         <span>Surat Peringatan</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/cetak/formulir-asuransi"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Shield className="w-4 h-4" aria-hidden="true" />
                         <span>Formulir Asuransi</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/cetak/keterangan-lunas"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Award className="w-4 h-4" aria-hidden="true" />
                         <span>Surat Keterangan Lunas</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/cetak/surat-samsat"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Car className="w-4 h-4" aria-hidden="true" />
                         <span>Surat Samsat</span>
                       </ProtectedLink>
                     </div>
@@ -923,7 +862,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <div className="flex items-center gap-2">
                       <Wallet className="w-4 h-4" aria-hidden="true" />
-                      <span>Data Titipan</span>
+                      <span>Dana Titipan</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuDataTitipan ? "rotate-180" : ""}`}
@@ -936,49 +875,22 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/legal/titipan/asuransi"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/asuransi") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Shield className="w-4 h-4" aria-hidden="true" />
                         <span>Dana Titipan Asuransi</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/titipan/notaris"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/notaris") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Scale className="w-4 h-4" aria-hidden="true" />
                         <span>Dana Titipan Notaris</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/titipan/angsuran"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/angsuran") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Wallet className="w-4 h-4" aria-hidden="true" />
                         <span>Dana Titipan Angsuran</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuLinkDokumen(!menuLinkDokumen)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/link-dokumen"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Link2 className="w-4 h-4" aria-hidden="true" />
-                      <span>Link Dokumen</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuLinkDokumen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {menuLinkDokumen && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/legal/link-dokumen"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/link-dokumen") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Link Dokumen Pembiayaan</span>
                       </ProtectedLink>
                     </div>
                   )}
@@ -991,7 +903,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <div className="flex items-center gap-2">
                       <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
-                      <span>Input Progress</span>
+                      <span>Input Progres PHK3</span>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 transition-transform duration-300 ${menuInputProgress ? "rotate-180" : ""}`}
@@ -1004,21 +916,21 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/legal/progress/notaris"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/notaris") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Scale className="w-4 h-4" aria-hidden="true" />
                         <span>Progress Notaris</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/progress/asuransi"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/asuransi") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Shield className="w-4 h-4" aria-hidden="true" />
                         <span>Progress Asuransi</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/legal/progress/klaim"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/klaim") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <AlertCircle className="w-4 h-4" aria-hidden="true" />
                         <span>Tracking Claim Asuransi</span>
                       </ProtectedLink>
                     </div>
@@ -1026,11 +938,18 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <ProtectedLink
-                  href="/dashboard/legal/cek-bprs"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/cek-bprs") ? "active" : ""}`}
+                  href="/dashboard/legal/upload-ideb"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/upload-ideb") ? "active" : ""}`}
                 >
-                  <Search className="w-4 h-4" aria-hidden="true" />
-                  <span>Cek Data Debitur di BPRS Lain</span>
+                  <FileUp className="w-4 h-4" aria-hidden="true" />
+                  <span>Upload Ideb</span>
+                </ProtectedLink>
+                <ProtectedLink
+                  href="/dashboard/legal/laporan"
+                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/laporan") ? "active" : ""}`}
+                >
+                  <BarChart2 className="w-4 h-4" aria-hidden="true" />
+                  <span>Laporan Legal</span>
                 </ProtectedLink>
               </div>
             )}
@@ -1039,10 +958,46 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           {sidebarOpen && (
             <div className="mx-0 my-2 border-t border-white/10">
               <span className="block px-4 py-2 text-xs text-white/50 uppercase tracking-wider font-semibold">
-                Administrasi
+                Administrator
               </span>
             </div>
           )}
+
+          <div>
+            <button
+              onClick={() => setMenuAdmin(!menuAdmin)}
+              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/admin"]) ? "active" : ""}`}
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5" />
+                {sidebarOpen && <span className="font-medium">Admin</span>}
+              </div>
+              {sidebarOpen && (
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${menuAdmin ? "rotate-180" : ""}`}
+                />
+              )}
+            </button>
+
+            {sidebarOpen && menuAdmin && (
+              <div className="mt-1 space-y-0.5">
+                <ProtectedLink
+                  href="/dashboard/informasi-debitur/admin/upload-slik"
+                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Data SLIK</span>
+                </ProtectedLink>
+                <ProtectedLink
+                  href="/dashboard/informasi-debitur/admin/upload-restrik"
+                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Data Restrik</span>
+                </ProtectedLink>
+              </div>
+            )}
+          </div>
 
           <ProtectedLink
             href="/dashboard/users"
@@ -1155,39 +1110,53 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   "Setup Tempat Penyimpanan"}
                 {pathname.includes("parameter/jenis") && "Setup Jenis Dokumen"}
                 {pathname.includes("/users") && "Manajemen User"}
-                {pathname.includes("/surat/surat-masuk/input") &&
+                {pathname.includes(
+                  "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
+                ) &&
                   "Input Surat Masuk"}
-                {pathname.includes("/surat/surat-masuk/laporan") &&
-                  "Laporan Surat Masuk"}
-                {pathname.includes("/surat/surat-keluar/input") &&
+                {pathname.includes(
+                  "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
+                ) &&
                   "Input Surat Keluar"}
-                {pathname.includes("/surat/surat-keluar/laporan") &&
-                  "Laporan Surat Keluar"}
-                {pathname.includes("/surat/memorandum/input") &&
+                {pathname.includes(
+                  "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
+                ) &&
                   "Input Memorandum"}
-                {pathname.includes("/surat/memorandum/laporan") &&
-                  "Laporan Memorandum"}
+                {pathname.includes("/dashboard/manajemen-surat/laporan") &&
+                  "Laporan Persuratan"}
+                {pathname.includes("/dashboard/manajemen-surat/cetak-dokumen") &&
+                  "Cetak Dokumen"}
                 {pathname === "/dashboard/informasi-debitur" && "List Debitur"}
                 {pathname.includes(
                   "/dashboard/informasi-debitur/marketing/action-plan",
-                ) && "Marketing - Action Plan"}
+                ) && "Input Progress - Action Plan"}
                 {pathname.includes(
                   "/dashboard/informasi-debitur/marketing/hasil-kunjungan",
-                ) && "Marketing - Hasil Kunjungan"}
+                ) && "Input Progress - Hasil Kunjungan"}
                 {pathname.includes(
                   "/dashboard/informasi-debitur/marketing/langkah-penanganan",
-                ) && "Marketing - Langkah Penanganan"}
+                ) && "Input Progress - Langkah Penanganan"}
                 {pathname.includes(
                   "/dashboard/informasi-debitur/admin/upload-slik",
-                ) && "Admin - Upload Data SLIK"}
+                ) && "Administrator - Upload Data SLIK"}
                 {pathname.includes(
                   "/dashboard/informasi-debitur/admin/upload-restrik",
-                ) && "Admin - Upload Data Restrik"}
+                ) && "Administrator - Upload Data Restrik"}
                 {pathname.startsWith("/dashboard/informasi-debitur/") &&
                   !pathname.includes("/marketing/") &&
                   !pathname.includes("/admin/") &&
                   "Detail Debitur"}
-                {pathname.includes("/legal") && "Manajemen Legal"}
+                {pathname.includes("/dashboard/legal/upload-ideb") &&
+                  "Upload Ideb"}
+                {pathname.includes("/dashboard/legal/laporan") &&
+                  "Laporan Legal"}
+                {pathname.includes("/dashboard/legal/cetak/") &&
+                  "Cetak Dokumen Legal"}
+                {pathname.includes("/legal") &&
+                  !pathname.includes("/dashboard/legal/cetak/") &&
+                  !pathname.includes("/dashboard/legal/upload-ideb") &&
+                  !pathname.includes("/dashboard/legal/laporan") &&
+                  "Manajemen Legal"}
               </h2>
             </div>
           </div>

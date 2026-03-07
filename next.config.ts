@@ -3,6 +3,15 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  async redirects() {
+    return [
+      {
+        source: "/laporan/:path*",
+        destination: "/dashboard/laporan/:path*",
+        permanent: false,
+      },
+    ];
+  },
 
   experimental: {
     optimizeCss: true,

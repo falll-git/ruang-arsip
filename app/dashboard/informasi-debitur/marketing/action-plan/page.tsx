@@ -3,18 +3,22 @@
 import { useState, useEffect } from "react";
 import {
   ClipboardCheck,
-  Eye,
   Pencil,
   Plus,
   UploadCloud,
   X,
 } from "lucide-react";
+import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import { dummyDebiturList, dummyActionPlan } from "@/lib/data";
 import type { ActionPlan } from "@/lib/types/modul3";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import DatePickerInput from "@/components/ui/DatePickerInput";
-import { formatDateDisplay, todayIsoDate } from "@/lib/utils/date";
+import { todayIsoDate } from "@/lib/utils/date";
+import {
+  formatInformasiDebiturDate,
+  normalizeDebiturDocumentUrl,
+} from "@/lib/utils/informasi-debitur";
 import StatusBadge from "@/components/marketing/StatusBadge";
 import StatusEditModal from "@/components/marketing/StatusEditModal";
 import SearchableDebiturSelect from "@/components/marketing/SearchableDebiturSelect";
@@ -83,19 +87,6 @@ export default function ActionPlanPage() {
     const nextFile = event.dataTransfer.files[0];
     if (!handleFileValidation(nextFile)) return;
     setFile(nextFile);
-  };
-
-  const normalizeFileUrl = (filePath: string) => {
-    if (/^https?:\/\//i.test(filePath)) return filePath;
-    if (/^(blob:|data:)/i.test(filePath)) return filePath;
-    if (filePath.startsWith("/")) {
-      return filePath.startsWith("/documents/")
-        ? filePath
-        : `/documents${filePath}`;
-    }
-    return filePath.startsWith("documents/")
-      ? `/${filePath}`
-      : `/documents/${filePath}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -167,7 +158,7 @@ export default function ActionPlanPage() {
         actions={
           <button
             onClick={() => setIsModalOpen(true)}
-            className="btn btn-primary"
+            className="btn btn-upload"
             title="Tambah Action Plan"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
@@ -211,7 +202,7 @@ export default function ActionPlanPage() {
                 className="hover:bg-blue-50/30 transition-colors cursor-pointer"
               >
                 <td className="px-5 py-4 text-sm text-gray-600 text-center">
-                  {formatDateDisplay(item.tanggal)}
+                  {formatInformasiDebiturDate(item.tanggal)}
                 </td>
                 <td className="px-5 py-4 text-center">
                   <div className="flex flex-col items-center gap-1">
@@ -225,27 +216,23 @@ export default function ActionPlanPage() {
                   <p className="truncate">{item.rencana}</p>
                 </td>
                 <td className="px-5 py-4 text-sm text-gray-600 text-center">
-                  {formatDateDisplay(item.targetTanggal)}
+                  {formatInformasiDebiturDate(item.targetTanggal)}
                 </td>
                 <td
                   className="px-5 py-4 text-center"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {item.lampiranFilePath ? (
-                    <button
-                      type="button"
+                    <DebiturViewButton
                       onClick={() =>
                         openPreview(
-                          normalizeFileUrl(item.lampiranFilePath!),
+                          normalizeDebiturDocumentUrl(item.lampiranFilePath!),
                           item.lampiranFileName || "lampiran_action_plan.pdf",
                           "pdf",
                         )
                       }
-                      className="btn btn-view-pdf btn-sm inline-flex"
-                      title="Lihat lampiran"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
+                      title="View lampiran"
+                    />
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
                   )}
@@ -397,7 +384,7 @@ export default function ActionPlanPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn btn-primary px-4 py-2.5 text-sm"
+                  className="flex-1 btn btn-upload px-4 py-2.5 text-sm"
                 >
                   Simpan
                 </button>
@@ -427,33 +414,32 @@ export default function ActionPlanPage() {
               <DetailRow label="Rencana" value={detailItem.rencana} />
               <DetailRow
                 label="Target Tanggal"
-                value={formatDateDisplay(detailItem.targetTanggal)}
+                value={formatInformasiDebiturDate(detailItem.targetTanggal)}
               />
             </DetailSection>
             <DetailSection title="Metadata">
               <DetailRow
                 label="Tanggal"
-                value={formatDateDisplay(detailItem.tanggal)}
+                value={formatInformasiDebiturDate(detailItem.tanggal)}
               />
               <DetailRow label="Dibuat oleh" value={detailItem.createdBy} />
               <DetailRow
                 label="Lampiran"
                 value={
                   detailItem.lampiranFilePath ? (
-                    <button
-                      type="button"
+                    <DebiturViewButton
                       onClick={() =>
                         openPreview(
-                          normalizeFileUrl(detailItem.lampiranFilePath!),
+                          normalizeDebiturDocumentUrl(
+                            detailItem.lampiranFilePath!,
+                          ),
                           detailItem.lampiranFileName ||
                             "lampiran_action_plan.pdf",
                           "pdf",
                         )
                       }
-                      className="btn btn-view-pdf btn-sm inline-flex"
-                    >
-                      <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
+                      title="View lampiran"
+                    />
                   ) : (
                     "-"
                   )
