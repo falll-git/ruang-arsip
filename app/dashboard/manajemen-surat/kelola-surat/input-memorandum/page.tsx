@@ -196,7 +196,7 @@ export default function InputMemorandumPage() {
                 value={formData.noMemo}
                 onChange={handleChange}
                 required
-                className="input font-mono"
+                className="input tabular-nums"
                 placeholder="Contoh: MEMO/001/HRD/2026"
               />
             </div>

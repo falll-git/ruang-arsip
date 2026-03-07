@@ -194,7 +194,7 @@ export default function AcceptPeminjamanPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium">
+                      <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium tabular-nums">
                         {item.kode}
                       </span>
                     </td>
@@ -301,7 +301,7 @@ export default function AcceptPeminjamanPage() {
                     <label className="text-xs text-gray-500 uppercase font-semibold">
                       Kode
                     </label>
-                    <p className="font-mono text-sm font-bold text-primary-600">
+                    <p className="text-sm font-bold text-primary-600 tabular-nums">
                       {selectedItem.kode}
                     </p>
                   </div>

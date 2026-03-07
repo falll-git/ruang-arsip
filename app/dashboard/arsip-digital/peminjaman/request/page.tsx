@@ -233,7 +233,7 @@ export default function RequestPeminjamanPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium">
+                    <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium tabular-nums">
                       {doc.kode}
                     </span>
                   </td>
@@ -312,7 +312,7 @@ export default function RequestPeminjamanPage() {
                           <p className="text-sm font-medium text-gray-800 truncate">
                             {doc.namaDokumen}
                           </p>
-                          <span className="text-xs font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tabular-nums">
                             {doc.kode}
                           </span>
                         </div>

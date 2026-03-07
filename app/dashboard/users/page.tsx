@@ -315,7 +315,7 @@ export default function ManajemenUserPage() {
                       {u.namaLengkap}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex rounded-md bg-gray-100 px-2 py-1 font-mono text-sm text-gray-800">
+                      <span className="inline-flex rounded-md bg-gray-100 px-2 py-1 text-sm text-gray-800 tabular-nums">
                         {u.username}
                       </span>
                     </td>

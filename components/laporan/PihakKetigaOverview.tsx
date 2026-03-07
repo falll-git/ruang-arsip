@@ -248,7 +248,7 @@ export default function PihakKetigaOverview({
                           {index + 1}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className="inline-flex min-w-[88px] justify-center rounded-[10px] border border-gray-800 px-2.5 py-1 font-mono text-xs font-medium text-gray-900">
+                          <span className="inline-flex min-w-[88px] justify-center rounded-[10px] border border-gray-800 px-2.5 py-1 text-xs font-medium text-gray-900 tabular-nums">
                             {item.kodeDokumen}
                           </span>
                         </td>

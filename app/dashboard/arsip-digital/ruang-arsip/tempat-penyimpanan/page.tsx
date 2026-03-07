@@ -248,7 +248,7 @@ export default function TempatPenyimpananPage() {
                             {idx + 1}
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100">
+                            <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 tabular-nums">
                               {doc.kode}
                             </span>
                           </td>

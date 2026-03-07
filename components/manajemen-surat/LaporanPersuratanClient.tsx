@@ -812,7 +812,7 @@ export default function LaporanPersuratanClient() {
                       >
                         <td className="px-6 py-4 text-gray-500">{index + 1}</td>
                         <td className="px-6 py-4 text-gray-900">
-                          <span className="rounded border border-blue-100 bg-blue-50 px-2 py-1 font-mono text-blue-700">
+                          <span className="rounded border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700 tabular-nums">
                             {record.noMemo}
                           </span>
                         </td>

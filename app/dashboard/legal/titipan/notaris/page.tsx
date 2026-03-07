@@ -423,7 +423,7 @@ export default function TitipanNotarisPage() {
                       {item.jenisAkta}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-mono">
+                  <td className="px-4 py-3 text-sm tabular-nums">
                     {item.noAkta || "-"}
                   </td>
                   <td className="px-4 py-3 text-sm text-right font-medium">

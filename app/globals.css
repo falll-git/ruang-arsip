@@ -114,11 +114,22 @@
   box-sizing: border-box;
 }
 
+html {
+  font-family: var(--app-font-sans);
+}
+
 body {
   font-family: var(--app-font-sans);
   line-height: 1.6;
   color: #0f172a;
   background-color: #f8fafc;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 @keyframes shimmer {

@@ -180,7 +180,7 @@ export default function PengajuanDisposisiPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium">
+                    <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium tabular-nums">
                       {doc.kode}
                     </span>
                   </td>
@@ -268,7 +268,7 @@ export default function PengajuanDisposisiPage() {
                           {doc.namaDokumen}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tabular-nums">
                             {doc.kode}
                           </span>
                           <span className="text-xs text-gray-500">

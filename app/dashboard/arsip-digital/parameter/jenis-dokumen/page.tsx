@@ -174,7 +174,7 @@ export default function SetupJenisDokumenPage() {
                       {idx + 1}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs font-medium text-gray-700">
+                      <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 tabular-nums">
                         {j.kode}
                       </span>
                     </td>

@@ -254,7 +254,7 @@ export default function InputDokumenPage() {
                       id="kodeDokumen"
                       type="text"
                       value={kodeDokumen || "Otomatis..."}
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 font-mono text-sm"
+                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 text-sm tabular-nums"
                       readOnly
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">

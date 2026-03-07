@@ -557,7 +557,7 @@ export default function CetakDokumenClient() {
                             <td className="px-5 py-4 text-sm font-semibold text-gray-800">
                               {record.primaryText}
                             </td>
-                            <td className="px-5 py-4 text-sm font-mono text-gray-700">
+                            <td className="px-5 py-4 text-sm text-gray-700 tabular-nums">
                               {record.code}
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-700">
@@ -575,7 +575,7 @@ export default function CetakDokumenClient() {
                             <td className="px-5 py-4 text-sm font-semibold text-gray-800">
                               {record.primaryText}
                             </td>
-                            <td className="px-5 py-4 text-sm font-mono text-gray-700">
+                            <td className="px-5 py-4 text-sm text-gray-700 tabular-nums">
                               {record.code}
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-700">
@@ -590,7 +590,7 @@ export default function CetakDokumenClient() {
                           </>
                         ) : (
                           <>
-                            <td className="px-5 py-4 text-sm font-mono font-semibold text-primary-600">
+                            <td className="px-5 py-4 text-sm font-semibold text-primary-600 tabular-nums">
                               {record.code}
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-700">
@@ -846,7 +846,7 @@ function DetailField({
         {label}
       </p>
       <p
-        className={`mt-2 text-sm leading-relaxed text-gray-800 ${mono ? "font-mono" : "font-medium"}`}
+        className={`mt-2 text-sm leading-relaxed text-gray-800 ${mono ? "tabular-nums" : "font-medium"}`}
       >
         {value}
       </p>
