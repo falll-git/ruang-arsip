@@ -69,9 +69,6 @@ export default function DokumenPreviewModal({
               Download
             </a>
           </Button>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Tutup
-          </Button>
         </div>
       </div>
     </div>

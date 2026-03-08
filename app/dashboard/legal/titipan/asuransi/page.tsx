@@ -1076,16 +1076,6 @@ export default function TitipanAsuransiPage() {
                 {detailItem.keterangan?.trim() ? detailItem.keterangan : "-"}
               </p>
             </div>
-
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setDetailItem(null);
-              }}
-              className="btn btn-primary w-full"
-            >
-              Tutup
-            </button>
           </div>
         </div>
       )}

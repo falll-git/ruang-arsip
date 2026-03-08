@@ -2148,6 +2148,10 @@ table td .flex {
   color: #ffffff;
 }
 
+.sidebar-arsip-group .sidebar-submenu-item {
+  font-weight: 700;
+}
+
 .sidebar-menu-item.rbac-disabled,
 .sidebar-submenu-item.rbac-disabled {
   opacity: 0.45;

@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Archive,
+  ArrowLeft,
   ChevronRight,
   FileText,
   Warehouse,
@@ -95,6 +97,13 @@ export default function TempatPenyimpananPage() {
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
+      <div className="mb-4">
+        <Link href="/dashboard" className="btn btn-outline btn-sm">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Kembali ke Dashboard
+        </Link>
+      </div>
+
       <FeatureHeader
         title="Ruang Arsip Digital"
         subtitle="Laporan visual penyimpanan dokumen fisik dan digital."
@@ -296,13 +305,6 @@ export default function TempatPenyimpananPage() {
                   </p>
                 </div>
               )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button onClick={closeModal} className="btn btn-outline">
-                Tutup
-              </button>
             </div>
           </div>
         </div>

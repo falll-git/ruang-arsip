@@ -400,7 +400,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <div>
+          <div className="sidebar-arsip-group">
             <button
               onClick={() => setMenuArsip(!menuArsip)}
               className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/arsip-digital"]) ? "active" : ""}`}
@@ -447,14 +447,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Archive className="w-4 h-4" aria-hidden="true" />
                         <span>Tempat Penyimpanan</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/ruang-arsip/list-dokumen"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/list-dokumen") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <List className="w-4 h-4" aria-hidden="true" />
                         <span>List Dokumen</span>
                       </ProtectedLink>
                     </div>
@@ -480,21 +480,21 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/arsip-digital/disposisi/pengajuan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/pengajuan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <FilePlus className="w-4 h-4" aria-hidden="true" />
                         <span>Pengajuan Disposisi</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/disposisi/permintaan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/permintaan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Inbox className="w-4 h-4" aria-hidden="true" />
                         <span>Permintaan Disposisi</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/disposisi/historis"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/historis") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <History className="w-4 h-4" aria-hidden="true" />
                         <span>Historis Disposisi</span>
                       </ProtectedLink>
                     </div>
@@ -520,21 +520,21 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/arsip-digital/peminjaman/request"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/request") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Send className="w-4 h-4" aria-hidden="true" />
                         <span>Request Peminjaman</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/peminjaman/accept"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/accept") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <FileCheck className="w-4 h-4" aria-hidden="true" />
                         <span>Accept Peminjaman</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/peminjaman/laporan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/laporan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <BarChart2 className="w-4 h-4" aria-hidden="true" />
                         <span>Laporan Peminjaman</span>
                       </ProtectedLink>
                     </div>
@@ -560,52 +560,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         href="/dashboard/arsip-digital/historis/penyimpanan"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/penyimpanan") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <Archive className="w-4 h-4" aria-hidden="true" />
                         <span>Historis Penyimpanan</span>
                       </ProtectedLink>
                       <ProtectedLink
                         href="/dashboard/arsip-digital/historis/peminjaman"
                         className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/peminjaman") ? "active" : ""}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        <BookOpen className="w-4 h-4" aria-hidden="true" />
                         <span>Historis Peminjaman</span>
                       </ProtectedLink>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <button
-                    onClick={() => setMenuParameter(!menuParameter)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/parameter"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4" aria-hidden="true" />
-                      <span>Parameter</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuParameter ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuParameter && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/parameter/tempat-penyimpanan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/tempat-penyimpanan") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Setup Tempat Penyimpanan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/parameter/jenis-dokumen"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/jenis-dokumen") ? "active" : ""}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                        <span>Setup Jenis Dokumen</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
@@ -970,7 +938,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             >
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5" />
-                {sidebarOpen && <span className="font-medium">Admin</span>}
+                {sidebarOpen && <span className="font-bold">Admin</span>}
               </div>
               {sidebarOpen && (
                 <ChevronDown
@@ -999,12 +967,47 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
+          <div>
+            <button
+              onClick={() => setMenuParameter(!menuParameter)}
+              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/parameter"]) ? "active" : ""}`}
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5" aria-hidden="true" />
+                {sidebarOpen && <span className="font-bold">Parameter</span>}
+              </div>
+              {sidebarOpen && (
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${menuParameter ? "rotate-180" : ""}`}
+                />
+              )}
+            </button>
+            {sidebarOpen && menuParameter && (
+              <div className="mt-1 space-y-0.5">
+                <ProtectedLink
+                  href="/dashboard/arsip-digital/parameter/tempat-penyimpanan"
+                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/tempat-penyimpanan") ? "active" : ""}`}
+                >
+                  <FolderOpen className="w-4 h-4" aria-hidden="true" />
+                  <span>Setup Tempat Penyimpanan</span>
+                </ProtectedLink>
+                <ProtectedLink
+                  href="/dashboard/arsip-digital/parameter/jenis-dokumen"
+                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/jenis-dokumen") ? "active" : ""}`}
+                >
+                  <FileText className="w-4 h-4" aria-hidden="true" />
+                  <span>Setup Jenis Dokumen</span>
+                </ProtectedLink>
+              </div>
+            )}
+          </div>
+
           <ProtectedLink
             href="/dashboard/users"
             className={`sidebar-menu-item ${isActive("/dashboard/users") ? "active" : ""}`}
           >
             <Users className="w-5 h-5" />
-            {sidebarOpen && <span className="font-medium">Manajemen User</span>}
+            {sidebarOpen && <span className="font-bold">Manajemen User</span>}
           </ProtectedLink>
         </nav>
 

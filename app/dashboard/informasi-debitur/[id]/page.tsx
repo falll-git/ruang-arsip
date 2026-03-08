@@ -9,6 +9,7 @@ import {
   getDebiturById,
   getHistorisKolektibilitasByDebiturId,
   getDokumenByDebiturId,
+  getNotarisByDebiturId,
   getActionPlanByDebiturId,
   getHasilKunjunganByDebiturId,
   getLangkahPenangananByDebiturId,
@@ -37,6 +38,7 @@ type TabType =
   | "bprs"
   | "historis"
   | "dokumen"
+  | "notaris"
   | "sp"
   | "klaim"
   | "titipan";
@@ -47,6 +49,7 @@ const tabs: { id: TabType; label: string }[] = [
   { id: "bprs", label: "Hasil Ideb" },
   { id: "historis", label: "Historis Kol" },
   { id: "dokumen", label: "Dokumen" },
+  { id: "notaris", label: "Notaris" },
   { id: "sp", label: "Surat Peringatan" },
   { id: "klaim", label: "Progress Claim Asuransi" },
   { id: "titipan", label: "Dana Titipan" },
@@ -78,6 +81,7 @@ export default function DetailDebiturPage() {
   const debitur = getDebiturById(id as string);
   const historisKol = getHistorisKolektibilitasByDebiturId(id as string);
   const dokumen = getDokumenByDebiturId(id as string);
+  const notaris = getNotarisByDebiturId(id as string);
   const actionPlan = getActionPlanByDebiturId(id as string);
   const hasilKunjungan = getHasilKunjunganByDebiturId(id as string);
   const langkahPenanganan = getLangkahPenangananByDebiturId(id as string);
@@ -370,6 +374,81 @@ export default function DetailDebiturPage() {
               debiturId={debitur.id}
               initialDocuments={dokumen}
             />
+          )}
+
+          {activeTab === "notaris" && (
+            <div>
+              {notaris.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <p>Belum ada data notaris untuk debitur ini.</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <table className="min-w-180 w-full">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            No
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Jenis Dokumen
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Nama Notaris
+                          </th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Keterangan
+                          </th>
+                          <th className="text-center py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                            Dokumen
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {notaris.map((item, index) => (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm text-gray-700">
+                              {index + 1}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="inline-flex px-2 py-1 rounded bg-blue-50 border border-blue-100 text-xs font-bold text-gray-900">
+                                {item.jenisDokumen}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                              {item.namaNotaris}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-600">
+                              {item.keterangan || "-"}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {item.filePath ? (
+                                <DebiturViewButton
+                                  onClick={() => {
+                                    if (!item.filePath) {
+                                      return;
+                                    }
+                                    openPreview(
+                                      normalizeDebiturDocumentUrl(item.filePath),
+                                      `Dokumen ${item.jenisDokumen} - ${item.namaNotaris}`,
+                                      item.fileType === "pdf" ? "pdf" : "image",
+                                    );
+                                  }}
+                                  title="View dokumen notaris"
+                                />
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {activeTab === "sp" && (

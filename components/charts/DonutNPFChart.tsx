@@ -37,8 +37,8 @@ export default function DonutNPFChart({
   ratio: number;
 }) {
   return (
-    <div className="flex flex-col items-center">
-      <div className="h-[320px] w-full max-w-[360px]">
+    <div className="flex justify-center">
+      <div className="h-[300px] w-full max-w-[360px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -100,21 +100,6 @@ export default function DonutNPFChart({
             />
           </PieChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-5 grid w-full max-w-[640px] gap-x-8 gap-y-3 text-sm text-gray-600 sm:grid-cols-2">
-        {data.map((item) => (
-          <div key={item.kol} className="flex items-center gap-3">
-            <span
-              className="inline-block h-3 w-3 rounded-full"
-              style={{ backgroundColor: item.color }}
-              aria-hidden="true"
-            />
-            <span>
-              Kol {item.kol} - {item.label}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );

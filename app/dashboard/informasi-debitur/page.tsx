@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect, type CSSProperties } from "react";
 import {
+  ArrowLeft,
   ChevronUp,
   FileDown,
   FileSpreadsheet,
@@ -95,6 +96,13 @@ export default function ListDebiturPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="mb-4">
+          <Link href="/dashboard" className="btn btn-outline btn-sm">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Dashboard
+          </Link>
+        </div>
+
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
         <div className="bg-white rounded-xl p-6 space-y-4">
           <div className="flex gap-4">
@@ -113,6 +121,13 @@ export default function ListDebiturPage() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-4">
+        <Link href="/dashboard" className="btn btn-outline btn-sm">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Kembali ke Dashboard
+        </Link>
+      </div>
+
       <FeatureHeader
         title="List Debitur"
         subtitle="Daftar nasabah pembiayaan"

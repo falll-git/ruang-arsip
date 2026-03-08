@@ -517,15 +517,6 @@ export default function HistorisDisposisiPage() {
                 </div>
               )}
             </div>
-
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button
-                onClick={() => setShowDetail(false)}
-                className="btn btn-outline"
-              >
-                Tutup
-              </button>
-            </div>
           </div>
         </div>
       )}

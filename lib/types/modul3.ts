@@ -60,6 +60,16 @@ export interface DokumenDebitur {
   fileType?: "pdf" | "jpg" | "png" | "image";
 }
 
+export interface NotarisDebitur {
+  id: string;
+  debiturId: string;
+  jenisDokumen: "Akad" | "APHT" | "Fidusia" | "Roya" | "Surat Kuasa";
+  namaNotaris: string;
+  keterangan?: string;
+  filePath?: string;
+  fileType?: "pdf" | "image";
+}
+
 export interface ActionPlan {
   id: string;
   debiturId: string;

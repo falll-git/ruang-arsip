@@ -25,6 +25,19 @@ export interface PihakKetigaSummary {
   lewatExpired: number;
 }
 
+export type ProgressPihakKetigaStatus = "PROSES" | "SELESAI" | "EXPIRED";
+
+export interface ProgressPihakKetiga {
+  id: string;
+  pihakKetigaId: string;
+  namaNasabah: string;
+  noKontrak: string;
+  status: ProgressPihakKetigaStatus;
+  tanggalMulai: string;
+  tanggalSelesai?: string;
+  keterangan?: string;
+}
+
 export interface KolektibilitasItem {
   kol: number;
   label: string;
@@ -41,14 +54,14 @@ export interface RiwayatNPF {
   rasioNPF: number;
 }
 
-export interface LaporanNpfSummary {
-  totalNasabah: number;
-  totalOutstandingPokok: number;
-  totalNasabahBermasalah: number;
-  totalOutstandingBermasalah: number;
-  rasioNpf: number;
-  latestRasioNpf: number;
-  latestRiwayat: RiwayatNPF | null;
+export type NpfKolektibilitasLevel = 1 | 2 | 3 | 4 | 5;
+
+export interface KolektibilitasNasabahItem {
+  nama: string;
+  noKontrak: string;
+  outstandingPokok: number;
+  sisaBulan: number;
+  kolektibilitas: NpfKolektibilitasLevel;
 }
 
 export type JenisTitipan = "NOTARIS" | "ASURANSI" | "ANGSURAN";
@@ -57,6 +70,7 @@ export interface TitipanNasabah {
   id: string;
   nama: string;
   jenisTitipan: JenisTitipan;
+  pihakKetigaId?: string | null;
   totalTitipan: number;
   saldoTerbayar: number;
   sisaSaldo: number;

@@ -962,16 +962,6 @@ export default function TitipanAngsuranPage() {
                 </div>
               </div>
             </div>
-
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setDetailItem(null);
-              }}
-              className="btn btn-primary w-full"
-            >
-              Tutup
-            </button>
           </div>
         </div>
       )}

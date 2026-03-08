@@ -37,9 +37,6 @@ export default function HasilIdebDetailModal({
           <Download className="h-4 w-4" aria-hidden="true" />
           Export PDF
         </Button>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Tutup
-        </Button>
       </div>
     </DetailModal>
   );

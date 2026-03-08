@@ -1048,16 +1048,6 @@ export default function ProgressAsuransiPage() {
                 className="mb-4 w-full justify-center"
               />
             )}
-
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setDetailItem(null);
-              }}
-              className="btn btn-primary w-full"
-            >
-              Tutup
-            </button>
           </div>
         </div>
       )}

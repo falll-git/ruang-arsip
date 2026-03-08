@@ -6,6 +6,7 @@ import type {
   HistorisKolektibilitas,
   KolektibilitasType,
   LangkahPenanganan,
+  NotarisDebitur,
   PengecekanBPRS,
   SuratPeringatan,
   UploadRestrik,
@@ -18,10 +19,11 @@ import type {
   IdebRingkasan,
   JenisTitipan,
   KolektibilitasItem,
-  LaporanNpfSummary,
+  KolektibilitasNasabahItem,
   PihakKetiga,
   PihakKetigaKategori,
   PihakKetigaSummary,
+  ProgressPihakKetiga,
   ProgresPHK3Record,
   RiwayatBPRSLain,
   RiwayatNPF,
@@ -982,6 +984,63 @@ const dummyDokumenDebitur: DokumenDebitur[] = [
   },
 ];
 
+const dummyNotarisDebitur: NotarisDebitur[] = [
+  {
+    id: "NTR-DBT-001",
+    debiturId: "DBT001",
+    jenisDokumen: "Akad",
+    namaNotaris: "Notaris Neta",
+    keterangan: "Akta akad pembiayaan utama nasabah.",
+    filePath: "/contoh-dok/akad-pembiayaan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-002",
+    debiturId: "DBT001",
+    jenisDokumen: "APHT",
+    namaNotaris: "Notaris Boby",
+    keterangan: "Pengikatan hak tanggungan agunan pembiayaan.",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-003",
+    debiturId: "DBT001",
+    jenisDokumen: "Fidusia",
+    namaNotaris: "Notaris Rendra",
+    keterangan: "Akta fidusia jaminan kendaraan nasabah.",
+    filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-004",
+    debiturId: "DBT001",
+    jenisDokumen: "Roya",
+    namaNotaris: "Notaris Wulan",
+    keterangan: "Proses roya untuk jaminan lama yang telah lunas.",
+    filePath: "/contoh-dok/npwp.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-005",
+    debiturId: "DBT001",
+    jenisDokumen: "Surat Kuasa",
+    namaNotaris: "Notaris Tegar",
+    keterangan: "Surat kuasa pengurusan dokumen legal pembiayaan.",
+    filePath: "/contoh-dok/kartu-keluarga.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-006",
+    debiturId: "DBT002",
+    jenisDokumen: "Fidusia",
+    namaNotaris: "Notaris B",
+    keterangan: "Dokumen jaminan fidusia kendaraan.",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+];
+
 export const dummyActionPlan: ActionPlan[] = [
   {
     id: "AP001",
@@ -1224,6 +1283,30 @@ export function getHistorisKolektibilitasByDebiturId(
 
 export function getDokumenByDebiturId(id: string): DokumenDebitur[] {
   return dummyDokumenDebitur.filter((d) => d.debiturId === id);
+}
+
+export function getNotarisByDebiturId(id: string): NotarisDebitur[] {
+  const notarisByDebitur = dummyNotarisDebitur.filter((item) => item.debiturId === id);
+  if (notarisByDebitur.length > 0) {
+    return notarisByDebitur;
+  }
+
+  const debitur = getDebiturById(id);
+  if (!debitur) {
+    return [];
+  }
+
+  return dummyProgressNotaris
+    .filter((item) => item.noKontrak === debitur.noKontrak)
+    .map((item) => ({
+      id: `NTR-${item.id}`,
+      debiturId: id,
+      jenisDokumen: item.jenisAkta,
+      namaNotaris: item.namaNotaris,
+      keterangan: item.catatan,
+      filePath: item.lampiranFilePath,
+      fileType: item.lampiranFileType,
+    }));
 }
 
 export function getActionPlanByDebiturId(id: string): ActionPlan[] {
@@ -2122,93 +2205,85 @@ const IDEB_MONTH_NAMES = [
 const pihakKetigaSeed = {
   NOTARIS: [
     {
-      id: "PTK-NTR-001",
-      nama: "Notaris Sinta Permata, S.H.",
+      id: "pk-001",
+      nama: "Notaris Ahmad Subagyo SH",
       kodeDokumen: "NTR-001",
       jenisDokumen: "Akta",
-      namaDokumen: "Akta Pembiayaan Musyarakah",
-      detailDokumen: "Akta pembiayaan Musyarakah No. 12 untuk nasabah prioritas",
-      tanggalInput: "2026-01-21",
+      namaDokumen: "Akta Pembiayaan Kolektif",
+      detailDokumen: "Dokumen akta pembiayaan untuk batch awal tahun 2026.",
+      tanggalInput: "2026-01-10",
       userInput: "Faisal",
-      fileUrl: "/contoh-dok/akad-pembiayaan.pdf",
-      fileType: "pdf",
-      prosesBerjalan: 12,
-      laporanSelesai: 28,
+      prosesBerjalan: 4,
+      laporanSelesai: 15,
       lewatExpired: 1,
     },
     {
-      id: "PTK-NTR-002",
-      nama: "Notaris Arif Rahman, S.H., M.Kn.",
+      id: "pk-002",
+      nama: "Notaris Siti Rahayu SH MKn",
       kodeDokumen: "NTR-002",
-      jenisDokumen: "Jaminan",
-      namaDokumen: "Sertifikat Hak Tanggungan",
-      detailDokumen: "Pengikatan jaminan pembiayaan ruko nasabah komersial",
-      tanggalInput: "2026-01-24",
+      jenisDokumen: "Pengikatan",
+      namaDokumen: "Dokumen Pengikatan Jaminan",
+      detailDokumen: "Pengikatan jaminan pembiayaan produktif dan konsumer.",
+      tanggalInput: "2026-01-14",
       userInput: "Annas",
-      fileUrl: "/contoh-dok/sertifikat-jaminan.pdf",
-      fileType: "pdf",
-      prosesBerjalan: 8,
-      laporanSelesai: 19,
+      prosesBerjalan: 5,
+      laporanSelesai: 18,
       lewatExpired: 0,
     },
   ],
   ASURANSI: [
     {
-      id: "PTK-ASR-001",
-      nama: "Askrindo Syariah",
+      id: "pk-003",
+      nama: "PT Asuransi Jiwa Syariah",
       kodeDokumen: "ASR-001",
       jenisDokumen: "Polis",
       namaDokumen: "Polis Penjaminan Pembiayaan",
-      detailDokumen: "Polis penjaminan batch Januari 2026 untuk nasabah UMKM",
-      tanggalInput: "2026-01-22",
+      detailDokumen: "Dokumen polis penjaminan nasabah pembiayaan aktif.",
+      tanggalInput: "2026-01-12",
       userInput: "Anggita",
-      fileUrl: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
-      fileType: "pdf",
-      prosesBerjalan: 15,
-      laporanSelesai: 36,
-      lewatExpired: 2,
+      prosesBerjalan: 3,
+      laporanSelesai: 12,
+      lewatExpired: 1,
     },
     {
-      id: "PTK-ASR-002",
-      nama: "Jamkrindo Syariah",
+      id: "pk-004",
+      nama: "PT Asuransi Takaful Keluarga",
       kodeDokumen: "ASR-002",
       jenisDokumen: "Klaim",
-      namaDokumen: "Dokumen Klaim Asuransi",
-      detailDokumen: "Pengajuan klaim pembiayaan atas agunan kendaraan bermotor",
-      tanggalInput: "2026-01-26",
+      namaDokumen: "Dokumen Klaim Penutupan",
+      detailDokumen: "Dokumen klaim dan penutupan asuransi pembiayaan.",
+      tanggalInput: "2026-01-18",
       userInput: "Burhan",
-      prosesBerjalan: 9,
-      laporanSelesai: 24,
-      lewatExpired: 1,
+      prosesBerjalan: 5,
+      laporanSelesai: 20,
+      lewatExpired: 0,
     },
   ],
   KJPP: [
     {
-      id: "PTK-KJPP-001",
-      nama: "KJPP Nusantara Appraisal",
+      id: "pk-005",
+      nama: "KJPP Rengganis & Rekan",
       kodeDokumen: "KJP-001",
       jenisDokumen: "Appraisal",
-      namaDokumen: "Laporan Penilaian Agunan Ruko",
-      detailDokumen: "Penilaian agunan ruko pusat perdagangan Kota Bandung",
-      tanggalInput: "2026-01-23",
-      userInput: "Annas",
-      fileUrl: "/contoh-dok/npwp.pdf",
-      fileType: "pdf",
-      prosesBerjalan: 6,
-      laporanSelesai: 14,
-      lewatExpired: 0,
+      namaDokumen: "Laporan Penilaian Agunan",
+      detailDokumen: "Penilaian agunan ruko dan properti pembiayaan komersial.",
+      tanggalInput: "2026-01-20",
+      userInput: "Faisal",
+      prosesBerjalan: 2,
+      laporanSelesai: 8,
+      lewatExpired: 1,
     },
     {
-      id: "PTK-KJPP-002",
-      nama: "KJPP Mitra Properti",
+      id: "pk-006",
+      nama: "KJPP Toto Suharto & Rekan",
       kodeDokumen: "KJP-002",
       jenisDokumen: "Review",
-      namaDokumen: "Review Nilai Agunan Tanah",
-      detailDokumen: "Review nilai pasar agunan tanah kavling pembiayaan produktif",
-      tanggalInput: "2026-01-27",
-      userInput: "Faisal",
-      prosesBerjalan: 4,
-      laporanSelesai: 11,
+      namaDokumen: "Review Nilai Agunan",
+      detailDokumen: "Review penilaian ulang agunan untuk pembiayaan restrukturisasi.",
+      tanggalInput: "2026-01-22",
+      userInput: "Annas",
+      prosesBerjalan: 3,
+      laporanSelesai: 10,
       lewatExpired: 1,
     },
   ],
@@ -2223,25 +2298,17 @@ const pihakKetigaSeed = {
     detailDokumen: string;
     tanggalInput: string;
     userInput: string;
-    fileUrl?: string;
-    fileType?: "pdf" | "image";
     prosesBerjalan: number;
     laporanSelesai: number;
     lewatExpired: number;
   }>
 >;
 
-export const pihakKetigaKategoriOrder: PihakKetigaKategori[] = [
+const pihakKetigaKategoriOrder: PihakKetigaKategori[] = [
   "NOTARIS",
   "ASURANSI",
   "KJPP",
 ];
-
-export const pihakKetigaKategoriSlugs: Record<PihakKetigaKategori, string> = {
-  NOTARIS: "notaris",
-  ASURANSI: "asuransi",
-  KJPP: "kjpp",
-};
 
 export const pihakKetigaData: PihakKetiga[] = pihakKetigaKategoriOrder.flatMap(
   (kategori) =>
@@ -2270,21 +2337,169 @@ export const pihakKetigaSummary: PihakKetigaSummary[] =
     };
   });
 
-export function getPihakKetigaKategoriBySlug(
-  slug: string,
-): PihakKetigaKategori | null {
-  return (
-    pihakKetigaKategoriOrder.find(
-      (kategori) => pihakKetigaKategoriSlugs[kategori] === slug,
-    ) ?? null
-  );
+const progressPihakKetigaBaseDate: Record<string, string> = {
+  "pk-001": "2025-12-10",
+  "pk-002": "2025-12-16",
+  "pk-003": "2025-12-08",
+  "pk-004": "2025-12-18",
+  "pk-005": "2025-12-04",
+  "pk-006": "2025-12-14",
+};
+
+const progressPihakKetigaContractPrefix: Record<string, string> = {
+  "pk-001": "PB/2024/001",
+  "pk-002": "PB/2024/002",
+  "pk-003": "PB/2024/003",
+  "pk-004": "PB/2024/004",
+  "pk-005": "PB/2024/005",
+  "pk-006": "PB/2024/006",
+};
+
+const progressPihakKetigaFirstNames = [
+  "Ahmad",
+  "Budi",
+  "Cahya",
+  "Dewi",
+  "Eko",
+  "Fajar",
+  "Gina",
+  "Hendra",
+  "Intan",
+  "Joko",
+  "Kartika",
+  "Lia",
+  "Maya",
+  "Nanda",
+  "Oki",
+  "Putri",
+  "Qori",
+  "Rizky",
+  "Siti",
+  "Teguh",
+  "Ulfa",
+  "Vina",
+  "Wahyu",
+  "Yusuf",
+  "Zahra",
+];
+
+const progressPihakKetigaLastNames = [
+  "Suryanto",
+  "Santoso",
+  "Pratama",
+  "Lestari",
+  "Saputra",
+  "Rahmawati",
+  "Wijaya",
+  "Permata",
+  "Hidayat",
+  "Maulana",
+  "Kurniasih",
+  "Gunawan",
+  "Amelia",
+  "Prasetyo",
+  "Handayani",
+  "Ramadhan",
+  "Nugraha",
+  "Puspita",
+  "Setiawan",
+  "Herlambang",
+  "Maesaroh",
+  "Ramadhani",
+  "Wicaksono",
+  "Fadilah",
+  "Salsabila",
+];
+
+function addDaysToIsoDate(value: string, days: number) {
+  const date = new Date(value);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
-export function getPihakKetigaByKategori(
-  kategori: PihakKetigaKategori,
-): PihakKetiga[] {
-  return pihakKetigaData.filter((item) => item.kategori === kategori);
+function getProgressPihakKetigaName(entityIndex: number, entryIndex: number) {
+  const firstName =
+    progressPihakKetigaFirstNames[
+      (entityIndex * 7 + entryIndex) % progressPihakKetigaFirstNames.length
+    ];
+  const lastName =
+    progressPihakKetigaLastNames[
+      (entityIndex * 11 + entryIndex) % progressPihakKetigaLastNames.length
+    ];
+
+  return `${firstName} ${lastName}`;
 }
+
+function getProgressPihakKetigaNote(
+  kategori: PihakKetigaKategori,
+  status: ProgressPihakKetiga["status"],
+) {
+  if (kategori === "NOTARIS") {
+    if (status === "SELESAI") {
+      return "Dokumen akta dan pengikatan telah selesai diverifikasi.";
+    }
+
+    if (status === "PROSES") {
+      return "Menunggu penjadwalan tanda tangan dan finalisasi dokumen.";
+    }
+
+    return "Dokumen melewati target penyelesaian dan perlu follow up.";
+  }
+
+  if (kategori === "ASURANSI") {
+    if (status === "SELESAI") {
+      return "Polis atau klaim telah diselesaikan dan diarsipkan.";
+    }
+
+    if (status === "PROSES") {
+      return "Masih menunggu approval pihak asuransi.";
+    }
+
+    return "Dokumen klaim melewati SLA dan perlu eskalasi.";
+  }
+
+  if (status === "SELESAI") {
+    return "Laporan appraisal telah diterima dan tervalidasi.";
+  }
+
+  if (status === "PROSES") {
+    return "Penilaian lapangan dan review agunan masih berjalan.";
+  }
+
+  return "Laporan penilaian terlambat dari jadwal yang ditetapkan.";
+}
+
+export const progressPihakKetiga: ProgressPihakKetiga[] = pihakKetigaData.flatMap(
+  (item, entityIndex) => {
+    const statuses: ProgressPihakKetiga["status"][] = [
+      ...Array.from({ length: item.laporanSelesai }, () => "SELESAI" as const),
+      ...Array.from({ length: item.prosesBerjalan }, () => "PROSES" as const),
+      ...Array.from({ length: item.lewatExpired }, () => "EXPIRED" as const),
+    ];
+    const baseDate = progressPihakKetigaBaseDate[item.id];
+    const contractPrefix = progressPihakKetigaContractPrefix[item.id];
+
+    return statuses.map((status, index) => {
+      const startOffset = index * 2;
+      const tanggalMulai = addDaysToIsoDate(baseDate, startOffset);
+      const tanggalSelesai =
+        status === "PROSES"
+          ? undefined
+          : addDaysToIsoDate(baseDate, startOffset + (status === "SELESAI" ? 6 : 14));
+
+      return {
+        id: `ppk-${item.id}-${String(index + 1).padStart(3, "0")}`,
+        pihakKetigaId: item.id,
+        namaNasabah: getProgressPihakKetigaName(entityIndex, index),
+        noKontrak: `${contractPrefix}/${String(index + 1).padStart(3, "0")}`,
+        status,
+        tanggalMulai,
+        tanggalSelesai,
+        keterangan: getProgressPihakKetigaNote(item.kategori, status),
+      };
+    });
+  },
+);
 
 export const npfKolektibilitasColors: Record<number, string> = {
   1: "#22c55e",
@@ -2327,7 +2542,146 @@ export const kolektibilitasData: KolektibilitasItem[] = [
   },
 ];
 
+export const nasabahKolektibilitasData: KolektibilitasNasabahItem[] = [
+  {
+    nama: "Ahmad Suryanto",
+    noKontrak: "PB/2025/010101",
+    outstandingPokok: 185000000,
+    sisaBulan: 42,
+    kolektibilitas: 1,
+  },
+  {
+    nama: "Rani Permata",
+    noKontrak: "PB/2025/010102",
+    outstandingPokok: 142000000,
+    sisaBulan: 36,
+    kolektibilitas: 1,
+  },
+  {
+    nama: "Fajar Hidayat",
+    noKontrak: "PB/2024/010103",
+    outstandingPokok: 98000000,
+    sisaBulan: 24,
+    kolektibilitas: 1,
+  },
+  {
+    nama: "Dewi Kartika",
+    noKontrak: "PB/2024/010104",
+    outstandingPokok: 76000000,
+    sisaBulan: 18,
+    kolektibilitas: 1,
+  },
+  {
+    nama: "Yusuf Maulana",
+    noKontrak: "PB/2025/010105",
+    outstandingPokok: 56000000,
+    sisaBulan: 12,
+    kolektibilitas: 1,
+  },
+  {
+    nama: "Siti Rahayu",
+    noKontrak: "PB/2024/020201",
+    outstandingPokok: 146000000,
+    sisaBulan: 30,
+    kolektibilitas: 2,
+  },
+  {
+    nama: "Budi Santoso",
+    noKontrak: "PB/2024/020202",
+    outstandingPokok: 94000000,
+    sisaBulan: 18,
+    kolektibilitas: 2,
+  },
+  {
+    nama: "Nina Aprilia",
+    noKontrak: "PB/2025/020203",
+    outstandingPokok: 61000000,
+    sisaBulan: 12,
+    kolektibilitas: 2,
+  },
+  {
+    nama: "Rizki Ananda",
+    noKontrak: "PB/2025/020204",
+    outstandingPokok: 33000000,
+    sisaBulan: 8,
+    kolektibilitas: 2,
+  },
+  {
+    nama: "Hendra Wijaya",
+    noKontrak: "PB/2023/030301",
+    outstandingPokok: 92000000,
+    sisaBulan: 20,
+    kolektibilitas: 3,
+  },
+  {
+    nama: "Lia Kurniasih",
+    noKontrak: "PB/2024/030302",
+    outstandingPokok: 58000000,
+    sisaBulan: 11,
+    kolektibilitas: 3,
+  },
+  {
+    nama: "Teguh Saputra",
+    noKontrak: "PB/2025/030303",
+    outstandingPokok: 27000000,
+    sisaBulan: 4,
+    kolektibilitas: 3,
+  },
+  {
+    nama: "Maya Fitriani",
+    noKontrak: "PB/2024/040401",
+    outstandingPokok: 72000000,
+    sisaBulan: 9,
+    kolektibilitas: 4,
+  },
+  {
+    nama: "Joko Prasetyo",
+    noKontrak: "PB/2023/040402",
+    outstandingPokok: 21000000,
+    sisaBulan: 2,
+    kolektibilitas: 4,
+  },
+  {
+    nama: "Rudi Hartono",
+    noKontrak: "PB/2023/050501",
+    outstandingPokok: 54000000,
+    sisaBulan: 5,
+    kolektibilitas: 5,
+  },
+  {
+    nama: "Anisa Rahma",
+    noKontrak: "PB/2024/050502",
+    outstandingPokok: 18000000,
+    sisaBulan: 1,
+    kolektibilitas: 5,
+  },
+];
+
 export const riwayatNPFData: RiwayatNPF[] = [
+  {
+    tahun: 2025,
+    bulan: 4,
+    namaBulan: "April",
+    jumlahNasabah: 156,
+    outstandingPokok: 33980000000,
+    rasioNPF: 9.4,
+  },
+  {
+    tahun: 2025,
+    bulan: 5,
+    namaBulan: "Mei",
+    jumlahNasabah: 158,
+    outstandingPokok: 34240000000,
+    rasioNPF: 9.1,
+  },
+  {
+    tahun: 2025,
+    bulan: 6,
+    namaBulan: "Juni",
+    jumlahNasabah: 160,
+    outstandingPokok: 34470000000,
+    rasioNPF: 9.0,
+  },
   {
     tahun: 2025,
     bulan: 7,
@@ -2402,93 +2756,86 @@ export const riwayatNPFData: RiwayatNPF[] = [
   },
 ];
 
-const totalNasabahKolektibilitas = kolektibilitasData.reduce(
-  (total, item) => total + item.jumlahNasabah,
-  0,
-);
-const totalOutstandingKolektibilitas = kolektibilitasData.reduce(
-  (total, item) => total + item.outstandingPokok,
-  0,
-);
-const nasabahBermasalah = kolektibilitasData
-  .filter((item) => item.kol >= 3)
-  .reduce((total, item) => total + item.jumlahNasabah, 0);
-const outstandingBermasalah = kolektibilitasData
-  .filter((item) => item.kol >= 3)
-  .reduce((total, item) => total + item.outstandingPokok, 0);
-const latestRiwayatNPF = [...riwayatNPFData].sort((left, right) => {
-  if (left.tahun !== right.tahun) {
-    return right.tahun - left.tahun;
-  }
-
-  return right.bulan - left.bulan;
-})[0] ?? null;
-
-export const laporanNpfSummary: LaporanNpfSummary = {
-  totalNasabah: totalNasabahKolektibilitas,
-  totalOutstandingPokok: totalOutstandingKolektibilitas,
-  totalNasabahBermasalah: nasabahBermasalah,
-  totalOutstandingBermasalah: outstandingBermasalah,
-  rasioNpf:
-    totalOutstandingKolektibilitas === 0
-      ? 0
-      : Number(
-          (
-            (outstandingBermasalah / totalOutstandingKolektibilitas) *
-            100
-          ).toFixed(1),
-        ),
-  latestRasioNpf: latestRiwayatNPF?.rasioNPF ?? 0,
-  latestRiwayat: latestRiwayatNPF,
-};
-
 export const titipanNasabahData: TitipanNasabah[] = [
   {
-    id: "TTP-NTR-001",
-    nama: "Ahmad Suryanto",
+    id: "titipan-001",
+    nama: "Ahmad Fauzi",
     jenisTitipan: "NOTARIS",
-    totalTitipan: 50000000,
+    pihakKetigaId: "pk-001",
+    totalTitipan: 85000000,
+    saldoTerbayar: 60000000,
+    sisaSaldo: 25000000,
+  },
+  {
+    id: "titipan-002",
+    nama: "Siti Aminah",
+    jenisTitipan: "NOTARIS",
+    pihakKetigaId: "pk-001",
+    totalTitipan: 65000000,
+    saldoTerbayar: 40000000,
+    sisaSaldo: 25000000,
+  },
+  {
+    id: "titipan-003",
+    nama: "Budi Wicaksono",
+    jenisTitipan: "NOTARIS",
+    pihakKetigaId: "pk-002",
+    totalTitipan: 72000000,
+    saldoTerbayar: 72000000,
+    sisaSaldo: 0,
+  },
+  {
+    id: "titipan-004",
+    nama: "Dewi Lestari",
+    jenisTitipan: "ASURANSI",
+    pihakKetigaId: "pk-003",
+    totalTitipan: 45000000,
+    saldoTerbayar: 45000000,
+    sisaSaldo: 0,
+  },
+  {
+    id: "titipan-005",
+    nama: "Rizky Pratama",
+    jenisTitipan: "ASURANSI",
+    pihakKetigaId: "pk-003",
+    totalTitipan: 55000000,
     saldoTerbayar: 30000000,
-    sisaSaldo: 20000000,
+    sisaSaldo: 25000000,
   },
   {
-    id: "TTP-NTR-002",
-    nama: "Siti Rahayu",
-    jenisTitipan: "NOTARIS",
-    totalTitipan: 35000000,
-    saldoTerbayar: 35000000,
-    sisaSaldo: 0,
-  },
-  {
-    id: "TTP-ASR-001",
-    nama: "Hendra Wijaya",
+    id: "titipan-006",
+    nama: "Hendra Gunawan",
     jenisTitipan: "ASURANSI",
-    totalTitipan: 12500000,
-    saldoTerbayar: 7000000,
-    sisaSaldo: 5500000,
+    pihakKetigaId: "pk-004",
+    totalTitipan: 38000000,
+    saldoTerbayar: 20000000,
+    sisaSaldo: 18000000,
   },
   {
-    id: "TTP-ASR-002",
-    nama: "Dewi Kartika",
-    jenisTitipan: "ASURANSI",
-    totalTitipan: 9800000,
-    saldoTerbayar: 9800000,
-    sisaSaldo: 0,
-  },
-  {
-    id: "TTP-ANG-001",
+    id: "titipan-007",
     nama: "Budi Santoso",
     jenisTitipan: "ANGSURAN",
-    totalTitipan: 4500000,
-    saldoTerbayar: 1500000,
-    sisaSaldo: 3000000,
+    pihakKetigaId: null,
+    totalTitipan: 120000000,
+    saldoTerbayar: 95000000,
+    sisaSaldo: 25000000,
   },
   {
-    id: "TTP-ANG-002",
-    nama: "Rina Kartika",
+    id: "titipan-008",
+    nama: "Nurul Hidayah",
     jenisTitipan: "ANGSURAN",
-    totalTitipan: 6200000,
-    saldoTerbayar: 6200000,
+    pihakKetigaId: null,
+    totalTitipan: 95000000,
+    saldoTerbayar: 80000000,
+    sisaSaldo: 15000000,
+  },
+  {
+    id: "titipan-009",
+    nama: "Eko Prasetyo",
+    jenisTitipan: "ANGSURAN",
+    pihakKetigaId: null,
+    totalTitipan: 150000000,
+    saldoTerbayar: 150000000,
     sisaSaldo: 0,
   },
 ];

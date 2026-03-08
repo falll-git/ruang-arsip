@@ -1,8 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle,
-  ChevronRight,
   TrendingDown,
   XCircle,
 } from "lucide-react";
@@ -11,11 +12,16 @@ import DonutNPFChart from "@/components/charts/DonutNPFChart";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { kolektibilitasData, npfKolektibilitasColors, riwayatNPFData } from "@/lib/data";
+import KolektibilitasTable from "@/components/dashboard/KolektibilitasTable";
+import {
+  kolektibilitasData,
+  nasabahKolektibilitasData,
+  npfKolektibilitasColors,
+  riwayatNPFData,
+} from "@/lib/data";
 
 function formatRupiah(value: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -48,7 +54,15 @@ function getRatioTone(value: number) {
   return "text-red-600";
 }
 
+type RiwayatRange = 6 | 12;
+
+const riwayatRangeOptions: Array<{ value: RiwayatRange; label: string }> = [
+  { value: 6, label: "6 bulan terakhir" },
+  { value: 12, label: "12 bulan terakhir" },
+];
+
 export default function LaporanNPFSection() {
+  const [riwayatRange, setRiwayatRange] = useState<RiwayatRange>(6);
   const totalOutstanding = kolektibilitasData.reduce(
     (total, item) => total + item.outstandingPokok,
     0,
@@ -66,7 +80,24 @@ export default function LaporanNPFSection() {
     totalOutstanding === 0
       ? 0
       : Number(((totalOutstandingBermasalah / totalOutstanding) * 100).toFixed(1));
-  const recentRiwayat = riwayatNPFData.slice(0, 6);
+  const sortedRiwayat = useMemo(
+    () =>
+      [...riwayatNPFData].sort((left, right) => {
+        if (left.tahun !== right.tahun) {
+          return right.tahun - left.tahun;
+        }
+
+        return right.bulan - left.bulan;
+      }),
+    [],
+  );
+  const visibleRiwayat = useMemo(
+    () => sortedRiwayat.slice(0, riwayatRange),
+    [riwayatRange, sortedRiwayat],
+  );
+  const selectedRiwayatLabel =
+    riwayatRangeOptions.find((option) => option.value === riwayatRange)?.label ??
+    riwayatRangeOptions[0].label;
 
   const status =
     currentRatio < 5
@@ -103,7 +134,7 @@ export default function LaporanNPFSection() {
           <CardHeader>
             <CardTitle>Distribusi Kolektibilitas</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="space-y-4 pt-0">
             <DonutNPFChart
               data={kolektibilitasData.map((item) => ({
                 ...item,
@@ -111,26 +142,46 @@ export default function LaporanNPFSection() {
               }))}
               ratio={currentRatio}
             />
+            <KolektibilitasTable
+              rows={kolektibilitasData}
+              nasabah={nasabahKolektibilitasData}
+            />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                <TrendingDown className="h-5 w-5" aria-hidden="true" />
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <TrendingDown className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div className="flex min-h-[44px] items-center">
+                  <CardTitle>Ringkasan NPF</CardTitle>
+                </div>
               </div>
-              <div>
-                <CardTitle>Ringkasan NPF</CardTitle>
-                <CardDescription>
-                  Posisi kolektibilitas saat ini dan ringkasan 6 bulan terakhir
-                </CardDescription>
+
+              <div className="w-full sm:w-[210px]">
+                <select
+                  value={riwayatRange}
+                  onChange={(event) =>
+                    setRiwayatRange(Number(event.target.value) as RiwayatRange)
+                  }
+                  className="select border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                  aria-label="Pilih periode riwayat NPF"
+                >
+                  {riwayatRangeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className={`rounded-xl border p-4 ${status.classes}`}>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <StatusIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
                 <p className="text-sm font-semibold">{status.text}</p>
               </div>
@@ -163,46 +214,48 @@ export default function LaporanNPFSection() {
 
             <div>
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="font-semibold text-gray-900">Riwayat NPF</h3>
-                <span className="text-xs text-gray-500">6 bulan terakhir</span>
+                <h3 className="font-semibold text-gray-900">
+                  Riwayat NPF - {selectedRiwayatLabel}
+                </h3>
               </div>
 
               <div className="overflow-hidden rounded-xl border border-gray-200">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        Bulan Tahun
-                      </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        Rasio NPF
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {recentRiwayat.map((item) => (
-                      <tr key={`${item.tahun}-${item.bulan}`} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-700">
-                          {item.namaBulan} {item.tahun}
-                        </td>
-                        <td
-                          className={`px-4 py-3 text-right font-semibold ${getRatioTone(item.rasioNPF)}`}
-                        >
-                          {formatRatio(item.rasioNPF)}%
-                        </td>
+                <div
+                  className={
+                    riwayatRange === 12 ? "max-h-[360px] overflow-y-auto" : undefined
+                  }
+                >
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          Bulan Tahun
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          Rasio NPF
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {visibleRiwayat.map((item) => (
+                        <tr
+                          key={`${item.tahun}-${item.bulan}`}
+                          className="transition-colors hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-3 text-gray-700">
+                            {item.namaBulan} {item.tahun}
+                          </td>
+                          <td
+                            className={`px-4 py-3 text-right font-semibold ${getRatioTone(item.rasioNPF)}`}
+                          >
+                            {formatRatio(item.rasioNPF)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-
-              <Link
-                href="/dashboard/laporan/npf"
-                className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700"
-              >
-                Lihat Semua Riwayat
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
             </div>
           </CardContent>
         </Card>
