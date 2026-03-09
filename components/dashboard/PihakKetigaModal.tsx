@@ -19,10 +19,35 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { pihakKetigaData } from "@/lib/data";
-import type { PihakKetiga, PihakKetigaKategori } from "@/lib/types";
+import { pihakKetigaData, progressPihakKetiga } from "@/lib/data";
+import type {
+  PihakKetiga,
+  PihakKetigaKategori,
+  ProgressPihakKetigaStatus,
+} from "@/lib/types";
 
 const defaultDocumentUrl = "/documents/contoh-dok.pdf";
+
+type PihakKetigaProgressTableItem = {
+  id: string;
+  nama: string;
+  kodeDokumen: string;
+  jenisDokumen: string;
+  namaDokumen: string;
+  detailDokumen: string;
+  tanggalInput: string;
+  userInput: string;
+  fileUrl?: string;
+  prosesBerjalan: number;
+  laporanSelesai: number;
+  lewatExpired: number;
+};
+
+const progressStatusLabel: Record<ProgressPihakKetigaStatus, string> = {
+  PROSES: "Proses",
+  SELESAI: "Selesai",
+  EXPIRED: "Expired",
+};
 
 const kategoriMeta: Record<
   PihakKetigaKategori,
@@ -44,15 +69,15 @@ const kategoriMeta: Record<
   ASURANSI: {
     icon: Shield,
     label: "Asuransi",
-    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    iconWrapperClassName: "border-emerald-100 bg-emerald-50 text-emerald-600",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    iconWrapperClassName: "border-sky-100 bg-sky-50 text-sky-600",
     accentClassName: "text-emerald-600",
   },
   KJPP: {
     icon: Building2,
     label: "KJPP",
-    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
-    iconWrapperClassName: "border-amber-100 bg-amber-50 text-amber-600",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    iconWrapperClassName: "border-sky-100 bg-sky-50 text-sky-600",
     accentClassName: "text-amber-600",
   },
 };
@@ -233,13 +258,6 @@ export default function PihakKetigaModal({
     };
   }, [detailPihakKetigaId, handleClose, modalOpen]);
 
-  useEffect(() => {
-    setSelectedPihakKetigaId(null);
-    setDetailPihakKetigaId(null);
-    setEntitySearchTerm("");
-    setTableSearchTerm("");
-  }, [kategori]);
-
   const items = useMemo(
     () =>
       kategori === null
@@ -253,9 +271,35 @@ export default function PihakKetigaModal({
     [items, selectedPihakKetigaId],
   );
 
+  const tableItems = useMemo<PihakKetigaProgressTableItem[]>(() => {
+    if (selectedItem === null) {
+      return [];
+    }
+
+    return progressPihakKetiga
+      .filter((item) => item.pihakKetigaId === selectedItem.id)
+      .map((item) => ({
+        id: item.id,
+        nama: selectedItem.nama,
+        kodeDokumen: item.noKontrak,
+        jenisDokumen: progressStatusLabel[item.status],
+        namaDokumen: item.namaNasabah,
+        detailDokumen: item.keterangan ?? "-",
+        tanggalInput: item.tanggalMulai,
+        userInput:
+          item.tanggalSelesai !== undefined
+            ? formatShortDate(item.tanggalSelesai)
+            : "Belum selesai",
+        fileUrl: selectedItem.fileUrl,
+        prosesBerjalan: selectedItem.prosesBerjalan,
+        laporanSelesai: selectedItem.laporanSelesai,
+        lewatExpired: selectedItem.lewatExpired,
+      }));
+  }, [selectedItem]);
+
   const detailItem = useMemo(
-    () => items.find((item) => item.id === detailPihakKetigaId) ?? null,
-    [detailPihakKetigaId, items],
+    () => tableItems.find((item) => item.id === detailPihakKetigaId) ?? null,
+    [detailPihakKetigaId, tableItems],
   );
 
   const filteredGridItems = useMemo(() => {
@@ -272,10 +316,10 @@ export default function PihakKetigaModal({
     const keyword = tableSearchTerm.trim().toLowerCase();
 
     if (keyword.length === 0) {
-      return items;
+      return tableItems;
     }
 
-    return items.filter(
+    return tableItems.filter(
       (item) =>
         item.kodeDokumen.toLowerCase().includes(keyword) ||
         item.jenisDokumen.toLowerCase().includes(keyword) ||
@@ -283,7 +327,7 @@ export default function PihakKetigaModal({
         item.detailDokumen.toLowerCase().includes(keyword) ||
         item.userInput.toLowerCase().includes(keyword),
     );
-  }, [items, tableSearchTerm]);
+  }, [tableItems, tableSearchTerm]);
 
   if (kategori === null) {
     return null;
@@ -397,7 +441,7 @@ export default function PihakKetigaModal({
                       <span
                         className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.badgeClassName}`}
                       >
-                        {items.length} data
+                        {tableItems.length} data
                       </span>
                     </div>
                   </div>
@@ -476,7 +520,7 @@ export default function PihakKetigaModal({
                               key={item.id}
                               onDoubleClick={() => setDetailPihakKetigaId(item.id)}
                               className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                                selectedItem?.id === item.id ? "bg-blue-50/50" : ""
+                                detailPihakKetigaId === item.id ? "bg-blue-50/50" : ""
                               }`}
                             >
                               <td className="px-4 py-3 text-gray-700">{index + 1}</td>

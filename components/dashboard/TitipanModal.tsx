@@ -70,16 +70,16 @@ const jenisMeta: Record<
     label: "Asuransi",
     title: "Titipan Asuransi",
     accentClassName: "text-emerald-600",
-    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    iconWrapperClassName: "border-emerald-100 bg-emerald-50 text-emerald-600",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    iconWrapperClassName: "border-sky-100 bg-sky-50 text-sky-600",
   },
   ANGSURAN: {
     icon: Banknote,
     label: "Angsuran",
     title: "Titipan Angsuran",
     accentClassName: "text-amber-600",
-    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
-    iconWrapperClassName: "border-amber-100 bg-amber-50 text-amber-600",
+    badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+    iconWrapperClassName: "border-sky-100 bg-sky-50 text-sky-600",
   },
 };
 
@@ -265,14 +265,6 @@ export default function TitipanModal({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [detailNasabahId, handleClose, modalOpen]);
-
-  useEffect(() => {
-    setSelectedGridItemId(null);
-    setDetailNasabahId(null);
-    setEntitySearchTerm("");
-    setSearchTerm("");
-    setSortOption("SISA_DESC");
-  }, [jenisTitipan]);
 
   const meta = jenisTitipan ? jenisMeta[jenisTitipan] : null;
 
