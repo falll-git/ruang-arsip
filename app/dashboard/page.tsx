@@ -9,8 +9,8 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <DashboardOverviewClient />
       <LaporanPihakKetigaSection />
-      <LaporanNPFSection />
       <LaporanTitipanSection />
+      <LaporanNPFSection />
       <LaporanAktivitasMarketingSection />
     </div>
   );

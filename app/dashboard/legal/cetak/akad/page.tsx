@@ -247,7 +247,10 @@ export default function CetakAkadPage() {
                         {nasabah.nama}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {nasabah.noKontrak} • {nasabah.nik}
+                        <span className="font-medium text-gray-800">
+                          {nasabah.noKontrak}
+                        </span>{" "}
+                        • {nasabah.nik}
                       </div>
                     </button>
                   ))}

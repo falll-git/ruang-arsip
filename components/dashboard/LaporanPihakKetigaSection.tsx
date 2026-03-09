@@ -43,9 +43,8 @@ const kategoriMeta: Record<
 };
 
 export default function LaporanPihakKetigaSection() {
-  const [selectedKategori, setSelectedKategori] = useState<PihakKetigaKategori | null>(
-    null,
-  );
+  const [selectedKategori, setSelectedKategori] =
+    useState<PihakKetigaKategori | null>(null);
 
   return (
     <>
@@ -91,7 +90,7 @@ export default function LaporanPihakKetigaSection() {
                     </div>
                   </div>
 
-                  <div className="flex w-[118px] shrink-0 flex-col items-end text-right">
+                  <div className="flex w-29.5 shrink-0 flex-col items-end text-right">
                     <span className="mb-1 text-xs font-semibold uppercase leading-tight tracking-wider text-gray-400">
                       Total Pihak Ketiga
                     </span>
@@ -104,7 +103,10 @@ export default function LaporanPihakKetigaSection() {
                 <div className="rounded-xl bg-gray-50 p-4">
                   <div className="flex items-center justify-between gap-4 text-sm">
                     <span className="flex items-center gap-2 text-gray-500">
-                      <Activity className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                      <Activity
+                        className="h-4 w-4 text-gray-500"
+                        aria-hidden="true"
+                      />
                       Proses Berjalan
                     </span>
                     <span className="font-semibold text-gray-800">
@@ -135,7 +137,9 @@ export default function LaporanPihakKetigaSection() {
                     >
                       <AlertTriangle
                         className={
-                          item.lewatExpired > 0 ? "h-4 w-4 text-red-600" : "h-4 w-4 text-gray-400"
+                          item.lewatExpired > 0
+                            ? "h-4 w-4 text-red-600"
+                            : "h-4 w-4 text-gray-400"
                         }
                         aria-hidden="true"
                       />

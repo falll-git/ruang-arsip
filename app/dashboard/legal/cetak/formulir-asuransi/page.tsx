@@ -255,7 +255,10 @@ export default function CetakFormulirAsuransiPage() {
                     >
                       <div className="font-medium text-gray-800">{n.nama}</div>
                       <div className="text-sm text-gray-500">
-                        {n.noKontrak} • {n.produk}
+                        <span className="font-medium text-gray-800">
+                          {n.noKontrak}
+                        </span>{" "}
+                        • {n.produk}
                       </div>
                     </button>
                   ))}

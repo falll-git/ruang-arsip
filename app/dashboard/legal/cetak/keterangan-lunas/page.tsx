@@ -207,7 +207,10 @@ export default function CetakKeteranganLunasPage() {
                         </span>
                       </div>
                       <div className="text-sm text-gray-500 ml-6">
-                        {n.noKontrak} • {n.produk}
+                        <span className="font-medium text-gray-700">
+                          {n.noKontrak}
+                        </span>{" "}
+                        • {n.produk}
                       </div>
                     </button>
                   ))}
@@ -228,7 +231,10 @@ export default function CetakKeteranganLunasPage() {
                     Pembiayaan Lunas
                   </h2>
                   <p className="text-sm text-gray-500">
-                    {selectedNasabah.nama} - {selectedNasabah.noKontrak}
+                    {selectedNasabah.nama} -{" "}
+                    <span className="font-medium text-gray-700">
+                      {selectedNasabah.noKontrak}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -368,7 +374,9 @@ export default function CetakKeteranganLunasPage() {
                   <td className="px-4 py-3 text-sm font-medium text-green-600">
                     {item.noSurat}
                   </td>
-                  <td className="px-4 py-3 text-sm">{item.noKontrak}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-800">
+                    {item.noKontrak}
+                  </td>
                   <td className="px-4 py-3 text-sm">{item.namaNasabah}</td>
                   <td className="px-4 py-3 text-sm">{item.user}</td>
                 </tr>

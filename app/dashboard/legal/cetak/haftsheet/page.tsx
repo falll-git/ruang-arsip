@@ -270,7 +270,9 @@ export default function CetakHaftsheetPage() {
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0"
                     >
                       <div className="font-medium text-gray-800">{n.nama}</div>
-                      <div className="text-sm text-gray-500">{n.noKontrak}</div>
+                      <div className="text-sm font-medium text-gray-700">
+                        {n.noKontrak}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -287,7 +289,10 @@ export default function CetakHaftsheetPage() {
                     Checklist Dokumen
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    {selectedNasabah.nama} | {selectedNasabah.noKontrak}
+                    {selectedNasabah.nama} |{" "}
+                    <span className="font-medium text-gray-700">
+                      {selectedNasabah.noKontrak}
+                    </span>
                   </p>
                 </div>
                 <div

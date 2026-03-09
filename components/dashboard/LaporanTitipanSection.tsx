@@ -93,7 +93,7 @@ export default function LaporanTitipanSection() {
                     </div>
                   </div>
 
-                  <div className="flex w-[118px] shrink-0 flex-col items-end text-right">
+                  <div className="flex w-29.5 shrink-0 flex-col items-end text-right">
                     <span className="mb-1 text-xs font-semibold uppercase leading-tight tracking-wider text-gray-400">
                       Jumlah Nasabah
                     </span>

@@ -220,7 +220,10 @@ export default function CetakSPPage() {
                         </span>
                       </div>
                       <div className="text-sm text-gray-500">
-                        {n.noKontrak} • Tunggakan:{" "}
+                        <span className="font-medium text-gray-800">
+                          {n.noKontrak}
+                        </span>{" "}
+                        • Tunggakan:{" "}
                         {formatCurrency(n.tunggakanPokok + n.tunggakanMargin)}
                       </div>
                     </button>

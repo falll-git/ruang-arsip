@@ -141,7 +141,7 @@ export default function IdebHistoryTable({
                           {record.namaNasabah}
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-700">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-800">
                         {record.noKontrak}
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-gray-600">

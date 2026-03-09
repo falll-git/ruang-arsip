@@ -150,7 +150,9 @@ function SearchableNasabahField({
                 className="w-full border-b border-gray-100 px-4 py-3 text-left transition-colors hover:bg-blue-50/50 last:border-0"
               >
                 <p className="font-medium text-gray-900">{option.namaNasabah}</p>
-                <p className="mt-1 text-xs text-gray-500">{option.noKontrak}</p>
+                <p className="mt-1 text-xs font-medium text-gray-700">
+                  {option.noKontrak}
+                </p>
               </button>
             ))
           )}

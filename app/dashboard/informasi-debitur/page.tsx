@@ -307,7 +307,7 @@ export default function ListDebiturPage() {
                     {(currentPage - 1) * itemsPerPage + idx + 1}
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-sm px-2 py-1 rounded bg-blue-50 text-blue-700 tabular-nums">
+                    <span className="text-sm font-medium text-gray-900 tabular-nums">
                       {item.noKontrak}
                     </span>
                   </td>

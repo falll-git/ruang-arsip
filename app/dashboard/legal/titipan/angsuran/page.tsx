@@ -414,7 +414,7 @@ export default function TitipanAngsuranPage() {
             <tbody className="divide-y divide-gray-100">
               {paginatedData.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-primary">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {item.noKontrak}
                   </td>
                   <td className="px-4 py-3 text-sm">{item.namaNasabah}</td>

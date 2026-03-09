@@ -10,10 +10,7 @@ import {
   dummyLangkahPenanganan,
 } from "@/lib/data";
 
-type JenisAktivitas =
-  | "ACTION_PLAN"
-  | "HASIL_KUNJUNGAN"
-  | "LANGKAH_PENANGANAN";
+type JenisAktivitas = "ACTION_PLAN" | "HASIL_KUNJUNGAN" | "LANGKAH_PENANGANAN";
 
 type AktivitasFilter = "SEMUA" | JenisAktivitas;
 type SortFilter = "TERBARU" | "TERLAMA";
@@ -95,23 +92,24 @@ export default function LaporanAktivitasMarketingSection() {
     const getNasabahName = (debiturId: string) =>
       debiturNameMap.get(debiturId) ?? "-";
 
-    const actionPlanItems: AktivitasMarketingItem[] = dummyActionPlan.map((item) => ({
-      id: `action-plan-${item.id}`,
-      tanggal: item.tanggal,
-      jenisAktivitas: "ACTION_PLAN",
-      namaNasabah: getNasabahName(item.debiturId),
-      sortTimestamp: getDateTimestamp(item.tanggal),
-    }));
-
-    const hasilKunjunganItems: AktivitasMarketingItem[] = dummyHasilKunjungan.map(
+    const actionPlanItems: AktivitasMarketingItem[] = dummyActionPlan.map(
       (item) => ({
+        id: `action-plan-${item.id}`,
+        tanggal: item.tanggal,
+        jenisAktivitas: "ACTION_PLAN",
+        namaNasabah: getNasabahName(item.debiturId),
+        sortTimestamp: getDateTimestamp(item.tanggal),
+      }),
+    );
+
+    const hasilKunjunganItems: AktivitasMarketingItem[] =
+      dummyHasilKunjungan.map((item) => ({
         id: `hasil-kunjungan-${item.id}`,
         tanggal: item.tanggalKunjungan,
         jenisAktivitas: "HASIL_KUNJUNGAN",
         namaNasabah: getNasabahName(item.debiturId),
         sortTimestamp: getDateTimestamp(item.tanggalKunjungan),
-      }),
-    );
+      }));
 
     const langkahPenangananItems: AktivitasMarketingItem[] =
       dummyLangkahPenanganan.map((item) => ({
@@ -122,7 +120,11 @@ export default function LaporanAktivitasMarketingSection() {
         sortTimestamp: getDateTimestamp(item.tanggal),
       }));
 
-    return [...actionPlanItems, ...hasilKunjunganItems, ...langkahPenangananItems];
+    return [
+      ...actionPlanItems,
+      ...hasilKunjunganItems,
+      ...langkahPenangananItems,
+    ];
   }, [debiturNameMap]);
 
   const filteredItems = useMemo(() => {
@@ -131,9 +133,11 @@ export default function LaporanAktivitasMarketingSection() {
     return aktivitasItems
       .filter((item) => {
         const matchesAktivitas =
-          selectedAktivitas === "SEMUA" || item.jenisAktivitas === selectedAktivitas;
+          selectedAktivitas === "SEMUA" ||
+          item.jenisAktivitas === selectedAktivitas;
         const matchesSearch =
-          keyword.length === 0 || item.namaNasabah.toLowerCase().includes(keyword);
+          keyword.length === 0 ||
+          item.namaNasabah.toLowerCase().includes(keyword);
 
         return matchesAktivitas && matchesSearch;
       })
@@ -157,7 +161,7 @@ export default function LaporanAktivitasMarketingSection() {
 
       <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="min-w-[220px] flex-1 sm:flex-none">
+          <div className="min-w-55 flex-1 sm:flex-none">
             <select
               value={selectedAktivitas}
               onChange={(event) =>
@@ -174,7 +178,7 @@ export default function LaporanAktivitasMarketingSection() {
             </select>
           </div>
 
-          <div className="relative min-w-[260px] flex-[2]">
+          <div className="relative min-w-65 flex-2">
             <Search
               className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
               aria-hidden="true"
@@ -188,7 +192,7 @@ export default function LaporanAktivitasMarketingSection() {
             />
           </div>
 
-          <div className="min-w-[150px] flex-1 sm:flex-none">
+          <div className="min-w-37.5 flex-1 sm:flex-none">
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortFilter)}
@@ -225,7 +229,10 @@ export default function LaporanAktivitasMarketingSection() {
                   const aktivitasMeta = aktivitasBadgeMeta[item.jenisAktivitas];
 
                   return (
-                    <tr key={item.id} className="transition-colors hover:bg-gray-50">
+                    <tr
+                      key={item.id}
+                      className="transition-colors hover:bg-gray-50"
+                    >
                       <td className="px-4 py-3 text-gray-700">
                         {formatDisplayDate(item.tanggal)}
                       </td>
@@ -236,14 +243,16 @@ export default function LaporanAktivitasMarketingSection() {
                           {aktivitasMeta.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">{item.namaNasabah}</td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {item.namaNasabah}
+                      </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           ) : (
-            <div className="flex min-h-[220px] flex-col items-center justify-center px-6 py-10 text-center">
+            <div className="flex min-h-55 flex-col items-center justify-center px-6 py-10 text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-50 text-gray-300">
                 <SearchX className="h-7 w-7" aria-hidden="true" />
               </div>

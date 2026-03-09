@@ -176,7 +176,11 @@ function DashboardSkeletonTable({
             <div key={colIndex} className="skeleton-table-cell">
               <DashboardSkeletonLine
                 width={
-                  colIndex === 0 ? "30px" : colIndex === cols - 1 ? "70px" : "100%"
+                  colIndex === 0
+                    ? "30px"
+                    : colIndex === cols - 1
+                      ? "70px"
+                      : "100%"
                 }
               />
             </div>
@@ -368,7 +372,8 @@ export default function DashboardOverviewClient() {
               <div
                 className="flex h-14 w-14 items-center justify-center rounded-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
+                  background:
+                    "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
                 }}
               >
                 <FileStack className="h-7 w-7 text-white" aria-hidden="true" />
@@ -388,7 +393,8 @@ export default function DashboardOverviewClient() {
               <div
                 className="flex h-14 w-14 items-center justify-center rounded-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  background:
+                    "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                 }}
               >
                 <Handshake className="h-7 w-7 text-white" aria-hidden="true" />
@@ -408,7 +414,8 @@ export default function DashboardOverviewClient() {
               <div
                 className="flex h-14 w-14 items-center justify-center rounded-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)",
+                  background:
+                    "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)",
                 }}
               >
                 <FileClock className="h-7 w-7 text-white" aria-hidden="true" />
@@ -428,7 +435,8 @@ export default function DashboardOverviewClient() {
               <div
                 className="flex h-14 w-14 items-center justify-center rounded-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  background:
+                    "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
                 }}
               >
                 <AlarmClockCheck
