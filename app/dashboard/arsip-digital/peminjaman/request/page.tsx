@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { BookOpen, Search, Send, X, FileText } from "lucide-react";
-import { dummyDokumen } from "@/lib/data";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -10,11 +9,13 @@ import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { RBAC_DENIED_MESSAGE, filterDigitalDocuments } from "@/lib/rbac";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function RequestPeminjamanPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { showToast } = useAppToast();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen, submitPeminjaman } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -27,7 +28,7 @@ export default function RequestPeminjamanPage() {
 
   const dokumenList = useMemo(() => {
     if (!role) return [];
-    const accessibleDokumen = filterDigitalDocuments(role, dummyDokumen);
+    const accessibleDokumen = filterDigitalDocuments(role, dokumen);
     return accessibleDokumen.map((d) => {
       const tempat = tempatPenyimpanan.find(
         (t) => t.id === d.tempatPenyimpananId,
@@ -44,7 +45,7 @@ export default function RequestPeminjamanPage() {
           : `Tempat ID: ${d.tempatPenyimpananId}`,
       };
     });
-  }, [role, tempatPenyimpanan]);
+  }, [dokumen, role, tempatPenyimpanan]);
 
   const filteredDokumen = dokumenList.filter(
     (doc) =>
@@ -92,11 +93,27 @@ export default function RequestPeminjamanPage() {
       return;
     }
 
+    const created = submitPeminjaman({
+      dokumenIds: selectedDocs,
+      tanggalPeminjaman: formData.tanggalPeminjaman,
+      tanggalPengembalian: formData.tanggalPengembalian,
+      alasan: formData.alasan,
+      peminjam: user?.username ?? "SYSTEM",
+    });
+
+    if (created === 0) {
+      showToast("Tidak ada dokumen tersedia untuk diajukan", "warning");
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       setShowModal(false);
-      showToast("Permohonan peminjaman berhasil diajukan!", "success");
+      showToast(
+        `Permohonan peminjaman berhasil diajukan (${created} dokumen)!`,
+        "success",
+      );
       setSelectedDocs([]);
       setFormData({
         tanggalPeminjaman: "",
@@ -214,7 +231,7 @@ export default function RequestPeminjamanPage() {
                   key={doc.id}
                   className={`group transition-colors cursor-pointer hover:bg-blue-50/40 
                     ${selectedDocs.includes(doc.id) ? "bg-blue-50/60" : ""} 
-                    ${doc.status === "Dipinjam" ? "bg-gray-50/50" : ""}
+                    ${doc.status !== "Tersedia" ? "bg-gray-50/50" : ""}
                   `}
                   onClick={() => handleCheckbox(doc.id)}
                 >
@@ -226,7 +243,7 @@ export default function RequestPeminjamanPage() {
                       <UiverseCheckbox
                         checked={selectedDocs.includes(doc.id)}
                         onCheckedChange={() => handleCheckbox(doc.id)}
-                        disabled={doc.status === "Dipinjam"}
+                        disabled={doc.status !== "Tersedia"}
                         ariaLabel={`Pilih dokumen ${doc.kode}`}
                         size={20}
                       />

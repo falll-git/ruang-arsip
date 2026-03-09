@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Calendar,
   CheckCircle2,
@@ -10,14 +10,13 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import {
-  dummyDisposisi,
-  dummyDokumen,
-  dummyTempatPenyimpanan,
-} from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { filterDigitalDocuments } from "@/lib/rbac";
+import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 interface HistorisItem {
   id: number;
@@ -40,75 +39,10 @@ interface HistorisItem {
   fileUrl?: string;
 }
 
-const completedDisposisi = dummyDisposisi.filter(
-  (d) => d.status === "Approved" || d.status === "Rejected",
-);
-
-const historisPermohonan: HistorisItem[] = completedDisposisi.map((d) => {
-  const dokumen = dummyDokumen.find((doc) => doc.id === d.dokumenId);
-  const lokasi =
-    dokumen?.tempatPenyimpanan ||
-    (dokumen?.tempatPenyimpananId
-      ? dummyTempatPenyimpanan.find((t) => t.id === dokumen.tempatPenyimpananId)
-          ?.kodeLemari
-      : undefined) ||
-    "-";
-  const detail = d.detail || dokumen?.detail || "-";
-  return {
-    id: d.id,
-    kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
-    namaDokumen: dokumen?.namaDokumen ?? "-",
-    jenisDokumen: dokumen?.jenisDokumen ?? "-",
-    detail,
-    tglInput: dokumen?.tglInput ?? "-",
-    userInput: dokumen?.userInput ?? "-",
-    tempatPenyimpanan: lokasi,
-    statusPinjam: dokumen?.statusPinjam ?? "-",
-    alasanPengajuan: d.alasanPengajuan,
-    tglExpired: d.tglExpired,
-    alasanAksi: d.alasanAksi,
-    pemohon: d.pemohon,
-    pemilik: d.pemilik,
-    tglPengajuan: d.tglPengajuan,
-    status: d.status,
-    tglAksi: d.tglAksi || d.tglPengajuan,
-    fileUrl: dokumen?.fileUrl,
-  };
-});
-
-const historisPersetujuan: HistorisItem[] = completedDisposisi.map((d) => {
-  const dokumen = dummyDokumen.find((doc) => doc.id === d.dokumenId);
-  const lokasi =
-    dokumen?.tempatPenyimpanan ||
-    (dokumen?.tempatPenyimpananId
-      ? dummyTempatPenyimpanan.find((t) => t.id === dokumen.tempatPenyimpananId)
-          ?.kodeLemari
-      : undefined) ||
-    "-";
-  const detail = d.detail || dokumen?.detail || "-";
-  return {
-    id: d.id,
-    kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
-    namaDokumen: dokumen?.namaDokumen ?? "-",
-    jenisDokumen: dokumen?.jenisDokumen ?? "-",
-    detail,
-    tglInput: dokumen?.tglInput ?? "-",
-    userInput: dokumen?.userInput ?? "-",
-    tempatPenyimpanan: lokasi,
-    statusPinjam: dokumen?.statusPinjam ?? "-",
-    alasanPengajuan: d.alasanPengajuan,
-    tglExpired: d.tglExpired,
-    alasanAksi: d.alasanAksi,
-    pemilik: d.pemilik,
-    pemohon: d.pemohon,
-    tglPengajuan: d.tglPengajuan,
-    status: d.status,
-    tglAksi: d.tglAksi || d.tglPengajuan,
-    fileUrl: dokumen?.fileUrl,
-  };
-});
-
 export default function HistorisDisposisiPage() {
+  const { role } = useAuth();
+  const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen, disposisi } = useArsipDigitalWorkflow();
   const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<"permohonan" | "persetujuan">(
     "permohonan",
@@ -116,8 +50,62 @@ export default function HistorisDisposisiPage() {
   const [selectedItem, setSelectedItem] = useState<HistorisItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const data =
-    activeTab === "permohonan" ? historisPermohonan : historisPersetujuan;
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(role, dokumen);
+  }, [dokumen, role]);
+
+  const accessibleById = useMemo(
+    () => new Map(accessibleDokumen.map((item) => [item.id, item])),
+    [accessibleDokumen],
+  );
+
+  const completedDisposisi = useMemo(
+    () =>
+      disposisi.filter(
+        (item) =>
+          (item.status === "Approved" || item.status === "Rejected") &&
+          accessibleById.has(item.dokumenId),
+      ),
+    [accessibleById, disposisi],
+  );
+
+  const historisData = useMemo<HistorisItem[]>(() => {
+    return completedDisposisi.map((item) => {
+      const dokumenItem = accessibleById.get(item.dokumenId);
+      const lokasi =
+        dokumenItem?.tempatPenyimpanan ||
+        (dokumenItem?.tempatPenyimpananId
+          ? tempatPenyimpanan.find((t) => t.id === dokumenItem.tempatPenyimpananId)
+              ?.kodeLemari
+          : undefined) ||
+        "-";
+      const detail = item.detail || dokumenItem?.detail || "-";
+
+      return {
+        id: item.id,
+        kode: dokumenItem?.kode ?? `DOK-${item.dokumenId}`,
+        namaDokumen: dokumenItem?.namaDokumen ?? "-",
+        jenisDokumen: dokumenItem?.jenisDokumen ?? "-",
+        detail,
+        tglInput: dokumenItem?.tglInput ?? "-",
+        userInput: dokumenItem?.userInput ?? "-",
+        tempatPenyimpanan: lokasi,
+        statusPinjam: dokumenItem?.statusPinjam ?? "-",
+        alasanPengajuan: item.alasanPengajuan,
+        tglExpired: item.tglExpired,
+        alasanAksi: item.alasanAksi,
+        pemilik: item.pemilik,
+        pemohon: item.pemohon,
+        tglPengajuan: item.tglPengajuan,
+        status: item.status,
+        tglAksi: item.tglAksi || item.tglPengajuan,
+        fileUrl: dokumenItem?.fileUrl,
+      };
+    });
+  }, [accessibleById, completedDisposisi, tempatPenyimpanan]);
+
+  const data = historisData;
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">

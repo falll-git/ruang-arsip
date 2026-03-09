@@ -2,24 +2,25 @@
 
 import { useMemo, useState } from "react";
 import { Archive, FileSpreadsheet, Search } from "lucide-react";
-import { dummyDokumen } from "@/lib/data";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { filterDigitalDocuments } from "@/lib/rbac";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function HistorisPenyimpananPage() {
   const { role } = useAuth();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterAksi, setFilterAksi] = useState("Semua");
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dummyDokumen);
-  }, [role]);
+    return filterDigitalDocuments(role, dokumen);
+  }, [dokumen, role]);
 
   const historisPenyimpanan = useMemo(() => {
     return dokumenAkses.map((d, idx) => {

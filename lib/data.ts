@@ -15,11 +15,14 @@ import type {
 import type {
   CetakDokumenLegalType,
   CetakDokumenRecord,
+  DokumenArsip,
   IdebRecord,
   IdebRingkasan,
   JenisTitipan,
+  Kantor,
   KolektibilitasItem,
   KolektibilitasNasabahItem,
+  Lemari,
   PihakKetiga,
   PihakKetigaKategori,
   PihakKetigaSummary,
@@ -187,6 +190,24 @@ export const dummyTempatPenyimpanan: TempatPenyimpanan[] = [
     kapasitas: 100,
     status: "Aktif",
   },
+  {
+    id: 4,
+    kodeKantor: "KCK",
+    namaKantor: "Kantor Cabang Kranji",
+    kodeLemari: "L-101",
+    rak: "RAK 1",
+    kapasitas: 120,
+    status: "Aktif",
+  },
+  {
+    id: 5,
+    kodeKantor: "KCK",
+    namaKantor: "Kantor Cabang Kranji",
+    kodeLemari: "L-102",
+    rak: "RAK 2",
+    kapasitas: 140,
+    status: "Aktif",
+  },
 ];
 
 export const dummyJenisDokumen: JenisDokumen[] = [
@@ -231,8 +252,8 @@ export const dummyDokumen: Dokumen[] = [
     userInput: "FAISAL",
     tempatPenyimpanan: "L-020",
     tempatPenyimpananId: 1,
-    statusPinjam: "Tersedia",
-    statusPeminjaman: "Tersedia",
+    statusPinjam: "Dipinjam",
+    statusPeminjaman: "Dipinjam",
     levelAkses: "NON_RESTRICT",
     restrict: false,
     fileUrl: "/documents/contoh-dok.pdf",
@@ -311,8 +332,8 @@ export const dummyDokumen: Dokumen[] = [
     userInput: "BURHAN",
     tempatPenyimpanan: "L-001",
     tempatPenyimpananId: 3,
-    statusPinjam: "Tersedia",
-    statusPeminjaman: "Tersedia",
+    statusPinjam: "Dipinjam",
+    statusPeminjaman: "Dipinjam",
     levelAkses: "NON_RESTRICT",
     restrict: false,
     fileUrl: "/documents/contoh-dok.pdf",
@@ -329,6 +350,110 @@ export const dummyDokumen: Dokumen[] = [
     tempatPenyimpananId: 1,
     statusPinjam: "Tersedia",
     statusPeminjaman: "Tersedia",
+    levelAkses: "RESTRICT",
+    restrict: true,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 8,
+    kode: "A010260",
+    jenisDokumen: "Pembiayaan",
+    namaDokumen: "Akad Murabahah Kranji",
+    detail: "Dokumen akad pembiayaan An. Siti Rahayu - Cabang Kranji",
+    tglInput: "12-02-2026",
+    userInput: "ANNAS",
+    tempatPenyimpanan: "L-101",
+    tempatPenyimpananId: 4,
+    statusPinjam: "Dipinjam",
+    statusPeminjaman: "Dipinjam",
+    noKontrak: "PB/2024/001235",
+    debiturId: "DBT002",
+    levelAkses: "RESTRICT",
+    restrict: true,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 9,
+    kode: "A010261",
+    jenisDokumen: "Pembiayaan",
+    namaDokumen: "Sertifikat Agunan Ruko Kranji",
+    detail: "Sertifikat SHM No. 1178 untuk pembiayaan ruko Kranji",
+    tglInput: "13-02-2026",
+    userInput: "FAISAL",
+    tempatPenyimpanan: "L-102",
+    tempatPenyimpananId: 5,
+    statusPinjam: "Diajukan",
+    statusPeminjaman: "Diajukan",
+    noKontrak: "PB/2022/000456",
+    debiturId: "DBT004",
+    levelAkses: "RESTRICT",
+    restrict: true,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 10,
+    kode: "A010262",
+    jenisDokumen: "Perusahaan",
+    namaDokumen: "Laporan Survey Usaha Kranji",
+    detail: "Laporan hasil survey usaha nasabah cabang Kranji",
+    tglInput: "14-02-2026",
+    userInput: "ANGGITA",
+    tempatPenyimpanan: "L-101",
+    tempatPenyimpananId: 4,
+    statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
+    noKontrak: "PB/2021/000789",
+    debiturId: "DBT005",
+    levelAkses: "NON_RESTRICT",
+    restrict: false,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 11,
+    kode: "A010263",
+    jenisDokumen: "Voucher",
+    namaDokumen: "Voucher Teller Kranji Juli",
+    detail: "Voucher Juli 2025 Kantor Cabang Kranji",
+    tglInput: "15-02-2026",
+    userInput: "BURHAN",
+    tempatPenyimpanan: "L-102",
+    tempatPenyimpananId: 5,
+    statusPinjam: "Dipinjam",
+    statusPeminjaman: "Dipinjam",
+    levelAkses: "NON_RESTRICT",
+    restrict: false,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 12,
+    kode: "A010264",
+    jenisDokumen: "Karyawan",
+    namaDokumen: "SK Mutasi Pegawai Kranji",
+    detail: "SK mutasi internal pegawai operasional cabang Kranji",
+    tglInput: "16-02-2026",
+    userInput: "ANGGITA",
+    tempatPenyimpanan: "L-101",
+    tempatPenyimpananId: 4,
+    statusPinjam: "Diajukan",
+    statusPeminjaman: "Diajukan",
+    levelAkses: "RESTRICT",
+    restrict: true,
+    fileUrl: "/documents/contoh-dok.pdf",
+  },
+  {
+    id: 13,
+    kode: "A010265",
+    jenisDokumen: "Pembiayaan",
+    namaDokumen: "NPWP dan NIB CV Kranji Sejahtera",
+    detail: "Legalitas usaha nasabah pembiayaan cabang Kranji",
+    tglInput: "17-02-2026",
+    userInput: "ANNAS",
+    tempatPenyimpanan: "L-102",
+    tempatPenyimpananId: 5,
+    statusPinjam: "Tersedia",
+    statusPeminjaman: "Tersedia",
+    noKontrak: "PB/2024/001234",
+    debiturId: "DBT001",
     levelAkses: "RESTRICT",
     restrict: true,
     fileUrl: "/documents/contoh-dok.pdf",
@@ -570,6 +695,84 @@ export const dummyDisposisi: Disposisi[] = [
     tglAksi: "07-02-2026",
     alasanAksi: "Disetujui untuk kebutuhan arsip legal",
   },
+  {
+    id: 19,
+    dokumenId: 8,
+    detail: "Dokumen akad pembiayaan An. Siti Rahayu - Cabang Kranji",
+    pemohon: "BURHAN",
+    pemilik: "ANNAS",
+    tglPengajuan: "18-02-2026",
+    status: "Pending",
+    alasanPengajuan: "Review addendum akad untuk audit cabang Kranji",
+    tglExpired: null,
+    tglAksi: null,
+    alasanAksi: null,
+  },
+  {
+    id: 20,
+    dokumenId: 9,
+    detail: "Sertifikat SHM No. 1178 untuk pembiayaan ruko Kranji",
+    pemohon: "ANGGITA",
+    pemilik: "FAISAL",
+    tglPengajuan: "19-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Validasi agunan untuk komite pembiayaan cabang",
+    tglExpired: "23-02-2026",
+    tglAksi: "19-02-2026",
+    alasanAksi: "Disetujui untuk keperluan verifikasi agunan",
+  },
+  {
+    id: 21,
+    dokumenId: 10,
+    detail: "Laporan hasil survey usaha nasabah cabang Kranji",
+    pemohon: "FAISAL",
+    pemilik: "ANGGITA",
+    tglPengajuan: "20-02-2026",
+    status: "Rejected",
+    alasanPengajuan: "Pengecekan ulang hasil survey lapangan",
+    tglExpired: null,
+    tglAksi: "20-02-2026",
+    alasanAksi: "Ditolak karena dokumen sudah tersedia pada folder bersama",
+  },
+  {
+    id: 22,
+    dokumenId: 11,
+    detail: "Voucher Juli 2025 Kantor Cabang Kranji",
+    pemohon: "ANNAS",
+    pemilik: "BURHAN",
+    tglPengajuan: "21-02-2026",
+    status: "Approved",
+    alasanPengajuan: "Rekonsiliasi transaksi teller cabang Kranji",
+    tglExpired: "25-02-2026",
+    tglAksi: "21-02-2026",
+    alasanAksi: "Disetujui untuk audit operasional cabang",
+  },
+  {
+    id: 23,
+    dokumenId: 12,
+    detail: "SK mutasi internal pegawai operasional cabang Kranji",
+    pemohon: "BURHAN",
+    pemilik: "ANGGITA",
+    tglPengajuan: "22-02-2026",
+    status: "Pending",
+    alasanPengajuan: "Kebutuhan administrasi personalia kantor cabang",
+    tglExpired: null,
+    tglAksi: null,
+    alasanAksi: null,
+  },
+  {
+    id: 24,
+    dokumenId: 13,
+    detail: "Legalitas usaha nasabah pembiayaan cabang Kranji",
+    pemohon: "ANGGITA",
+    pemilik: "ANNAS",
+    tglPengajuan: "23-02-2026",
+    status: "Rejected",
+    alasanPengajuan: "Validasi dokumen legal untuk monitoring pembiayaan",
+    tglExpired: null,
+    tglAksi: "23-02-2026",
+    alasanAksi: "Ditolak karena review sedang dikerjakan oleh tim legal",
+  },
 ];
 
 export const dummyPeminjaman: Peminjaman[] = [
@@ -605,7 +808,225 @@ export const dummyPeminjaman: Peminjaman[] = [
     alasanApprove: "Ok",
     tglPenyerahan: "20-01-2026",
   },
+  {
+    id: 3,
+    dokumenId: 8,
+    detail: "Akad Murabahah Kranji",
+    peminjam: "FAISAL",
+    tglPinjam: "24-02-2026",
+    tglKembali: "03-03-2026",
+    tglPengembalian: null,
+    status: "Dipinjam",
+    alasan: "Review legal addendum akad cabang Kranji",
+    approver: "ANNAS",
+    tglApprove: "24-02-2026",
+    jamApprove: "10:15",
+    alasanApprove: "Disetujui untuk legal review",
+    tglPenyerahan: "24-02-2026",
+  },
+  {
+    id: 4,
+    dokumenId: 9,
+    detail: "Sertifikat Agunan Ruko Kranji",
+    peminjam: "BURHAN",
+    tglPinjam: "25-02-2026",
+    tglKembali: "01-03-2026",
+    tglPengembalian: null,
+    status: "Pending",
+    alasan: "Pengecekan agunan sebelum appraisal internal",
+    approver: null,
+    tglApprove: null,
+    jamApprove: null,
+    alasanApprove: null,
+    tglPenyerahan: null,
+  },
+  {
+    id: 5,
+    dokumenId: 10,
+    detail: "Laporan Survey Usaha Kranji",
+    peminjam: "ANGGITA",
+    tglPinjam: "10-02-2026",
+    tglKembali: "14-02-2026",
+    tglPengembalian: "14-02-2026",
+    status: "Dikembalikan",
+    alasan: "Validasi hasil survey usaha nasabah",
+    approver: "FAISAL",
+    tglApprove: "10-02-2026",
+    jamApprove: "08:45",
+    alasanApprove: "Disetujui",
+    tglPenyerahan: "10-02-2026",
+  },
+  {
+    id: 6,
+    dokumenId: 11,
+    detail: "Voucher Teller Kranji Juli",
+    peminjam: "ANNAS",
+    tglPinjam: "26-02-2026",
+    tglKembali: "04-03-2026",
+    tglPengembalian: null,
+    status: "Dipinjam",
+    alasan: "Audit transaksi kas cabang Kranji",
+    approver: "FAISAL",
+    tglApprove: "26-02-2026",
+    jamApprove: "11:00",
+    alasanApprove: "Disetujui",
+    tglPenyerahan: "26-02-2026",
+  },
+  {
+    id: 7,
+    dokumenId: 12,
+    detail: "SK Mutasi Pegawai Kranji",
+    peminjam: "FAISAL",
+    tglPinjam: "27-02-2026",
+    tglKembali: "05-03-2026",
+    tglPengembalian: null,
+    status: "Pending",
+    alasan: "Verifikasi dokumen mutasi untuk kebutuhan audit SDM",
+    approver: null,
+    tglApprove: null,
+    jamApprove: null,
+    alasanApprove: null,
+    tglPenyerahan: null,
+  },
+  {
+    id: 8,
+    dokumenId: 13,
+    detail: "NPWP dan NIB CV Kranji Sejahtera",
+    peminjam: "ANGGITA",
+    tglPinjam: "05-02-2026",
+    tglKembali: "12-02-2026",
+    tglPengembalian: "12-02-2026",
+    status: "Dikembalikan",
+    alasan: "Pemeriksaan legalitas nasabah pembiayaan cabang",
+    approver: "ANNAS",
+    tglApprove: "05-02-2026",
+    jamApprove: "09:30",
+    alasanApprove: "Disetujui",
+    tglPenyerahan: "05-02-2026",
+  },
 ];
+
+const kantorIdByNama: Record<string, string> = {
+  "Kantor Pusat": "kantor-001",
+  "Kantor Cabang": "kantor-002",
+  "Kantor Kas ST": "kantor-003",
+  "Kantor Kas Timur": "kantor-004",
+  "Kantor Cabang Kranji": "kantor-005",
+};
+
+function toKantorId(namaKantor: string) {
+  const knownId = kantorIdByNama[namaKantor];
+  if (knownId) return knownId;
+
+  const normalized = namaKantor
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `kantor-${normalized}`;
+}
+
+function parseLegacyDateToIso(dateValue: string) {
+  const parts = dateValue.split("-");
+  if (parts.length !== 3) return dateValue;
+
+  const [day, month, year] = parts;
+  if (day.length !== 2 || month.length !== 2 || year.length !== 4) {
+    return dateValue;
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+const tempatById = new Map(dummyTempatPenyimpanan.map((item) => [item.id, item]));
+const lemariIdByTempatId = new Map(
+  dummyTempatPenyimpanan.map((item) => [item.id, `lemari-${String(item.id).padStart(3, "0")}`]),
+);
+
+export const lemariData: Lemari[] = dummyTempatPenyimpanan.map((item) => ({
+  id: `lemari-${String(item.id).padStart(3, "0")}`,
+  kantorId: toKantorId(item.namaKantor),
+  kodeLemari: item.kodeLemari,
+  rak: item.rak,
+  totalArsip: dummyDokumen.filter((doc) => doc.tempatPenyimpananId === item.id).length,
+}));
+
+export const dokumenArsipData: DokumenArsip[] = dummyDokumen
+  .map((item) => {
+    if (item.tempatPenyimpananId == null) return null;
+
+    const lemariId = lemariIdByTempatId.get(item.tempatPenyimpananId);
+    if (!lemariId) return null;
+
+    return {
+      id: `dok-${String(item.id).padStart(3, "0")}`,
+      lemariId,
+      namaDokumen: item.namaDokumen,
+      jenis: item.restrict ? ("FISIK" as const) : ("DIGITAL" as const),
+      tanggalInput: parseLegacyDateToIso(item.tglInput),
+    };
+  })
+  .filter((item): item is DokumenArsip => item !== null);
+
+const kantorSummaryMap = new Map<
+  string,
+  {
+    id: string;
+    namaKantor: string;
+    totalArsip: number;
+    disposisi: number;
+    peminjaman: number;
+  }
+>();
+
+dummyTempatPenyimpanan.forEach((item) => {
+  const kantorId = toKantorId(item.namaKantor);
+  if (!kantorSummaryMap.has(kantorId)) {
+    kantorSummaryMap.set(kantorId, {
+      id: kantorId,
+      namaKantor: item.namaKantor,
+      totalArsip: 0,
+      disposisi: 0,
+      peminjaman: 0,
+    });
+  }
+});
+
+lemariData.forEach((item) => {
+  const summary = kantorSummaryMap.get(item.kantorId);
+  if (summary) {
+    summary.totalArsip += item.totalArsip;
+  }
+});
+
+const kantorIdByDokumenId = new Map<number, string>();
+
+dummyDokumen.forEach((item) => {
+  if (item.tempatPenyimpananId == null) return;
+  const tempat = tempatById.get(item.tempatPenyimpananId);
+  if (!tempat) return;
+  kantorIdByDokumenId.set(item.id, toKantorId(tempat.namaKantor));
+});
+
+dummyDisposisi.forEach((item) => {
+  const kantorId = kantorIdByDokumenId.get(item.dokumenId);
+  if (!kantorId) return;
+  const summary = kantorSummaryMap.get(kantorId);
+  if (!summary) return;
+  summary.disposisi += 1;
+});
+
+dummyPeminjaman.forEach((item) => {
+  const kantorId = kantorIdByDokumenId.get(item.dokumenId);
+  if (!kantorId) return;
+  const summary = kantorSummaryMap.get(kantorId);
+  if (!summary) return;
+  summary.peminjaman += 1;
+});
+
+export const kantorData: Kantor[] = Array.from(kantorSummaryMap.values()).sort((a, b) =>
+  a.namaKantor.localeCompare(b.namaKantor, "id-ID"),
+);
 
 export interface SuratUser {
   id: number;

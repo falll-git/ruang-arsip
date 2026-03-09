@@ -25,6 +25,33 @@ export interface PihakKetigaSummary {
   lewatExpired: number;
 }
 
+export interface Kantor {
+  id: string;
+  namaKantor: string;
+  totalArsip: number;
+  disposisi: number;
+  peminjaman: number;
+}
+
+export interface Lemari {
+  id: string;
+  kantorId: string;
+  kodeLemari: string;
+  rak: string;
+  totalArsip: number;
+}
+
+export type DokumenArsipJenis = "DIGITAL" | "FISIK";
+
+export interface DokumenArsip {
+  id: string;
+  lemariId: string;
+  namaDokumen: string;
+  jenis: DokumenArsipJenis;
+  tanggalInput: string;
+  nasabah?: string;
+}
+
 export type ProgressPihakKetigaStatus = "PROSES" | "SELESAI" | "EXPIRED";
 
 export interface ProgressPihakKetiga {

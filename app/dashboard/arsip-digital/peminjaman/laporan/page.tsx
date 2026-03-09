@@ -9,7 +9,6 @@ import {
   Search,
   Filter,
 } from "lucide-react";
-import { dummyDokumen, dummyPeminjaman } from "@/lib/data";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -20,9 +19,11 @@ import {
   parseDateString,
   toIsoDate,
 } from "@/lib/utils/date";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function LaporanPeminjamanPage() {
   const { role } = useAuth();
+  const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [dateFrom, setDateFrom] = useState("");
@@ -30,8 +31,8 @@ export default function LaporanPeminjamanPage() {
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dummyDokumen);
-  }, [role]);
+    return filterDigitalDocuments(role, dokumen);
+  }, [dokumen, role]);
 
   const dokumenAksesById = useMemo(
     () => new Map(dokumenAkses.map((d) => [d.id, d])),
@@ -40,7 +41,7 @@ export default function LaporanPeminjamanPage() {
 
   const riwayatPeminjaman = useMemo(() => {
     const today = toIsoDate(new Date());
-    return dummyPeminjaman
+    return peminjaman
       .filter((p) => dokumenAksesById.has(p.dokumenId))
       .map((p) => {
         const dokumen = dokumenAksesById.get(p.dokumenId);
@@ -49,7 +50,12 @@ export default function LaporanPeminjamanPage() {
             ? "Aktif"
             : p.status === "Dikembalikan"
               ? "Dikembalikan"
-              : "Pending";
+              : p.status === "Pending"
+                ? "Pending"
+                : "Ditolak";
+
+        const jatuhTempoDate = parseDateString(p.tglKembali);
+        const jatuhTempoIso = jatuhTempoDate ? toIsoDate(jatuhTempoDate) : "";
 
         return {
           id: p.id,
@@ -61,10 +67,13 @@ export default function LaporanPeminjamanPage() {
           jatuhTempo: p.tglKembali,
           status,
           approvedBy: p.approver ?? "-",
-          isTerlambat: p.status === "Dipinjam" && p.tglKembali < today,
+          isTerlambat:
+            p.status === "Dipinjam" &&
+            Boolean(jatuhTempoIso) &&
+            jatuhTempoIso < today,
         };
       });
-  }, [dokumenAksesById]);
+  }, [dokumenAksesById, peminjaman]);
 
   const normalizedFrom =
     dateFrom && dateTo && dateFrom > dateTo ? dateTo : dateFrom;
@@ -123,7 +132,9 @@ export default function LaporanPeminjamanPage() {
             ? "Dipinjam"
             : item.status === "Pending"
               ? "Pending"
-              : "Dikembalikan",
+              : item.status === "Dikembalikan"
+                ? "Dikembalikan"
+                : "Ditolak",
       })),
     });
   };
@@ -224,6 +235,7 @@ export default function LaporanPeminjamanPage() {
                 <option value="Pending">Menunggu Persetujuan</option>
                 <option value="Aktif">Sedang Dipinjam</option>
                 <option value="Dikembalikan">Dikembalikan</option>
+                <option value="Ditolak">Ditolak</option>
               </select>
             </div>
           </div>
@@ -333,7 +345,9 @@ export default function LaporanPeminjamanPage() {
                               : "bg-blue-50 text-blue-700 border-blue-200"
                             : item.status === "Pending"
                               ? "bg-amber-50 text-amber-700 border-amber-200"
-                              : "bg-green-50 text-green-700 border-green-200"
+                              : item.status === "Dikembalikan"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-rose-50 text-rose-700 border-rose-200"
                         }`}
                     >
                       {item.status === "Aktif" ? (
@@ -352,13 +366,21 @@ export default function LaporanPeminjamanPage() {
                           />
                           Pending
                         </>
-                      ) : (
+                      ) : item.status === "Dikembalikan" ? (
                         <>
                           <CheckCircle2
                             className="w-3.5 h-3.5"
                             aria-hidden="true"
                           />
                           Diserahkan
+                        </>
+                      ) : (
+                        <>
+                          <BookOpen
+                            className="w-3.5 h-3.5"
+                            aria-hidden="true"
+                          />
+                          Ditolak
                         </>
                       )}
                     </span>

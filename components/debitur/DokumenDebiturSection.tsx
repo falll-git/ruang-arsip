@@ -1,7 +1,14 @@
 "use client";
 
 import { FolderOpen, Plus, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 
 import type { DokumenDebitur } from "@/lib/types/modul3";
 import { todayIsoDate } from "@/lib/utils/date";
@@ -287,7 +294,29 @@ export default function DokumenDebiturSection({
   initialDocuments: DokumenDebitur[];
 }) {
   const { showToast } = useAppToast();
-  const [documents, setDocuments] = useState<DokumenDebitur[]>(initialDocuments);
+  const [documentsByDebitur, setDocumentsByDebitur] = useState<
+    Record<string, DokumenDebitur[]>
+  >({});
+  const documents = documentsByDebitur[debiturId] ?? initialDocuments;
+  const setDocuments = useCallback(
+    (updater: SetStateAction<DokumenDebitur[]>) => {
+      setDocumentsByDebitur((current) => {
+        const currentDocuments = current[debiturId] ?? initialDocuments;
+        const nextDocuments =
+          typeof updater === "function"
+            ? (
+                updater as (currentValue: DokumenDebitur[]) => DokumenDebitur[]
+              )(currentDocuments)
+            : updater;
+
+        return {
+          ...current,
+          [debiturId]: nextDocuments,
+        };
+      });
+    },
+    [debiturId, initialDocuments],
+  );
   const [uploadConfig, setUploadConfig] = useState<{
     kategori: "AWAL" | "LAINNYA";
     namaDokumen?: string;
@@ -300,10 +329,6 @@ export default function DokumenDebiturSection({
     fileType?: "pdf" | "image";
   } | null>(null);
   const objectUrlsRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    setDocuments(initialDocuments);
-  }, [debiturId]);
 
   useEffect(() => {
     return () => {

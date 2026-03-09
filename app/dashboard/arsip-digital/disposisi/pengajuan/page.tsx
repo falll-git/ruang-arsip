@@ -1,28 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, Send, X, FileText } from "lucide-react";
-import { dummyDokumen } from "@/lib/data";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-
-const dokumenList = dummyDokumen.map((d) => ({
-  id: d.id,
-  kode: d.kode,
-  jenisDokumen: d.jenisDokumen,
-  namaDokumen: d.namaDokumen,
-  detail: d.detail,
-  pemilik: d.userInput,
-}));
+import { useAuth } from "@/components/auth/AuthProvider";
+import { filterDigitalDocuments } from "@/lib/rbac";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function PengajuanDisposisiPage() {
+  const { role, user } = useAuth();
   const { showToast } = useAppToast();
+  const { dokumen, submitDisposisi } = useArsipDigitalWorkflow();
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [alasan, setAlasan] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const dokumenList = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(role, dokumen).map((d) => ({
+      id: d.id,
+      kode: d.kode,
+      jenisDokumen: d.jenisDokumen,
+      namaDokumen: d.namaDokumen,
+      detail: d.detail,
+      pemilik: d.userInput,
+    }));
+  }, [dokumen, role]);
 
   const filteredDokumen = dokumenList.filter(
     (doc) =>
@@ -45,11 +52,30 @@ export default function PengajuanDisposisiPage() {
   };
 
   const handleSubmit = () => {
+    if (!alasan.trim()) {
+      showToast("Alasan pengajuan wajib diisi", "warning");
+      return;
+    }
+
+    const created = submitDisposisi({
+      dokumenIds: selectedDocs,
+      alasanPengajuan: alasan,
+      pemohon: user?.username ?? "SYSTEM",
+    });
+
+    if (created === 0) {
+      showToast("Tidak ada dokumen yang bisa diajukan", "warning");
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       setShowModal(false);
-      showToast("Pengajuan disposisi berhasil dikirim!", "success");
+      showToast(
+        `Pengajuan disposisi berhasil dikirim (${created} dokumen)!`,
+        "success",
+      );
       setSelectedDocs([]);
       setAlasan("");
     }, 1500);

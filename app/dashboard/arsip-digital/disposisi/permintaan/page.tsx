@@ -1,39 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, Inbox, X, User, AlertCircle } from "lucide-react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
-import { dummyDisposisi, dummyDokumen } from "@/lib/data";
 import { canApproveAsLegal } from "@/lib/rbac";
 import { formatDateDisplay } from "@/lib/utils/date";
-
-const permintaanList = dummyDisposisi
-  .filter((d) => d.status === "Pending")
-  .map((d) => {
-    const dokumen = dummyDokumen.find((doc) => doc.id === d.dokumenId);
-    return {
-      id: d.id,
-      kode: dokumen?.kode ?? `DOK-${d.dokumenId}`,
-      namaDokumen: dokumen?.namaDokumen ?? "-",
-      detail: d.detail || dokumen?.detail || "-",
-      pemohon: d.pemohon,
-      tglPengajuan: d.tglPengajuan,
-      alasan: d.alasanPengajuan,
-      status: d.status,
-    };
-  });
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function PermintaanDisposisiPage() {
   const { showToast } = useAppToast();
   const { ensureAllowed } = useProtectedAction();
-  const [data, setData] = useState(permintaanList);
+  const { dokumen, disposisi, processDisposisi } = useArsipDigitalWorkflow();
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<
-    (typeof permintaanList)[0] | null
+    {
+      id: number;
+      kode: string;
+      namaDokumen: string;
+      detail: string;
+      pemohon: string;
+      tglPengajuan: string;
+      alasan: string;
+      status: string;
+    } | null
   >(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(
     null,
@@ -42,8 +35,26 @@ export default function PermintaanDisposisiPage() {
   const [alasanAksi, setAlasanAksi] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const data = useMemo(() => {
+    return disposisi
+      .filter((d) => d.status === "Pending")
+      .map((d) => {
+        const dokumenItem = dokumen.find((doc) => doc.id === d.dokumenId);
+        return {
+          id: d.id,
+          kode: dokumenItem?.kode ?? `DOK-${d.dokumenId}`,
+          namaDokumen: dokumenItem?.namaDokumen ?? "-",
+          detail: d.detail || dokumenItem?.detail || "-",
+          pemohon: d.pemohon,
+          tglPengajuan: d.tglPengajuan,
+          alasan: d.alasanPengajuan,
+          status: d.status,
+        };
+      });
+  }, [disposisi, dokumen]);
+
   const handleAction = (
-    item: (typeof permintaanList)[0],
+    item: (typeof data)[0],
     type: "approve" | "reject",
   ) => {
     if (!ensureAllowed(canApproveAsLegal)) return;
@@ -54,17 +65,32 @@ export default function PermintaanDisposisiPage() {
 
   const handleSubmit = () => {
     if (!ensureAllowed(canApproveAsLegal)) return;
+    if (!selectedItem || !actionType) return;
+
+    const updated = processDisposisi({
+      id: selectedItem.id,
+      action: actionType,
+      alasanAksi,
+      tanggalExpired,
+    });
+
+    if (!updated) {
+      showToast("Data disposisi tidak valid atau sudah diproses", "warning");
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       setShowModal(false);
-      setData(data.filter((d) => d.id !== selectedItem?.id));
       showToast(
         actionType === "approve"
           ? "Disposisi berhasil disetujui!"
           : "Disposisi berhasil ditolak!",
         actionType === "approve" ? "success" : "warning",
       );
+      setSelectedItem(null);
+      setActionType(null);
       setTanggalExpired("");
       setAlasanAksi("");
     }, 1500);

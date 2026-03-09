@@ -95,6 +95,44 @@ function saveToStorage(data: {
   }
 }
 
+function mergeTempatWithDefaults(
+  value: TempatPenyimpanan[],
+): TempatPenyimpanan[] {
+  const existingById = new Set(value.map((item) => item.id));
+  const merged = [...value];
+
+  dummyTempatPenyimpanan.forEach((item) => {
+    if (!existingById.has(item.id)) {
+      merged.push(item);
+    }
+  });
+
+  return merged.sort((a, b) => a.id - b.id);
+}
+
+function mergeJenisWithDefaults(value: JenisDokumen[]): JenisDokumen[] {
+  const existingById = new Set(value.map((item) => item.id));
+  const merged = [...value];
+
+  dummyJenisDokumen.forEach((item) => {
+    if (!existingById.has(item.id)) {
+      merged.push(item);
+    }
+  });
+
+  return merged.sort((a, b) => a.id - b.id);
+}
+
+function mergeWithDefaults(data: {
+  tempatPenyimpanan: TempatPenyimpanan[];
+  jenisDokumen: JenisDokumen[];
+}) {
+  return {
+    tempatPenyimpanan: mergeTempatWithDefaults(data.tempatPenyimpanan),
+    jenisDokumen: mergeJenisWithDefaults(data.jenisDokumen),
+  };
+}
+
 export function ArsipDigitalMasterDataProvider({
   children,
 }: {
@@ -110,9 +148,10 @@ export function ArsipDigitalMasterDataProvider({
   useEffect(() => {
     const stored = loadFromStorage();
     if (stored) {
+      const merged = mergeWithDefaults(stored);
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTempatPenyimpanan(stored.tempatPenyimpanan);
-      setJenisDokumen(stored.jenisDokumen);
+      setTempatPenyimpanan(merged.tempatPenyimpanan);
+      setJenisDokumen(merged.jenisDokumen);
     }
     setHydrated(true);
   }, []);

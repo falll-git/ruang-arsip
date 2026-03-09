@@ -14,8 +14,6 @@ import {
   User,
 } from "lucide-react";
 import {
-  dummyDokumen,
-  dummyPeminjaman,
   formatCurrency,
   getDebiturById,
   getKolektibilitasLabel,
@@ -32,6 +30,7 @@ import {
   type DataAccessLevel,
 } from "@/lib/rbac";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 type DokumenRow = {
   id: number;
@@ -58,13 +57,14 @@ export default function ListDokumenPage() {
   const { showToast } = useAppToast();
   const { openPreview } = useDocumentPreviewContext();
   const { tempatPenyimpanan, jenisDokumen } = useArsipDigitalMasterData();
+  const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJenis, setFilterJenis] = useState("Semua");
   const [selectedDoc, setSelectedDoc] = useState<DokumenRow | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
   const allDokumen = useMemo<DokumenRow[]>(() => {
-    return dummyDokumen.map((d) => {
+    return dokumen.map((d) => {
       const tempat =
         d.tempatPenyimpananId != null
           ? tempatPenyimpanan.find((t) => t.id === d.tempatPenyimpananId)
@@ -90,7 +90,7 @@ export default function ListDokumenPage() {
         levelAkses: d.levelAkses,
       };
     });
-  }, [tempatPenyimpanan]);
+  }, [dokumen, tempatPenyimpanan]);
 
   const jenisDokumenList = useMemo(() => {
     return [
@@ -106,7 +106,7 @@ export default function ListDokumenPage() {
 
   const historisPeminjaman = useMemo(() => {
     if (!selectedDoc) return [];
-    return dummyPeminjaman
+    return peminjaman
       .filter((p) => p.dokumenId === selectedDoc.id)
       .map((p) => ({
         id: p.id,
@@ -115,7 +115,7 @@ export default function ListDokumenPage() {
         tglKembali: p.tglKembali,
         status: p.status,
       }));
-  }, [selectedDoc]);
+  }, [peminjaman, selectedDoc]);
 
   const debiturTerkait = useMemo(() => {
     if (!selectedDoc?.debiturId) return undefined;

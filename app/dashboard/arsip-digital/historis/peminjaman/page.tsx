@@ -2,21 +2,36 @@
 
 import { useMemo, useState } from "react";
 import { FileSpreadsheet, History, Search } from "lucide-react";
-import { dummyDokumen, dummyPeminjaman } from "@/lib/data";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { filterDigitalDocuments } from "@/lib/rbac";
+import { parseDateString } from "@/lib/utils/date";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+
+function getDurationText(startValue: string, endValue: string) {
+  const startDate = parseDateString(startValue);
+  const endDate = parseDateString(endValue);
+  if (!startDate || !endDate) return "0 hari";
+
+  const oneDay = 24 * 60 * 60 * 1000;
+  const diff = Math.round(
+    (endDate.setHours(0, 0, 0, 0) - startDate.setHours(0, 0, 0, 0)) / oneDay,
+  );
+  const days = Number.isFinite(diff) ? Math.max(diff, 0) : 0;
+  return `${days} hari`;
+}
 
 export default function HistorisPeminjamanPage() {
   const { role } = useAuth();
+  const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPeminjam, setFilterPeminjam] = useState("Semua");
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dummyDokumen);
-  }, [role]);
+    return filterDigitalDocuments(role, dokumen);
+  }, [dokumen, role]);
 
   const dokumenAksesById = useMemo(
     () => new Map(dokumenAkses.map((d) => [d.id, d])),
@@ -24,13 +39,16 @@ export default function HistorisPeminjamanPage() {
   );
 
   const historisPeminjaman = useMemo(() => {
-    return dummyPeminjaman
+    return peminjaman
       .filter(
         (p) => p.status === "Dikembalikan" && dokumenAksesById.has(p.dokumenId),
       )
       .map((p) => {
         const dokumen = dokumenAksesById.get(p.dokumenId);
-        const durasi = "5 hari";
+        const durasi = getDurationText(
+          p.tglPinjam,
+          p.tglPengembalian ?? p.tglKembali,
+        );
         return {
           id: p.id,
           kode: dokumen?.kode ?? `DOK-${p.dokumenId}`,
@@ -42,7 +60,7 @@ export default function HistorisPeminjamanPage() {
           approvedBy: p.approver ?? "-",
         };
       });
-  }, [dokumenAksesById]);
+  }, [dokumenAksesById, peminjaman]);
 
   const peminjamList = [
     "Semua",

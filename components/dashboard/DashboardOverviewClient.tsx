@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import ProtectedLink from "@/components/rbac/ProtectedLink";
-import { dummyDisposisi, dummyDokumen, dummyPeminjaman } from "@/lib/data";
 import { filterDigitalDocuments } from "@/lib/rbac";
 
 function AnimatedNumber({
@@ -226,12 +226,13 @@ function DashboardSkeletonBanner() {
 
 export default function DashboardOverviewClient() {
   const { user, role } = useAuth();
+  const { dokumen, disposisi, peminjaman } = useArsipDigitalWorkflow();
   const [isLoading, setIsLoading] = useState(true);
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dummyDokumen);
-  }, [role]);
+    return filterDigitalDocuments(role, dokumen);
+  }, [dokumen, role]);
 
   const dokumenAksesId = useMemo(
     () => new Set(dokumenAkses.map((dokumen) => dokumen.id)),
@@ -244,13 +245,13 @@ export default function DashboardOverviewClient() {
       (dokumen) => dokumen.statusPinjam === "Dipinjam",
     ).length;
 
-    const disposisiPending = dummyDisposisi.filter(
+    const disposisiPending = disposisi.filter(
       (disposisi) =>
         disposisi.status === "Pending" &&
         dokumenAksesId.has(disposisi.dokumenId),
     ).length;
 
-    const peminjamanPending = dummyPeminjaman.filter(
+    const peminjamanPending = peminjaman.filter(
       (peminjaman) =>
         peminjaman.status === "Pending" &&
         dokumenAksesId.has(peminjaman.dokumenId),
@@ -262,7 +263,7 @@ export default function DashboardOverviewClient() {
       disposisiPending,
       peminjamanPending,
     };
-  }, [dokumenAkses, dokumenAksesId]);
+  }, [disposisi, dokumenAkses, dokumenAksesId, peminjaman]);
 
   const moduleCards = useMemo(() => {
     const list: ModuleCard[] = [

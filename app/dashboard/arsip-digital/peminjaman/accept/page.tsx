@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BookOpen,
   Check,
@@ -9,34 +9,29 @@ import {
   FileBarChart2,
   X,
 } from "lucide-react";
-import { dummyDokumen, dummyPeminjaman } from "@/lib/data";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
-
-const permohonanList = dummyPeminjaman
-  .filter((p) => p.status === "Pending" || p.status === "Dipinjam")
-  .map((p) => {
-    const dokumen = dummyDokumen.find((d) => d.id === p.dokumenId);
-    return {
-      id: p.id,
-      kode: dokumen?.kode ?? `DOK-${p.dokumenId}`,
-      namaDokumen: dokumen?.namaDokumen ?? "-",
-      pemohon: p.peminjam,
-      tglPeminjaman: p.tglPinjam,
-      tglPengembalian: p.tglKembali,
-      alasan: p.alasan,
-      tipe: p.status === "Dipinjam" ? "Pengembalian" : "Peminjaman",
-    };
-  });
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 export default function AcceptPeminjamanPage() {
+  const { user } = useAuth();
   const { showToast } = useAppToast();
-  const [data, setData] = useState(permohonanList);
+  const { dokumen, peminjaman, processPeminjaman } = useArsipDigitalWorkflow();
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<
-    (typeof permohonanList)[0] | null
+    {
+      id: number;
+      kode: string;
+      namaDokumen: string;
+      pemohon: string;
+      tglPeminjaman: string;
+      tglPengembalian: string;
+      alasan: string;
+      tipe: "Peminjaman" | "Pengembalian";
+    } | null
   >(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(
     null,
@@ -44,6 +39,24 @@ export default function AcceptPeminjamanPage() {
   const [tanggalPenyerahan, setTanggalPenyerahan] = useState("");
   const [alasanAksi, setAlasanAksi] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const data = useMemo(() => {
+    return peminjaman
+      .filter((p) => p.status === "Pending" || p.status === "Dipinjam")
+      .map((p) => {
+        const dokumenItem = dokumen.find((d) => d.id === p.dokumenId);
+        return {
+          id: p.id,
+          kode: dokumenItem?.kode ?? `DOK-${p.dokumenId}`,
+          namaDokumen: dokumenItem?.namaDokumen ?? "-",
+          pemohon: p.peminjam,
+          tglPeminjaman: p.tglPinjam,
+          tglPengembalian: p.tglKembali,
+          alasan: p.alasan,
+          tipe: p.status === "Dipinjam" ? ("Pengembalian" as const) : ("Peminjaman" as const),
+        };
+      });
+  }, [dokumen, peminjaman]);
 
   const closeModal = () => {
     setShowModal(false);
@@ -54,7 +67,7 @@ export default function AcceptPeminjamanPage() {
   };
 
   const handleAction = (
-    item: (typeof permohonanList)[0],
+    item: (typeof data)[0],
     type: "approve" | "reject",
   ) => {
     setSelectedItem(item);
@@ -63,11 +76,24 @@ export default function AcceptPeminjamanPage() {
   };
 
   const handleSubmit = () => {
+    if (!selectedItem || !actionType) return;
+
+    const updated = processPeminjaman({
+      id: selectedItem.id,
+      action: actionType,
+      tanggalPenyerahan,
+      alasanAksi,
+      approver: user?.username ?? undefined,
+    });
+
+    if (!updated) {
+      showToast("Data peminjaman tidak valid atau sudah diproses", "warning");
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      setData(data.filter((d) => d.id !== selectedItem?.id));
-
       const message =
         actionType === "approve"
           ? selectedItem?.tipe === "Peminjaman"

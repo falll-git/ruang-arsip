@@ -52,6 +52,7 @@ import {
   useDocumentPreviewContext,
 } from "@/components/ui/DocumentPreviewContext";
 import { ArsipDigitalMasterDataProvider } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { ArsipDigitalWorkflowProvider } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import ProtectedLink from "@/components/rbac/ProtectedLink";
@@ -67,7 +68,9 @@ export default function DashboardLayout({
   return (
     <DocumentPreviewProvider>
       <ArsipDigitalMasterDataProvider>
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        <ArsipDigitalWorkflowProvider>
+          <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        </ArsipDigitalWorkflowProvider>
       </ArsipDigitalMasterDataProvider>
     </DocumentPreviewProvider>
   );
