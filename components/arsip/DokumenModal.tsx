@@ -8,7 +8,12 @@ import type { DokumenArsip, Lemari, Rak } from "@/lib/types";
 
 type FilterJenis = "SEMUA" | DokumenArsip["jenisDokumen"];
 
-const jenisDokumenOrder = ["Perusahaan", "Pembiayaan", "Karyawan", "Voucher"];
+const jenisDokumenOrder = [
+  "Perusahaan",
+  "Pembiayaan",
+  "Karyawan",
+  "Voucher",
+] satisfies DokumenArsip["jenisDokumen"][];
 
 type DokumenModalProps = {
   lemari: Lemari;
