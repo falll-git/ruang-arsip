@@ -44,11 +44,13 @@ export interface Rak {
 }
 
 export type DokumenArsipJenis = "DIGITAL" | "FISIK";
+export type DokumenArsipKategori = "Perusahaan" | "Pembiayaan" | "Karyawan" | "Voucher";
 
 export interface DokumenArsip {
   id: string;
   rakId: string;
   namaDokumen: string;
+  jenisDokumen: DokumenArsipKategori;
   jenis: DokumenArsipJenis;
   tanggalInput: string;
 }

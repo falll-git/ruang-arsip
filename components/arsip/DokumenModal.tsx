@@ -6,7 +6,9 @@ import { ArrowLeft, Eye, FolderOpen, Search, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DokumenArsip, Lemari, Rak } from "@/lib/types";
 
-type FilterJenis = "SEMUA" | "DIGITAL" | "FISIK";
+type FilterJenis = "SEMUA" | DokumenArsip["jenisDokumen"];
+
+const jenisDokumenOrder = ["Perusahaan", "Pembiayaan", "Karyawan", "Voucher"];
 
 type DokumenModalProps = {
   lemari: Lemari;
@@ -41,13 +43,23 @@ export default function DokumenModal({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJenis, setFilterJenis] = useState<FilterJenis>("SEMUA");
 
+  const jenisDokumenOptions = useMemo(() => {
+    const available = new Set(dokumen.map((item) => item.jenisDokumen));
+    const ordered = jenisDokumenOrder.filter((item) => available.has(item));
+    const extras = Array.from(available).filter(
+      (item) => !jenisDokumenOrder.includes(item),
+    );
+    return ["SEMUA", ...ordered, ...extras];
+  }, [dokumen]);
+
   const filteredDokumen = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
     return dokumen.filter((item) => {
       const matchSearch =
         query.length === 0 || item.namaDokumen.toLowerCase().includes(query);
-      const matchJenis = filterJenis === "SEMUA" || item.jenis === filterJenis;
+      const matchJenis =
+        filterJenis === "SEMUA" || item.jenisDokumen === filterJenis;
 
       return matchSearch && matchJenis;
     });
@@ -103,9 +115,11 @@ export default function DokumenModal({
               className="select"
               aria-label="Filter jenis dokumen"
             >
-              <option value="SEMUA">Semua</option>
-              <option value="DIGITAL">Digital</option>
-              <option value="FISIK">Fisik</option>
+              {jenisDokumenOptions.map((jenis) => (
+                <option key={jenis} value={jenis}>
+                  {jenis === "SEMUA" ? "Semua" : jenis}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -159,16 +173,8 @@ export default function DokumenModal({
                     <td className="truncate px-5 py-3 font-semibold text-gray-900">
                       {item.namaDokumen}
                     </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          item.jenis === "DIGITAL"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {item.jenis === "DIGITAL" ? "Digital" : "Fisik"}
-                      </span>
+                    <td className="px-5 py-3 text-gray-700 font-medium">
+                      {item.jenisDokumen}
                     </td>
                     <td className="px-5 py-3 text-gray-600">
                       {formatTanggalInput(item.tanggalInput)}
@@ -176,7 +182,7 @@ export default function DokumenModal({
                     <td className="px-5 py-3">
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                        className="btn btn-view-pdf btn-sm"
                       >
                         <Eye className="h-4 w-4" aria-hidden="true" />
                         View
