@@ -3,19 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  Archive,
-  ArrowLeft,
-  Box,
-  ChevronRight,
-  Search,
-  SearchX,
-  Warehouse,
-} from "lucide-react";
+import { ArrowLeft, Box, ChevronRight, Search, SearchX, Warehouse } from "lucide-react";
 
-import DokumenLemariModal from "@/components/arsip/DokumenLemariModal";
+import DokumenModal from "@/components/arsip/DokumenModal";
+import RakGridModal from "@/components/arsip/RakGridModal";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { dokumenArsipData, kantorData, lemariData } from "@/lib/data";
+import { dokumenArsipData, kantorData, lemariData, rakData } from "@/lib/data";
 import type { Lemari } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 6;
@@ -27,24 +20,29 @@ export default function KantorLemariPage() {
     : (params.kantorId ?? "");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedLemari, setSelectedLemari] = useState<Lemari | null>(null);
-  const totalDokumenByLemariId = useMemo(
-    () =>
-      dokumenArsipData.reduce((accumulator, item) => {
-        accumulator.set(item.lemariId, (accumulator.get(item.lemariId) ?? 0) + 1);
-        return accumulator;
-      }, new Map<string, number>()),
-    [],
-  );
+  const [selectedLemariId, setSelectedLemariId] = useState<string | null>(null);
+  const [selectedRakId, setSelectedRakId] = useState<string | null>(null);
 
   const kantor = useMemo(
     () => kantorData.find((item) => item.id === kantorId) ?? null,
     [kantorId],
   );
 
+  const totalArsipByLemariId = useMemo(
+    () =>
+      rakData.reduce((accumulator, item) => {
+        accumulator.set(
+          item.lemariId,
+          (accumulator.get(item.lemariId) ?? 0) + item.totalArsip,
+        );
+        return accumulator;
+      }, new Map<string, number>()),
+    [rakData],
+  );
+
   const lemariByKantor = useMemo(
     () => lemariData.filter((item) => item.kantorId === kantorId),
-    [kantorId],
+    [kantorId, lemariData],
   );
 
   const filteredLemari = useMemo(() => {
@@ -54,17 +52,12 @@ export default function KantorLemariPage() {
       return lemariByKantor;
     }
 
-    return lemariByKantor.filter(
-      (item) =>
-        item.kodeLemari.toLowerCase().includes(query) ||
-        item.rak.toLowerCase().includes(query),
+    return lemariByKantor.filter((item) =>
+      item.kodeLemari.toLowerCase().includes(query),
     );
   }, [lemariByKantor, searchTerm]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredLemari.length / ITEMS_PER_PAGE),
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredLemari.length / ITEMS_PER_PAGE));
   const effectiveCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedLemari = useMemo(() => {
@@ -72,10 +65,28 @@ export default function KantorLemariPage() {
     return filteredLemari.slice(start, start + ITEMS_PER_PAGE);
   }, [effectiveCurrentPage, filteredLemari]);
 
-  const dokumenLemari = useMemo(() => {
-    if (!selectedLemari) return [];
-    return dokumenArsipData.filter((item) => item.lemariId === selectedLemari.id);
-  }, [selectedLemari]);
+  const selectedLemari: Lemari | null = selectedLemariId
+    ? lemariData.find((item) => item.id === selectedLemariId) ?? null
+    : null;
+  const selectedRak = selectedRakId
+    ? rakData.find((item) => item.id === selectedRakId) ?? null
+    : null;
+  const rakList = selectedLemari
+    ? rakData.filter((item) => item.lemariId === selectedLemari.id)
+    : [];
+  const dokumenRak = selectedRak
+    ? dokumenArsipData.filter((item) => item.rakId === selectedRak.id)
+    : [];
+
+  const handleOpenLemari = (lemariId: string) => {
+    setSelectedLemariId(lemariId);
+    setSelectedRakId(null);
+  };
+
+  const handleCloseAll = () => {
+    setSelectedRakId(null);
+    setSelectedLemariId(null);
+  };
 
   if (!kantor) {
     return (
@@ -125,7 +136,7 @@ export default function KantorLemariPage() {
           />
           <input
             type="text"
-            placeholder="Cari kode lemari atau rak..."
+            placeholder="Cari kode lemari..."
             value={searchTerm}
             onChange={(event) => {
               setSearchTerm(event.target.value);
@@ -141,7 +152,7 @@ export default function KantorLemariPage() {
           <button
             key={lemari.id}
             type="button"
-            onClick={() => setSelectedLemari(lemari)}
+            onClick={() => handleOpenLemari(lemari.id)}
             className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-gray-100 animate-slide-up text-left"
             style={{ animationDelay: `${idx * 0.1}s` }}
           >
@@ -160,7 +171,7 @@ export default function KantorLemariPage() {
                   Total Arsip
                 </span>
                 <span className="text-2xl font-bold text-gray-800 tabular-nums">
-                  {totalDokumenByLemariId.get(lemari.id) ?? lemari.totalArsip}
+                  {totalArsipByLemariId.get(lemari.id) ?? 0}
                 </span>
               </div>
             </div>
@@ -178,18 +189,11 @@ export default function KantorLemariPage() {
                 <div className="w-full h-px bg-gray-200" />
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-500 flex items-center gap-2">
-                    <Box className="w-4 h-4" aria-hidden="true" /> Kode Lemari
+                    <Box className="w-4 h-4" aria-hidden="true" /> Lemari
                   </span>
                   <span className="font-semibold text-gray-800">
                     {lemari.kodeLemari}
                   </span>
-                </div>
-                <div className="w-full h-px bg-gray-200" />
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-500 flex items-center gap-2">
-                    <Archive className="w-4 h-4" aria-hidden="true" /> Rak
-                  </span>
-                  <span className="font-semibold text-gray-800">{lemari.rak}</span>
                 </div>
               </div>
             </div>
@@ -249,12 +253,24 @@ export default function KantorLemariPage() {
         </div>
       ) : null}
 
-      {selectedLemari ? (
-        <DokumenLemariModal
-          namaKantor={kantor.namaKantor}
+      {selectedLemari && !selectedRakId ? (
+        <RakGridModal
           lemari={selectedLemari}
-          dokumen={dokumenLemari}
-          onClose={() => setSelectedLemari(null)}
+          namaKantor={kantor.namaKantor}
+          rakList={rakList}
+          onClose={handleCloseAll}
+          onSelectRak={(rakId) => setSelectedRakId(rakId)}
+        />
+      ) : null}
+
+      {selectedLemari && selectedRak ? (
+        <DokumenModal
+          lemari={selectedLemari}
+          namaKantor={kantor.namaKantor}
+          rak={selectedRak}
+          dokumen={dokumenRak}
+          onBack={() => setSelectedRakId(null)}
+          onCloseAll={handleCloseAll}
         />
       ) : null}
     </div>

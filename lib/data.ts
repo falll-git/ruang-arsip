@@ -15,6 +15,7 @@ import type {
 import type {
   CetakDokumenLegalType,
   CetakDokumenRecord,
+  DisposisiArsip,
   DokumenArsip,
   IdebRecord,
   IdebRingkasan,
@@ -23,11 +24,13 @@ import type {
   KolektibilitasItem,
   KolektibilitasNasabahItem,
   Lemari,
+  PeminjamanArsip,
   PihakKetiga,
   PihakKetigaKategori,
   PihakKetigaSummary,
   ProgressPihakKetiga,
   ProgresPHK3Record,
+  Rak,
   RiwayatBPRSLain,
   RiwayatNPF,
   TitipanNasabah,
@@ -938,95 +941,272 @@ function parseLegacyDateToIso(dateValue: string) {
   return `${year}-${month}-${day}`;
 }
 
-const tempatById = new Map(dummyTempatPenyimpanan.map((item) => [item.id, item]));
-const lemariIdByTempatId = new Map(
-  dummyTempatPenyimpanan.map((item) => [item.id, `lemari-${String(item.id).padStart(3, "0")}`]),
+export const kantorData: Kantor[] = [
+  { id: "kantor-001", namaKantor: "Kantor Pusat" },
+  { id: "kantor-002", namaKantor: "Kantor Cabang Kranji" },
+  { id: "kantor-003", namaKantor: "Kantor Kas ST" },
+];
+
+export const lemariData: Lemari[] = [
+  { id: "lemari-020", kantorId: "kantor-001", kodeLemari: "L-020" },
+  { id: "lemari-021", kantorId: "kantor-001", kodeLemari: "L-021" },
+  { id: "lemari-022", kantorId: "kantor-001", kodeLemari: "L-022" },
+  { id: "lemari-101", kantorId: "kantor-002", kodeLemari: "L-101" },
+  { id: "lemari-102", kantorId: "kantor-002", kodeLemari: "L-102" },
+  { id: "lemari-201", kantorId: "kantor-003", kodeLemari: "L-201" },
+];
+
+export const rakData: Rak[] = [
+  { id: "rak-020-1", lemariId: "lemari-020", namaRak: "RAK 1", totalArsip: 4 },
+  { id: "rak-020-2", lemariId: "lemari-020", namaRak: "RAK 2", totalArsip: 3 },
+  { id: "rak-021-1", lemariId: "lemari-021", namaRak: "RAK 1", totalArsip: 2 },
+  { id: "rak-021-2", lemariId: "lemari-021", namaRak: "RAK 2", totalArsip: 5 },
+  { id: "rak-022-1", lemariId: "lemari-022", namaRak: "RAK 1", totalArsip: 1 },
+  { id: "rak-022-2", lemariId: "lemari-022", namaRak: "RAK 2", totalArsip: 2 },
+  { id: "rak-101-1", lemariId: "lemari-101", namaRak: "RAK 1", totalArsip: 3 },
+  { id: "rak-101-2", lemariId: "lemari-101", namaRak: "RAK 2", totalArsip: 3 },
+  { id: "rak-102-1", lemariId: "lemari-102", namaRak: "RAK 1", totalArsip: 2 },
+  { id: "rak-102-2", lemariId: "lemari-102", namaRak: "RAK 2", totalArsip: 1 },
+  { id: "rak-201-1", lemariId: "lemari-201", namaRak: "RAK 1", totalArsip: 1 },
+];
+
+export const dokumenArsipData: DokumenArsip[] = [
+  {
+    id: "dok-001",
+    rakId: "rak-020-1",
+    namaDokumen: "Akta Pendirian",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-01",
+  },
+  {
+    id: "dok-002",
+    rakId: "rak-020-1",
+    namaDokumen: "Dokumen Akad",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-02",
+  },
+  {
+    id: "dok-023",
+    rakId: "rak-020-1",
+    namaDokumen: "Surat Keputusan Direksi",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-23",
+  },
+  {
+    id: "dok-024",
+    rakId: "rak-020-1",
+    namaDokumen: "Peraturan Internal",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-24",
+  },
+  {
+    id: "dok-003",
+    rakId: "rak-020-2",
+    namaDokumen: "Voucher Teller Januari",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-03",
+  },
+  {
+    id: "dok-004",
+    rakId: "rak-020-2",
+    namaDokumen: "Laporan Audit Internal",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-04",
+  },
+  {
+    id: "dok-025",
+    rakId: "rak-020-2",
+    namaDokumen: "Laporan Rekonsiliasi",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-25",
+  },
+  {
+    id: "dok-005",
+    rakId: "rak-021-1",
+    namaDokumen: "Surat Kuasa",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-05",
+  },
+  {
+    id: "dok-006",
+    rakId: "rak-021-1",
+    namaDokumen: "Dokumen Jaminan",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-06",
+  },
+  {
+    id: "dok-007",
+    rakId: "rak-021-2",
+    namaDokumen: "Laporan Keuangan",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-07",
+  },
+  {
+    id: "dok-008",
+    rakId: "rak-021-2",
+    namaDokumen: "Berkas Perjanjian",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-08",
+  },
+  {
+    id: "dok-026",
+    rakId: "rak-021-2",
+    namaDokumen: "Berita Acara",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-26",
+  },
+  {
+    id: "dok-027",
+    rakId: "rak-021-2",
+    namaDokumen: "Dokumen Audit",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-27",
+  },
+  {
+    id: "dok-028",
+    rakId: "rak-021-2",
+    namaDokumen: "Formulir Permohonan",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-28",
+  },
+  {
+    id: "dok-009",
+    rakId: "rak-022-1",
+    namaDokumen: "Nota Internal",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-09",
+  },
+  {
+    id: "dok-011",
+    rakId: "rak-022-2",
+    namaDokumen: "Laporan Survey",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-11",
+  },
+  {
+    id: "dok-012",
+    rakId: "rak-022-2",
+    namaDokumen: "Dokumen Perizinan",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-12",
+  },
+  {
+    id: "dok-013",
+    rakId: "rak-101-1",
+    namaDokumen: "Akad Pembiayaan",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-13",
+  },
+  {
+    id: "dok-014",
+    rakId: "rak-101-1",
+    namaDokumen: "Lampiran Akad",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-14",
+  },
+  {
+    id: "dok-029",
+    rakId: "rak-101-1",
+    namaDokumen: "Daftar Agunan",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-03-01",
+  },
+  {
+    id: "dok-015",
+    rakId: "rak-101-2",
+    namaDokumen: "Voucher Operasional",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-15",
+  },
+  {
+    id: "dok-016",
+    rakId: "rak-101-2",
+    namaDokumen: "Berkas Audit Cabang",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-16",
+  },
+  {
+    id: "dok-030",
+    rakId: "rak-101-2",
+    namaDokumen: "Ringkasan Kredit",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-03-02",
+  },
+  {
+    id: "dok-017",
+    rakId: "rak-102-1",
+    namaDokumen: "Sertifikat Agunan",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-17",
+  },
+  {
+    id: "dok-018",
+    rakId: "rak-102-1",
+    namaDokumen: "Dokumen Penilaian",
+    jenis: "FISIK",
+    tanggalInput: "2026-02-18",
+  },
+  {
+    id: "dok-019",
+    rakId: "rak-102-2",
+    namaDokumen: "Berkas Legalitas",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-19",
+  },
+  {
+    id: "dok-021",
+    rakId: "rak-201-1",
+    namaDokumen: "Voucher Kas ST",
+    jenis: "DIGITAL",
+    tanggalInput: "2026-02-21",
+  },
+];
+
+const tempatPenyimpananById = new Map(
+  dummyTempatPenyimpanan.map((item) => [item.id, item]),
 );
+const dokumenById = new Map(dummyDokumen.map((item) => [item.id, item]));
+const lemariIdByKode = new Map(lemariData.map((item) => [item.kodeLemari, item.id]));
+const lemariAliasByKode = new Map([["L-001", "L-201"]]);
 
-export const lemariData: Lemari[] = dummyTempatPenyimpanan.map((item) => ({
-  id: `lemari-${String(item.id).padStart(3, "0")}`,
-  kantorId: toKantorId(item.namaKantor),
-  kodeLemari: item.kodeLemari,
-  rak: item.rak,
-  totalArsip: dummyDokumen.filter((doc) => doc.tempatPenyimpananId === item.id).length,
-}));
+function resolveLemariIdByKode(kodeLemari: string | undefined) {
+  if (!kodeLemari) return null;
+  const resolved =
+    lemariIdByKode.get(kodeLemari) ??
+    lemariIdByKode.get(lemariAliasByKode.get(kodeLemari) ?? "");
+  return resolved ?? null;
+}
 
-export const dokumenArsipData: DokumenArsip[] = dummyDokumen
+function resolveLemariIdByDokumenId(dokumenId: number) {
+  const dokumen = dokumenById.get(dokumenId);
+  if (!dokumen?.tempatPenyimpananId) return null;
+  const tempat = tempatPenyimpananById.get(dokumen.tempatPenyimpananId);
+  return resolveLemariIdByKode(tempat?.kodeLemari);
+}
+
+export const disposisiData: DisposisiArsip[] = dummyDisposisi
+  .filter((item) => item.status === "Approved" || item.status === "Rejected")
   .map((item) => {
-    if (item.tempatPenyimpananId == null) return null;
-
-    const lemariId = lemariIdByTempatId.get(item.tempatPenyimpananId);
+    const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
     if (!lemariId) return null;
-
     return {
-      id: `dok-${String(item.id).padStart(3, "0")}`,
+      id: `disp-${String(item.id).padStart(3, "0")}`,
       lemariId,
-      namaDokumen: item.namaDokumen,
-      jenis: item.restrict ? ("FISIK" as const) : ("DIGITAL" as const),
-      tanggalInput: parseLegacyDateToIso(item.tglInput),
     };
   })
-  .filter((item): item is DokumenArsip => item !== null);
+  .filter((item): item is DisposisiArsip => item !== null);
 
-const kantorSummaryMap = new Map<
-  string,
-  {
-    id: string;
-    namaKantor: string;
-    totalArsip: number;
-    disposisi: number;
-    peminjaman: number;
-  }
->();
-
-dummyTempatPenyimpanan.forEach((item) => {
-  const kantorId = toKantorId(item.namaKantor);
-  if (!kantorSummaryMap.has(kantorId)) {
-    kantorSummaryMap.set(kantorId, {
-      id: kantorId,
-      namaKantor: item.namaKantor,
-      totalArsip: 0,
-      disposisi: 0,
-      peminjaman: 0,
-    });
-  }
-});
-
-lemariData.forEach((item) => {
-  const summary = kantorSummaryMap.get(item.kantorId);
-  if (summary) {
-    summary.totalArsip += item.totalArsip;
-  }
-});
-
-const kantorIdByDokumenId = new Map<number, string>();
-
-dummyDokumen.forEach((item) => {
-  if (item.tempatPenyimpananId == null) return;
-  const tempat = tempatById.get(item.tempatPenyimpananId);
-  if (!tempat) return;
-  kantorIdByDokumenId.set(item.id, toKantorId(tempat.namaKantor));
-});
-
-dummyDisposisi.forEach((item) => {
-  const kantorId = kantorIdByDokumenId.get(item.dokumenId);
-  if (!kantorId) return;
-  const summary = kantorSummaryMap.get(kantorId);
-  if (!summary) return;
-  summary.disposisi += 1;
-});
-
-dummyPeminjaman.forEach((item) => {
-  const kantorId = kantorIdByDokumenId.get(item.dokumenId);
-  if (!kantorId) return;
-  const summary = kantorSummaryMap.get(kantorId);
-  if (!summary) return;
-  summary.peminjaman += 1;
-});
-
-export const kantorData: Kantor[] = Array.from(kantorSummaryMap.values()).sort((a, b) =>
-  a.namaKantor.localeCompare(b.namaKantor, "id-ID"),
-);
+export const peminjamanData: PeminjamanArsip[] = dummyPeminjaman
+  .filter((item) => item.status === "Dikembalikan")
+  .map((item) => {
+    const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
+    if (!lemariId) return null;
+    return {
+      id: `pinj-${String(item.id).padStart(3, "0")}`,
+      lemariId,
+    };
+  })
+  .filter((item): item is PeminjamanArsip => item !== null);
 
 export interface SuratUser {
   id: number;

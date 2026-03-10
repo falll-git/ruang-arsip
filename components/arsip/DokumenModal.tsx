@@ -4,9 +4,18 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, Eye, FolderOpen, Search, SearchX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { DokumenArsip, Lemari } from "@/lib/types";
+import type { DokumenArsip, Lemari, Rak } from "@/lib/types";
 
 type FilterJenis = "SEMUA" | "DIGITAL" | "FISIK";
+
+type DokumenModalProps = {
+  lemari: Lemari;
+  namaKantor: string;
+  rak: Rak;
+  dokumen: DokumenArsip[];
+  onBack: () => void;
+  onCloseAll: () => void;
+};
 
 function formatTanggalInput(value: string) {
   const parsed = new Date(value);
@@ -21,17 +30,14 @@ function formatTanggalInput(value: string) {
   }).format(parsed);
 }
 
-export default function DokumenLemariModal({
-  namaKantor,
+export default function DokumenModal({
   lemari,
+  namaKantor,
+  rak,
   dokumen,
-  onClose,
-}: {
-  namaKantor: string;
-  lemari: Lemari;
-  dokumen: DokumenArsip[];
-  onClose: () => void;
-}) {
+  onBack,
+  onCloseAll,
+}: DokumenModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJenis, setFilterJenis] = useState<FilterJenis>("SEMUA");
 
@@ -41,7 +47,6 @@ export default function DokumenLemariModal({
     return dokumen.filter((item) => {
       const matchSearch =
         query.length === 0 || item.namaDokumen.toLowerCase().includes(query);
-
       const matchJenis = filterJenis === "SEMUA" || item.jenis === filterJenis;
 
       return matchSearch && matchJenis;
@@ -54,26 +59,26 @@ export default function DokumenLemariModal({
   return (
     <div
       data-dashboard-overlay="true"
-      className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm animate-fade-in"
-      onClick={onClose}
+      className="fixed inset-0 z-[1400] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm animate-fade-in"
+      onClick={onCloseAll}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="flex max-h-[84vh] w-[94vw] max-w-[1060px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
+        className="flex max-h-[85vh] w-[94vw] max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50/50 px-5 py-4">
           <button
             type="button"
-            onClick={onClose}
+            onClick={onBack}
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
             aria-label="Kembali"
           >
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </button>
           <h3 className="truncate text-lg font-bold text-gray-900">
-            {lemari.kodeLemari} {"\u00B7"} {namaKantor}
+            {lemari.kodeLemari} {"\u00B7"} {rak.namaRak} {"\u00B7"} {namaKantor}
           </h3>
         </div>
 
@@ -112,7 +117,7 @@ export default function DokumenLemariModal({
                 <FolderOpen className="h-7 w-7" aria-hidden="true" />
               </div>
               <p className="text-base font-medium text-gray-700">
-                Belum ada dokumen di lemari ini
+                Belum ada dokumen di rak ini
               </p>
             </div>
           ) : hasNoFilteredData ? (
@@ -121,7 +126,7 @@ export default function DokumenLemariModal({
                 <SearchX className="h-7 w-7" aria-hidden="true" />
               </div>
               <p className="text-base font-medium text-gray-700">
-                Tidak ada dokumen yang sesuai filter
+                Tidak ada dokumen yang sesuai
               </p>
             </div>
           ) : (
@@ -171,7 +176,7 @@ export default function DokumenLemariModal({
                     <td className="px-5 py-3">
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
                       >
                         <Eye className="h-4 w-4" aria-hidden="true" />
                         View
@@ -188,14 +193,14 @@ export default function DokumenLemariModal({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={onBack}
           >
             Kembali
           </Button>
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={onCloseAll}
           >
             Tutup
           </Button>
@@ -204,4 +209,3 @@ export default function DokumenLemariModal({
     </div>
   );
 }
-

@@ -28,16 +28,18 @@ export interface PihakKetigaSummary {
 export interface Kantor {
   id: string;
   namaKantor: string;
-  totalArsip: number;
-  disposisi: number;
-  peminjaman: number;
 }
 
 export interface Lemari {
   id: string;
   kantorId: string;
   kodeLemari: string;
-  rak: string;
+}
+
+export interface Rak {
+  id: string;
+  lemariId: string;
+  namaRak: string;
   totalArsip: number;
 }
 
@@ -45,11 +47,20 @@ export type DokumenArsipJenis = "DIGITAL" | "FISIK";
 
 export interface DokumenArsip {
   id: string;
-  lemariId: string;
+  rakId: string;
   namaDokumen: string;
   jenis: DokumenArsipJenis;
   tanggalInput: string;
-  nasabah?: string;
+}
+
+export interface DisposisiArsip {
+  id: string;
+  lemariId: string;
+}
+
+export interface PeminjamanArsip {
+  id: string;
+  lemariId: string;
 }
 
 export type ProgressPihakKetigaStatus = "PROSES" | "SELESAI" | "EXPIRED";

@@ -1,13 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileSpreadsheet, History, Search } from "lucide-react";
+import Link from "next/link";
+import { FileSpreadsheet, History, Search, ArrowLeft } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { filterDigitalDocuments } from "@/lib/rbac";
 import { parseDateString } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { lemariData } from "@/lib/data";
 
 function getDurationText(startValue: string, endValue: string) {
   const startDate = parseDateString(startValue);
@@ -25,6 +29,9 @@ function getDurationText(startValue: string, endValue: string) {
 export default function HistorisPeminjamanPage() {
   const { role } = useAuth();
   const { dokumen, peminjaman } = useArsipDigitalWorkflow();
+  const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const searchParams = useSearchParams();
+  const filterLemariId = searchParams.get("lemariId");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPeminjam, setFilterPeminjam] = useState("Semua");
 
@@ -38,6 +45,18 @@ export default function HistorisPeminjamanPage() {
     [dokumenAkses],
   );
 
+  const tempatById = useMemo(
+    () => new Map(tempatPenyimpanan.map((item) => [item.id, item])),
+    [tempatPenyimpanan],
+  );
+
+  const lemariAliasByKode = useMemo(() => new Map([["L-001", "L-201"]]), []);
+
+  const lemariIdByKode = useMemo(
+    () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
+    [lemariData],
+  );
+
   const historisPeminjaman = useMemo(() => {
     return peminjaman
       .filter(
@@ -45,6 +64,14 @@ export default function HistorisPeminjamanPage() {
       )
       .map((p) => {
         const dokumen = dokumenAksesById.get(p.dokumenId);
+        const tempat = dokumen?.tempatPenyimpananId
+          ? tempatById.get(dokumen.tempatPenyimpananId)
+          : undefined;
+        const kodeLemari = tempat?.kodeLemari;
+        const mappedKode = kodeLemari
+          ? lemariAliasByKode.get(kodeLemari) ?? kodeLemari
+          : undefined;
+        const lemariId = mappedKode ? lemariIdByKode.get(mappedKode) : undefined;
         const durasi = getDurationText(
           p.tglPinjam,
           p.tglPengembalian ?? p.tglKembali,
@@ -58,16 +85,22 @@ export default function HistorisPeminjamanPage() {
           tglKembali: p.tglPengembalian ?? p.tglKembali,
           durasi,
           approvedBy: p.approver ?? "-",
+          lemariId,
         };
       });
-  }, [dokumenAksesById, peminjaman]);
+  }, [dokumenAksesById, lemariAliasByKode, lemariIdByKode, peminjaman, tempatById]);
+
+  const historisByLemari = useMemo(() => {
+    if (!filterLemariId) return historisPeminjaman;
+    return historisPeminjaman.filter((item) => item.lemariId === filterLemariId);
+  }, [filterLemariId, historisPeminjaman]);
 
   const peminjamList = [
     "Semua",
-    ...Array.from(new Set(historisPeminjaman.map((d) => d.peminjam))),
+    ...Array.from(new Set(historisByLemari.map((d) => d.peminjam))),
   ];
 
-  const filteredData = historisPeminjaman.filter((item) => {
+  const filteredData = historisByLemari.filter((item) => {
     const matchSearch =
       item.namaDokumen.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.kode.toLowerCase().includes(searchTerm.toLowerCase());
@@ -104,18 +137,29 @@ export default function HistorisPeminjamanPage() {
     });
   };
 
-  const totalPeminjaman = historisPeminjaman.length;
-  const uniquePeminjam = new Set(historisPeminjaman.map((d) => d.peminjam))
+  const totalPeminjaman = historisByLemari.length;
+  const uniquePeminjam = new Set(historisByLemari.map((d) => d.peminjam))
     .size;
   const avgDurasi = Math.round(
-    historisPeminjaman.length === 0
+    historisByLemari.length === 0
       ? 0
-      : historisPeminjaman.reduce((acc, d) => acc + parseInt(d.durasi), 0) /
-          historisPeminjaman.length,
+      : historisByLemari.reduce((acc, d) => acc + parseInt(d.durasi), 0) /
+          historisByLemari.length,
   );
 
   return (
     <div className="animate-fade-in">
+      {filterLemariId ? (
+        <div className="mb-4">
+          <Link
+            href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
+            className="btn btn-outline btn-sm"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Ruang Arsip Digital
+          </Link>
+        </div>
+      ) : null}
       <FeatureHeader
         title="Historis Peminjaman Dokumen"
         subtitle="Riwayat lengkap peminjaman dokumen yang sudah dikembalikan"
@@ -191,7 +235,7 @@ export default function HistorisPeminjamanPage() {
           <p className="text-sm text-gray-600">
             Menampilkan{" "}
             <span className="font-semibold">{filteredData.length}</span> dari{" "}
-            {historisPeminjaman.length} riwayat
+            {historisByLemari.length} riwayat
           </p>
         </div>
         <div className="overflow-x-auto">

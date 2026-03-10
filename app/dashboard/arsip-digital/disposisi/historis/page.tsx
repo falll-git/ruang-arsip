@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   Calendar,
   CheckCircle2,
   History,
@@ -10,6 +12,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
@@ -17,6 +20,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { filterDigitalDocuments } from "@/lib/rbac";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+import { lemariData } from "@/lib/data";
 
 interface HistorisItem {
   id: number;
@@ -37,6 +41,7 @@ interface HistorisItem {
   status: string;
   tglAksi: string;
   fileUrl?: string;
+  lemariId?: string;
 }
 
 export default function HistorisDisposisiPage() {
@@ -44,6 +49,8 @@ export default function HistorisDisposisiPage() {
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
   const { dokumen, disposisi } = useArsipDigitalWorkflow();
   const { openPreview } = useDocumentPreviewContext();
+  const searchParams = useSearchParams();
+  const filterLemariId = searchParams.get("lemariId");
   const [activeTab, setActiveTab] = useState<"permohonan" | "persetujuan">(
     "permohonan",
   );
@@ -60,6 +67,18 @@ export default function HistorisDisposisiPage() {
     [accessibleDokumen],
   );
 
+  const tempatById = useMemo(
+    () => new Map(tempatPenyimpanan.map((item) => [item.id, item])),
+    [tempatPenyimpanan],
+  );
+
+  const lemariAliasByKode = useMemo(() => new Map([["L-001", "L-201"]]), []);
+
+  const lemariIdByKode = useMemo(
+    () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
+    [lemariData],
+  );
+
   const completedDisposisi = useMemo(
     () =>
       disposisi.filter(
@@ -73,12 +92,17 @@ export default function HistorisDisposisiPage() {
   const historisData = useMemo<HistorisItem[]>(() => {
     return completedDisposisi.map((item) => {
       const dokumenItem = accessibleById.get(item.dokumenId);
+      const tempat = dokumenItem?.tempatPenyimpananId
+        ? tempatById.get(dokumenItem.tempatPenyimpananId)
+        : undefined;
+      const kodeLemari = tempat?.kodeLemari;
+      const mappedKode = kodeLemari
+        ? lemariAliasByKode.get(kodeLemari) ?? kodeLemari
+        : undefined;
+      const lemariId = mappedKode ? lemariIdByKode.get(mappedKode) : undefined;
       const lokasi =
         dokumenItem?.tempatPenyimpanan ||
-        (dokumenItem?.tempatPenyimpananId
-          ? tempatPenyimpanan.find((t) => t.id === dokumenItem.tempatPenyimpananId)
-              ?.kodeLemari
-          : undefined) ||
+        tempat?.kodeLemari ||
         "-";
       const detail = item.detail || dokumenItem?.detail || "-";
 
@@ -101,14 +125,35 @@ export default function HistorisDisposisiPage() {
         status: item.status,
         tglAksi: item.tglAksi || item.tglPengajuan,
         fileUrl: dokumenItem?.fileUrl,
+        lemariId,
       };
     });
-  }, [accessibleById, completedDisposisi, tempatPenyimpanan]);
+  }, [
+    accessibleById,
+    completedDisposisi,
+    lemariAliasByKode,
+    lemariIdByKode,
+    tempatById,
+  ]);
 
-  const data = historisData;
+  const data = useMemo(() => {
+    if (!filterLemariId) return historisData;
+    return historisData.filter((item) => item.lemariId === filterLemariId);
+  }, [filterLemariId, historisData]);
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
+      {filterLemariId ? (
+        <div className="mb-4">
+          <Link
+            href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
+            className="btn btn-outline btn-sm"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Ruang Arsip Digital
+          </Link>
+        </div>
+      ) : null}
       <FeatureHeader
         title="Historis Disposisi"
         subtitle="Arsip riwayat pengajuan dan persetujuan disposisi dokumen."
