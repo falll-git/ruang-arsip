@@ -6,6 +6,7 @@ import {
   Building2,
   FileText,
   Inbox,
+  Search,
   Send,
   UploadCloud,
 } from "lucide-react";
@@ -14,6 +15,20 @@ import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { dummySuratUsers } from "@/lib/data";
+import TenggatWaktuModal from "@/components/surat/TenggatWaktuModal";
+
+type SuratMasukDraft = {
+  namaPengirim: string;
+  alamatPengirim: string;
+  namaSurat: string;
+  perihalSurat: string;
+  tanggalPenerimaan: string;
+  sifatSurat: string;
+  disposisiKepada: string[];
+  fileName?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
+};
 
 export default function InputSuratMasukPage() {
   const { showToast } = useAppToast();
@@ -29,6 +44,9 @@ export default function InputSuratMasukPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [savedSurat, setSavedSurat] = useState<SuratMasukDraft | null>(null);
+  const [isTenggatModalOpen, setIsTenggatModalOpen] = useState(false);
+  const [disposisiSearch, setDisposisiSearch] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -71,17 +89,15 @@ export default function InputSuratMasukPage() {
 
     setTimeout(() => {
       setIsLoading(false);
-      showToast("Surat masuk berhasil disimpan!", "success");
-      setFormData({
-        namaPengirim: "",
-        alamatPengirim: "",
-        namaSurat: "",
-        perihalSurat: "",
-        tanggalPenerimaan: "",
-        sifatSurat: "",
+      const disposisiKepada = dummySuratUsers
+        .filter((user) => selectedDisposisi.includes(user.id))
+        .map((user) => user.nama);
+      setSavedSurat({
+        ...formData,
+        disposisiKepada,
+        fileName: file?.name ?? "",
       });
-      setSelectedDisposisi([]);
-      setFile(null);
+      setIsTenggatModalOpen(true);
     }, 1500);
   };
 
@@ -97,6 +113,44 @@ export default function InputSuratMasukPage() {
     setSelectedDisposisi([]);
     setFile(null);
   };
+
+  const handleTenggatSave = (payload: {
+    tenggatWaktu?: string;
+    keteranganTenggat?: string;
+  }) => {
+    setSavedSurat((prev) => (prev ? { ...prev, ...payload } : prev));
+    setIsTenggatModalOpen(false);
+    showToast("Surat masuk berhasil disimpan!", "success");
+    handleReset();
+  };
+
+  const handleTenggatSkip = () => {
+    setIsTenggatModalOpen(false);
+    showToast("Surat masuk berhasil disimpan!", "success");
+    handleReset();
+  };
+
+  const normalizedDisposisiSearch = disposisiSearch.trim().toLowerCase();
+  const isDisposisiSearching = normalizedDisposisiSearch.length > 0;
+  const filteredDisposisiUsers = dummySuratUsers.filter((user) => {
+    if (!normalizedDisposisiSearch) return true;
+    return (
+      user.nama.toLowerCase().includes(normalizedDisposisiSearch) ||
+      user.divisi.toLowerCase().includes(normalizedDisposisiSearch)
+    );
+  });
+  const selectedDisposisiUsers = dummySuratUsers
+    .filter((user) => selectedDisposisi.includes(user.id))
+    .map((user) => ({ id: user.id, nama: user.nama }));
+  const shouldScrollDisposisi = filteredDisposisiUsers.length > 5;
+  const disposisiListClassName = [
+    "space-y-3",
+    "pr-2",
+    "custom-scrollbar",
+    shouldScrollDisposisi ? "max-h-72 overflow-y-auto" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
@@ -308,36 +362,70 @@ export default function InputSuratMasukPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Disposisi Kepada <span className="text-red-500">*</span>
               </label>
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                {dummySuratUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    onClick={() => handleDisposisiToggle(user.id)}
-                    className={`p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3
-                            ${
-                              selectedDisposisi.includes(user.id)
-                                ? "border-primary-500 bg-primary-50 shadow-sm"
-                                : "border-gray-200 hover:border-primary-200 hover:bg-gray-50"
-                            }
-                         `}
-                  >
-                    <div onClick={(event) => event.stopPropagation()}>
-                      <UiverseCheckbox
-                        checked={selectedDisposisi.includes(user.id)}
-                        onCheckedChange={() => handleDisposisiToggle(user.id)}
-                        ariaLabel={`Pilih disposisi ${user.nama}`}
-                        size={20}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-700">
-                        {user.nama}
-                      </p>
-                      <p className="text-xs text-gray-500">{user.divisi}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="relative mb-3">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={disposisiSearch}
+                  onChange={(event) => setDisposisiSearch(event.target.value)}
+                  className="input input-with-icon w-full"
+                  placeholder="Cari nama atau divisi..."
+                />
               </div>
+              {isDisposisiSearching && (
+                <div className={disposisiListClassName}>
+                  {filteredDisposisiUsers.length === 0 ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-gray-400">
+                      Tidak ada user yang sesuai
+                    </div>
+                  ) : (
+                    filteredDisposisiUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        onClick={() => handleDisposisiToggle(user.id)}
+                        className={`p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3
+                                ${
+                                  selectedDisposisi.includes(user.id)
+                                    ? "border-primary-500 bg-primary-50 shadow-sm"
+                                    : "border-gray-200 hover:border-primary-200 hover:bg-gray-50"
+                                }
+                             `}
+                      >
+                        <div onClick={(event) => event.stopPropagation()}>
+                          <UiverseCheckbox
+                            checked={selectedDisposisi.includes(user.id)}
+                            onCheckedChange={() => handleDisposisiToggle(user.id)}
+                            ariaLabel={`Pilih disposisi ${user.nama}`}
+                            size={20}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-700">
+                            {user.nama}
+                          </p>
+                          <p className="text-xs text-gray-500">{user.divisi}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+              {selectedDisposisiUsers.length > 0 && (
+                <p className="mt-2 text-sm text-gray-500 truncate">
+                  {selectedDisposisiUsers.length} dipilih:{" "}
+                  {selectedDisposisiUsers.map((user, index) => (
+                    <span key={user.id}>
+                      <span
+                        onClick={() => handleDisposisiToggle(user.id)}
+                        className="cursor-pointer hover:line-through"
+                      >
+                        {user.nama}
+                      </span>
+                      {index < selectedDisposisiUsers.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </p>
+              )}
               {selectedDisposisi.length === 0 && (
                 <div className="flex items-center gap-2 mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
                   <AlertCircle className="w-4 h-4" />
@@ -375,6 +463,13 @@ export default function InputSuratMasukPage() {
           </div>
         </form>
       </div>
+
+      <TenggatWaktuModal
+        isOpen={isTenggatModalOpen}
+        onSave={handleTenggatSave}
+        onSkip={handleTenggatSkip}
+        disposisi={savedSurat?.disposisiKepada ?? []}
+      />
     </div>
   );
 }

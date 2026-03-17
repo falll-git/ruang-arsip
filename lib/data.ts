@@ -1253,6 +1253,8 @@ export interface SuratMasuk {
   statusDisposisi: "Pending" | "Dalam Proses" | "Selesai";
   fileName: string;
   fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
 }
 
 export interface SuratKeluar {
@@ -1267,6 +1269,8 @@ export interface SuratKeluar {
   disposisiKepada: string[];
   fileName: string;
   fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
 }
 
 export interface Memorandum {
@@ -1281,6 +1285,8 @@ export interface Memorandum {
   penerima: string[];
   fileName: string;
   fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
 }
 
 export const dummyDivisiList: string[] = [
@@ -1309,6 +1315,8 @@ export const dummySuratMasuk: SuratMasuk[] = [
     disposisiKepada: ["BURHAN", "FAISAL"],
     statusDisposisi: "Dalam Proses",
     fileName: "surat_penawaran.pdf",
+    tenggatWaktu: "2026-03-20",
+    keteranganTenggat: "Segera tindak lanjuti surat ini",
   },
   {
     id: 2,
@@ -1321,6 +1329,20 @@ export const dummySuratMasuk: SuratMasuk[] = [
     disposisiKepada: ["FAISAL"],
     statusDisposisi: "Selesai",
     fileName: "surat_somasi.pdf",
+    tenggatWaktu: "2026-02-28",
+    keteranganTenggat: "Pastikan tindak lanjut sesuai arahan pimpinan",
+  },
+  {
+    id: 3,
+    namaSurat: "Surat Undangan",
+    pengirim: "PT. Nusantara Abadi",
+    alamatPengirim: "Jl. Gatot Subroto No 18",
+    perihal: "Undangan Rapat Koordinasi",
+    tanggalTerima: "25-01-2026",
+    sifat: "Biasa",
+    disposisiKepada: ["ANGGITA"],
+    statusDisposisi: "Pending",
+    fileName: "surat_undangan.pdf",
   },
 ];
 
@@ -1336,6 +1358,34 @@ export const dummySuratKeluar: SuratKeluar[] = [
     sifat: "Biasa",
     disposisiKepada: ["BURHAN"],
     fileName: "balasan_penawaran.pdf",
+    tenggatWaktu: "2026-03-18",
+    keteranganTenggat: "Konfirmasi kehadiran sebelum tenggat",
+  },
+  {
+    id: 2,
+    namaSurat: "Surat Konfirmasi",
+    penerima: "CV. Sinar Abadi",
+    alamatPenerima: "Jl. Merdeka No 10",
+    perihal: "Konfirmasi Kesepakatan",
+    tanggalKirim: "26-01-2026",
+    media: "Email",
+    sifat: "Biasa",
+    disposisiKepada: ["ANGGITA"],
+    fileName: "surat_konfirmasi.pdf",
+    tenggatWaktu: "2026-02-28",
+    keteranganTenggat: "Susun jawaban resmi dan dokumentasi pendukung",
+  },
+  {
+    id: 3,
+    namaSurat: "Surat Pengantar",
+    penerima: "PT. Cipta Mandiri",
+    alamatPenerima: "Jl. Pahlawan No 7",
+    perihal: "Pengiriman Dokumen Legal",
+    tanggalKirim: "28-01-2026",
+    media: "Kurir",
+    sifat: "Rahasia",
+    disposisiKepada: ["FAISAL"],
+    fileName: "surat_pengantar.pdf",
   },
 ];
 
@@ -1351,6 +1401,34 @@ export const dummyMemorandum: Memorandum[] = [
     penerimaTipe: "divisi",
     penerima: ["ALL DIVISI"],
     fileName: "memo_cuti.pdf",
+    tenggatWaktu: "2026-03-20",
+    keteranganTenggat: "Koordinasi jadwal pengganti sebelum tenggat",
+  },
+  {
+    id: 2,
+    noMemo: "MEMO/002/IT/2026",
+    perihal: "Pemeliharaan Sistem",
+    divisiPengirim: "IT",
+    pembuatMemo: "BURHAN",
+    tanggal: "22-01-2026",
+    keterangan: "Maintenance server utama pada akhir pekan.",
+    penerimaTipe: "divisi",
+    penerima: ["Operasional", "Finance"],
+    fileName: "memo_maintenance.pdf",
+    tenggatWaktu: "2026-02-28",
+    keteranganTenggat: "Siapkan backup data sebelum maintenance",
+  },
+  {
+    id: 3,
+    noMemo: "MEMO/003/LEGAL/2026",
+    perihal: "Review Kontrak Vendor",
+    divisiPengirim: "Legal",
+    pembuatMemo: "FAISAL",
+    tanggal: "24-01-2026",
+    keterangan: "Peninjauan klausul kontrak vendor baru.",
+    penerimaTipe: "perorangan",
+    penerima: ["ANNAS", "ANGGITA"],
+    fileName: "memo_review_vendor.pdf",
   },
 ];
 

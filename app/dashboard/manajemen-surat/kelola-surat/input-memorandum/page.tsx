@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import {
   AlertCircle,
+  Search,
   FileText,
   UploadCloud,
   User,
@@ -14,6 +15,21 @@ import { useAppToast } from "@/components/ui/AppToastProvider";
 import { dummyDivisiList, dummySuratUsers } from "@/lib/data";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
+import TenggatWaktuModal from "@/components/surat/TenggatWaktuModal";
+
+type MemorandumDraft = {
+  noMemo: string;
+  perihalMemo: string;
+  tanggalMemo: string;
+  divisiPengirim: string;
+  pembuatMemo: string;
+  keteranganMemo: string;
+  penerimaTipe: "divisi" | "perorangan";
+  penerima: string[];
+  fileName?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
+};
 
 export default function InputMemorandumPage() {
   const { showToast } = useAppToast();
@@ -28,14 +44,13 @@ export default function InputMemorandumPage() {
     keteranganMemo: "",
   });
 
-  const [selectedPenerimaTipe, setSelectedPenerimaTipe] = useState<
-    "divisi" | "perorangan"
-  >("perorangan");
-  const [selectedDivisi, setSelectedDivisi] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [savedMemo, setSavedMemo] = useState<MemorandumDraft | null>(null);
+  const [isTenggatModalOpen, setIsTenggatModalOpen] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -44,14 +59,6 @@ export default function InputMemorandumPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDivisiToggle = (divisi: string) => {
-    setSelectedDivisi((prev) =>
-      prev.includes(divisi)
-        ? prev.filter((d) => d !== divisi)
-        : [...prev, divisi],
-    );
   };
 
   const handleUserToggle = (userId: number) => {
@@ -79,10 +86,7 @@ export default function InputMemorandumPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isPenerimaTerpilih =
-      selectedPenerimaTipe === "divisi"
-        ? selectedDivisi.length > 0
-        : selectedUsers.length > 0;
+    const isPenerimaTerpilih = selectedUsers.length > 0;
 
     if (!isPenerimaTerpilih) {
       showToast("Pilih minimal 1 penerima memo!", "error");
@@ -103,20 +107,16 @@ export default function InputMemorandumPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      showToast("Memorandum berhasil disimpan!", "success");
-      setFormData({
-        noMemo: "",
-        perihalMemo: "",
-        tanggalMemo: "",
-        divisiPengirim: "",
-        pembuatMemo: "",
-        keteranganMemo: "",
+      const penerima = dummySuratUsers
+        .filter((user) => selectedUsers.includes(user.id))
+        .map((user) => user.nama);
+      setSavedMemo({
+        ...formData,
+        penerimaTipe: "perorangan",
+        penerima,
+        fileName: file?.name ?? "",
       });
-      setSelectedDivisi([]);
-      setSelectedUsers([]);
-      setFile(null);
-      setSelectedPenerimaTipe("perorangan");
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      setIsTenggatModalOpen(true);
     }, 1500);
   };
 
@@ -129,17 +129,49 @@ export default function InputMemorandumPage() {
       pembuatMemo: "",
       keteranganMemo: "",
     });
-    setSelectedDivisi([]);
     setSelectedUsers([]);
     setFile(null);
-    setSelectedPenerimaTipe("perorangan");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const isPenerimaTerpilih =
-    selectedPenerimaTipe === "divisi"
-      ? selectedDivisi.length > 0
-      : selectedUsers.length > 0;
+  const handleTenggatSave = (payload: {
+    tenggatWaktu?: string;
+    keteranganTenggat?: string;
+  }) => {
+    setSavedMemo((prev) => (prev ? { ...prev, ...payload } : prev));
+    setIsTenggatModalOpen(false);
+    showToast("Memorandum berhasil disimpan!", "success");
+    handleReset();
+  };
+
+  const handleTenggatSkip = () => {
+    setIsTenggatModalOpen(false);
+    showToast("Memorandum berhasil disimpan!", "success");
+    handleReset();
+  };
+
+  const normalizedUserSearch = userSearch.trim().toLowerCase();
+  const isUserSearching = normalizedUserSearch.length > 0;
+  const filteredPenerimaUsers = dummySuratUsers.filter((user) => {
+    if (!normalizedUserSearch) return true;
+    return (
+      user.nama.toLowerCase().includes(normalizedUserSearch) ||
+      user.divisi.toLowerCase().includes(normalizedUserSearch)
+    );
+  });
+  const selectedUserItems = dummySuratUsers
+    .filter((user) => selectedUsers.includes(user.id))
+    .map((user) => ({ id: user.id, nama: user.nama }));
+  const shouldScrollUsers = filteredPenerimaUsers.length > 5;
+  const userListClassName = [
+    "space-y-3",
+    "pr-2",
+    "custom-scrollbar",
+    shouldScrollUsers ? "max-h-72 overflow-y-auto" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const isPenerimaTerpilih = selectedUsers.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto animate-fade-in space-y-6">
@@ -344,99 +376,78 @@ export default function InputMemorandumPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Penerima Memo <span className="text-red-500">*</span>
               </label>
 
-              <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPenerimaTipe("perorangan");
-                    setSelectedDivisi([]);
-                  }}
-                  className={[
-                    "flex-1 py-1.5 text-sm font-medium rounded-md transition-all",
-                    selectedPenerimaTipe === "perorangan"
-                      ? "bg-white text-primary-700 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700",
-                  ].join(" ")}
-                >
-                  Per User
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPenerimaTipe("divisi");
-                    setSelectedUsers([]);
-                  }}
-                  className={[
-                    "flex-1 py-1.5 text-sm font-medium rounded-md transition-all",
-                    selectedPenerimaTipe === "divisi"
-                      ? "bg-white text-primary-700 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700",
-                  ].join(" ")}
-                >
-                  Per Divisi
-                </button>
+              <div className="relative mb-3">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={userSearch}
+                  onChange={(event) => setUserSearch(event.target.value)}
+                  className="input input-with-icon w-full"
+                  placeholder="Cari nama atau divisi..."
+                />
               </div>
 
-              <div className="mt-3 space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
-                {selectedPenerimaTipe === "perorangan"
-                  ? dummySuratUsers.map((user) => {
-                      const selected = selectedUsers.includes(user.id);
-                      return (
-                        <UiverseCheckbox
-                          key={user.id}
-                          checked={selected}
-                          onCheckedChange={() => handleUserToggle(user.id)}
-                          ariaLabel={`Pilih penerima ${user.nama}`}
-                          className={[
-                            "uiverse-checkbox--block p-3 rounded-lg border transition-all",
-                            selected
-                              ? "border-primary-300 bg-primary-50 shadow-sm"
-                              : "border-slate-200 hover:border-primary-200 hover:bg-slate-50",
-                          ].join(" ")}
-                          label={
-                            <span className="flex-1 min-w-0">
-                              <span className="block text-sm font-semibold text-gray-800 truncate">
-                                {user.nama}
-                              </span>
-                              <span className="block text-xs text-gray-500 truncate">
-                                {user.divisi}
-                              </span>
-                            </span>
-                          }
-                        />
-                      );
-                    })
-                  : dummyDivisiList.map((divisi) => {
-                      const selected = selectedDivisi.includes(divisi);
-                      return (
-                        <UiverseCheckbox
-                          key={divisi}
-                          checked={selected}
-                          onCheckedChange={() => handleDivisiToggle(divisi)}
-                          ariaLabel={`Pilih divisi ${divisi}`}
-                          className={[
-                            "uiverse-checkbox--block p-3 rounded-lg border transition-all",
-                            selected
-                              ? "border-primary-300 bg-primary-50 shadow-sm"
-                              : "border-slate-200 hover:border-primary-200 hover:bg-slate-50",
-                          ].join(" ")}
-                          label={
-                            <span className="block text-sm font-semibold text-gray-800">
-                              {divisi}
-                            </span>
-                          }
-                        />
-                      );
-                    })}
-              </div>
-
+              {isUserSearching && (
+                <div className={userListClassName}>
+                  {filteredPenerimaUsers.length === 0 ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-gray-400">
+                      Tidak ada user yang sesuai
+                    </div>
+                  ) : (
+                    filteredPenerimaUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        onClick={() => handleUserToggle(user.id)}
+                        className={`p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3
+                            ${
+                              selectedUsers.includes(user.id)
+                                ? "border-primary-500 bg-primary-50 shadow-sm"
+                                : "border-gray-200 hover:border-primary-200 hover:bg-gray-50"
+                            }
+                         `}
+                      >
+                        <div onClick={(event) => event.stopPropagation()}>
+                          <UiverseCheckbox
+                            checked={selectedUsers.includes(user.id)}
+                            onCheckedChange={() => handleUserToggle(user.id)}
+                            ariaLabel={`Pilih penerima ${user.nama}`}
+                            size={20}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-700">
+                            {user.nama}
+                          </p>
+                          <p className="text-xs text-gray-500">{user.divisi}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+              {selectedUserItems.length > 0 && (
+                <p className="mt-2 text-sm text-gray-500 truncate">
+                  {selectedUserItems.length} dipilih:{" "}
+                  {selectedUserItems.map((user, index) => (
+                    <span key={user.id}>
+                      <span
+                        onClick={() => handleUserToggle(user.id)}
+                        className="cursor-pointer hover:line-through"
+                      >
+                        {user.nama}
+                      </span>
+                      {index < selectedUserItems.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </p>
+              )}
               {!isPenerimaTerpilih && (
-                <div className="flex items-center gap-2 mt-3 text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
-                  <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                <div className="flex items-center gap-2 mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                  <AlertCircle className="w-4 h-4" />
                   Wajib memilih minimal satu penerima.
                 </div>
               )}
@@ -481,6 +492,13 @@ export default function InputMemorandumPage() {
           </div>
         </form>
       </div>
+
+      <TenggatWaktuModal
+        isOpen={isTenggatModalOpen}
+        onSave={handleTenggatSave}
+        onSkip={handleTenggatSkip}
+        disposisi={savedMemo?.penerima ?? []}
+      />
     </div>
   );
 }

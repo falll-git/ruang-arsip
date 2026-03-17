@@ -189,3 +189,57 @@ export interface ProgresPHK3Record {
   tanggalInput: string;
   keterangan?: string;
 }
+
+export interface SuratUser {
+  id: number;
+  nama: string;
+  divisi: string;
+}
+
+export interface SuratMasuk {
+  id: number;
+  namaSurat: string;
+  pengirim: string;
+  alamatPengirim: string;
+  perihal: string;
+  tanggalTerima: string;
+  sifat: "Biasa" | "Rahasia";
+  disposisiKepada: string[];
+  statusDisposisi: "Pending" | "Dalam Proses" | "Selesai";
+  fileName: string;
+  fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
+}
+
+export interface SuratKeluar {
+  id: number;
+  namaSurat: string;
+  penerima: string;
+  alamatPenerima: string;
+  perihal: string;
+  tanggalKirim: string;
+  media: string;
+  sifat: "Biasa" | "Rahasia";
+  disposisiKepada: string[];
+  fileName: string;
+  fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
+}
+
+export interface Memorandum {
+  id: number;
+  noMemo: string;
+  perihal: string;
+  divisiPengirim: string;
+  pembuatMemo: string;
+  tanggal: string;
+  keterangan: string;
+  penerimaTipe: "divisi" | "perorangan";
+  penerima: string[];
+  fileName: string;
+  fileUrl?: string;
+  tenggatWaktu?: string;
+  keteranganTenggat?: string;
+}
