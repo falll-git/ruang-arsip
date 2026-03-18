@@ -189,7 +189,7 @@ export default function RequestPeminjamanPage() {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="w-16 px-6 py-4 text-center">
+                <th className="w-16 px-6 py-3 text-center">
                   <div className="flex justify-center">
                     <UiverseCheckbox
                       checked={
@@ -205,22 +205,22 @@ export default function RequestPeminjamanPage() {
                     />
                   </div>
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Kode
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Jenis Dokumen
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
                   Nama Dokumen
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
                   Detail
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Lokasi
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                   Status
                 </th>
               </tr>
@@ -236,7 +236,7 @@ export default function RequestPeminjamanPage() {
                   onClick={() => handleCheckbox(doc.id)}
                 >
                   <td
-                    className="px-6 py-4 text-center"
+                    className="px-6 py-3 text-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex justify-center">
@@ -249,27 +249,27 @@ export default function RequestPeminjamanPage() {
                       />
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-3">
                     <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium tabular-nums">
                       {doc.kode}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-800">
                     {doc.jenisDokumen}
                   </td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
                   </td>
                   <td
-                    className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"
+                    className="px-6 py-3 text-sm text-gray-600 max-w-xs truncate"
                     title={doc.detail}
                   >
                     {doc.detail}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-3 text-sm text-gray-500">
                     {doc.lokasi}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-3 text-center">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
                         ${

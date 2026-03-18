@@ -9,6 +9,7 @@ import {
   dummyHasilKunjungan,
   dummyLangkahPenanganan,
 } from "@/lib/data";
+import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 
 type JenisAktivitas = "ACTION_PLAN" | "HASIL_KUNJUNGAN" | "LANGKAH_PENANGANAN";
 
@@ -22,12 +23,6 @@ type AktivitasMarketingItem = {
   namaNasabah: string;
   sortTimestamp: number;
 };
-
-const dateFormatter = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
 
 const aktivitasOptions: Array<{ value: AktivitasFilter; label: string }> = [
   { value: "SEMUA", label: "Semua Aktivitas" },
@@ -60,18 +55,13 @@ const aktivitasBadgeMeta: Record<
 };
 
 function getDateTimestamp(value: string) {
-  const timestamp = new Date(value).getTime();
-  return Number.isNaN(timestamp) ? 0 : timestamp;
+  const parsed = parseDateString(value);
+  if (!parsed) return 0;
+  return parsed.getTime();
 }
 
 function formatDisplayDate(value: string) {
-  const dateValue = new Date(value);
-
-  if (Number.isNaN(dateValue.getTime())) {
-    return "-";
-  }
-
-  return dateFormatter.format(dateValue);
+  return formatDateDisplay(value);
 }
 
 export default function LaporanAktivitasMarketingSection() {

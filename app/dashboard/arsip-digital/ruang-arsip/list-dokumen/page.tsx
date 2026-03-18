@@ -18,6 +18,7 @@ import {
   getDebiturById,
   getKolektibilitasLabel,
 } from "@/lib/data";
+import { formatDateDisplay } from "@/lib/utils/date";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -31,6 +32,11 @@ import {
 } from "@/lib/rbac";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 type DokumenRow = {
   id: number;
@@ -179,7 +185,7 @@ export default function ListDokumenPage() {
         jenisDokumen: doc.jenisDokumen,
         namaDokumen: doc.namaDokumen,
         detail: doc.detail,
-        tglInput: doc.tglInput,
+        tglInput: formatDateDisplay(doc.tglInput),
         userInput: doc.userInput,
         statusPinjam: doc.statusPinjam,
       })),
@@ -313,12 +319,10 @@ export default function ListDokumenPage() {
                       {doc.detail}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {doc.tglInput}
+                      {formatDateDisplay(doc.tglInput)}
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {doc.userInput}
-                      </span>
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                      {formatPersonName(doc.userInput)}
                     </td>
                     <td className="px-6 py-4 text-sm text-center">
                       <span
@@ -328,7 +332,9 @@ export default function ListDokumenPage() {
                               ? "bg-green-100 text-green-800"
                               : doc.statusPinjam === "Dipinjam"
                                 ? "bg-amber-100 text-amber-800"
-                                : "bg-gray-100 text-gray-800"
+                                : doc.statusPinjam === "Diajukan"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
                           }`}
                       >
                         {doc.statusPinjam}
@@ -439,7 +445,7 @@ export default function ListDokumenPage() {
                         Tanggal Input
                       </label>
                       <p className="text-base font-medium text-gray-800 mt-1">
-                        {selectedDoc.tglInput}
+                        {formatDateDisplay(selectedDoc.tglInput)}
                       </p>
                     </div>
                     <div>
@@ -451,7 +457,7 @@ export default function ListDokumenPage() {
                           {selectedDoc.userInput.substring(0, 1)}
                         </div>
                         <p className="text-base font-medium text-gray-800">
-                          {selectedDoc.userInput}
+                          {formatPersonName(selectedDoc.userInput)}
                         </p>
                       </div>
                     </div>
@@ -464,7 +470,13 @@ export default function ListDokumenPage() {
                     <div className="mt-2">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium
-                          ${selectedDoc.statusPinjam === "Tersedia" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}
+                          ${
+                            selectedDoc.statusPinjam === "Tersedia"
+                              ? "bg-green-100 text-green-700"
+                              : selectedDoc.statusPinjam === "Diajukan"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-amber-100 text-amber-700"
+                          }
                         `}
                       >
                         {selectedDoc.statusPinjam}
@@ -629,9 +641,11 @@ export default function ListDokumenPage() {
                         {historisPeminjaman.map((h, idx) => (
                           <tr key={idx}>
                             <td className="px-4 py-2 text-sm">{h.peminjam}</td>
-                            <td className="px-4 py-2 text-sm">{h.tglPinjam}</td>
                             <td className="px-4 py-2 text-sm">
-                              {h.tglKembali}
+                              {formatDateDisplay(h.tglPinjam)}
+                            </td>
+                            <td className="px-4 py-2 text-sm">
+                              {formatDateDisplay(h.tglKembali)}
                             </td>
                             <td className="px-4 py-2">
                               <span className="badge badge-success text-xs">

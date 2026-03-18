@@ -13,19 +13,12 @@ import type {
   ProgresPHK3Record,
   ProgresPHK3Status,
 } from "@/lib/types";
-import { parseDateString } from "@/lib/utils/date";
+import { formatDateDisplay } from "@/lib/utils/date";
 import LegalViewButton from "@/components/legal/LegalViewButton";
 import LaporanLegalDetailModal from "@/components/legal/LaporanLegalDetailModal";
 
-const longDateFormatter = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
-
 function formatLongDate(value: string) {
-  const date = parseDateString(value);
-  return date ? longDateFormatter.format(date) : value;
+  return formatDateDisplay(value);
 }
 
 function renderStatusBadge(status: ProgresPHK3Status) {

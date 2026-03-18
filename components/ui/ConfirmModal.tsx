@@ -79,6 +79,7 @@ export default function ConfirmModal({
 
   return (
     <div
+      data-dashboard-overlay="true"
       className="fixed inset-0 flex items-center justify-center p-4"
       style={{ background: "rgba(0, 0, 0, 0.5)", zIndex: 9999 }}
       onClick={handleClose}
@@ -111,7 +112,7 @@ export default function ConfirmModal({
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="rounded-xl border-2 border-gray-300 bg-white px-6 py-2.5 font-medium text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn btn-outline"
           >
             {cancelText}
           </button>

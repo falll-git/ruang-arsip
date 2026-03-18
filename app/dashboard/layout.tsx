@@ -38,7 +38,6 @@ import {
   Mail,
   Printer,
   Scale,
-  Search,
   Shield,
   Send,
   Users,
@@ -57,6 +56,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import ProtectedLink from "@/components/rbac/ProtectedLink";
 import { RBAC_DENIED_MESSAGE, getDashboardRouteDecision } from "@/lib/rbac";
+import { formatDateDisplay, toIsoDate } from "@/lib/utils/date";
 
 const SIDEBAR_OPEN_STORAGE_KEY = "ruang-arsip.dashboard.sidebar-open";
 
@@ -1054,10 +1054,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
       <main className="transition-all duration-300" style={mainStyle}>
         <header
-          className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky z-40 border-b border-gray-100 transition-all duration-300 ${
+          className={`px-4 lg:px-6 py-4 flex items-center justify-between sticky top-0 z-40 border-b border-gray-100 transition-all duration-300 transform ${
             headerVisible && !isPreviewOpen && !isFocusMode && !isOverlayOpen
-              ? "top-0"
-              : "-top-24"
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-full opacity-0 pointer-events-none"
           }`}
           style={{
             background: "rgba(255, 255, 255, 0.8)",
@@ -1197,12 +1197,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   aria-hidden="true"
                 />
                 <span className="font-semibold text-[#0d5a8f] tabular-nums">
-                  {now.toLocaleDateString("id-ID", {
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatDateDisplay(toIsoDate(now), "")}
                 </span>
               </div>
             </div>

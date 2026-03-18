@@ -1,18 +1,10 @@
-import { parseDateString } from "@/lib/utils/date";
+import { formatDateDisplay } from "@/lib/utils/date";
 
 export function formatInformasiDebiturDate(
   value: string | null | undefined,
   fallback = "-",
 ) {
-  if (!value?.trim()) return fallback;
-  const date = parseDateString(value);
-  if (!date) return value;
-
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
+  return formatDateDisplay(value, fallback);
 }
 
 export function normalizeDebiturDocumentUrl(filePath: string) {

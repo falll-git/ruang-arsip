@@ -909,26 +909,6 @@ export const dummyPeminjaman: Peminjaman[] = [
   },
 ];
 
-const kantorIdByNama: Record<string, string> = {
-  "Kantor Pusat": "kantor-001",
-  "Kantor Cabang": "kantor-002",
-  "Kantor Kas ST": "kantor-003",
-  "Kantor Kas Timur": "kantor-004",
-  "Kantor Cabang Kranji": "kantor-005",
-};
-
-function toKantorId(namaKantor: string) {
-  const knownId = kantorIdByNama[namaKantor];
-  if (knownId) return knownId;
-
-  const normalized = namaKantor
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return `kantor-${normalized}`;
-}
-
 function parseLegacyDateToIso(dateValue: string) {
   const parts = dateValue.split("-");
   if (parts.length !== 3) return dateValue;
@@ -957,15 +937,15 @@ export const lemariData: Lemari[] = [
 ];
 
 export const rakData: Rak[] = [
-  { id: "rak-020-1", lemariId: "lemari-020", namaRak: "RAK 1", totalArsip: 4 },
-  { id: "rak-020-2", lemariId: "lemari-020", namaRak: "RAK 2", totalArsip: 3 },
-  { id: "rak-021-1", lemariId: "lemari-021", namaRak: "RAK 1", totalArsip: 2 },
-  { id: "rak-021-2", lemariId: "lemari-021", namaRak: "RAK 2", totalArsip: 5 },
+  { id: "rak-020-1", lemariId: "lemari-020", namaRak: "RAK 1", totalArsip: 2 },
+  { id: "rak-020-2", lemariId: "lemari-020", namaRak: "RAK 2", totalArsip: 1 },
+  { id: "rak-021-1", lemariId: "lemari-021", namaRak: "RAK 1", totalArsip: 1 },
+  { id: "rak-021-2", lemariId: "lemari-021", namaRak: "RAK 2", totalArsip: 2 },
   { id: "rak-022-1", lemariId: "lemari-022", namaRak: "RAK 1", totalArsip: 1 },
-  { id: "rak-022-2", lemariId: "lemari-022", namaRak: "RAK 2", totalArsip: 2 },
-  { id: "rak-101-1", lemariId: "lemari-101", namaRak: "RAK 1", totalArsip: 3 },
-  { id: "rak-101-2", lemariId: "lemari-101", namaRak: "RAK 2", totalArsip: 3 },
-  { id: "rak-102-1", lemariId: "lemari-102", namaRak: "RAK 1", totalArsip: 2 },
+  { id: "rak-022-2", lemariId: "lemari-022", namaRak: "RAK 2", totalArsip: 1 },
+  { id: "rak-101-1", lemariId: "lemari-101", namaRak: "RAK 1", totalArsip: 1 },
+  { id: "rak-101-2", lemariId: "lemari-101", namaRak: "RAK 2", totalArsip: 1 },
+  { id: "rak-102-1", lemariId: "lemari-102", namaRak: "RAK 1", totalArsip: 1 },
   { id: "rak-102-2", lemariId: "lemari-102", namaRak: "RAK 2", totalArsip: 1 },
   { id: "rak-201-1", lemariId: "lemari-201", namaRak: "RAK 1", totalArsip: 1 },
 ];
@@ -978,22 +958,6 @@ export const dokumenArsipData: DokumenArsip[] = [
     jenisDokumen: "Perusahaan",
     jenis: "DIGITAL",
     tanggalInput: "2026-02-01",
-  },
-  {
-    id: "dok-002",
-    rakId: "rak-020-1",
-    namaDokumen: "Dokumen Akad",
-    jenisDokumen: "Pembiayaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-02",
-  },
-  {
-    id: "dok-023",
-    rakId: "rak-020-1",
-    namaDokumen: "Surat Keputusan Direksi",
-    jenisDokumen: "Perusahaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-02-23",
   },
   {
     id: "dok-024",
@@ -1012,36 +976,12 @@ export const dokumenArsipData: DokumenArsip[] = [
     tanggalInput: "2026-02-03",
   },
   {
-    id: "dok-004",
-    rakId: "rak-020-2",
-    namaDokumen: "Laporan Audit Internal",
-    jenisDokumen: "Perusahaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-04",
-  },
-  {
-    id: "dok-025",
-    rakId: "rak-020-2",
-    namaDokumen: "Laporan Rekonsiliasi",
-    jenisDokumen: "Perusahaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-02-25",
-  },
-  {
     id: "dok-005",
     rakId: "rak-021-1",
     namaDokumen: "Surat Kuasa",
     jenisDokumen: "Perusahaan",
     jenis: "DIGITAL",
     tanggalInput: "2026-02-05",
-  },
-  {
-    id: "dok-006",
-    rakId: "rak-021-1",
-    namaDokumen: "Dokumen Jaminan",
-    jenisDokumen: "Pembiayaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-06",
   },
   {
     id: "dok-007",
@@ -1060,30 +1000,6 @@ export const dokumenArsipData: DokumenArsip[] = [
     tanggalInput: "2026-02-08",
   },
   {
-    id: "dok-026",
-    rakId: "rak-021-2",
-    namaDokumen: "Berita Acara",
-    jenisDokumen: "Perusahaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-02-26",
-  },
-  {
-    id: "dok-027",
-    rakId: "rak-021-2",
-    namaDokumen: "Dokumen Audit",
-    jenisDokumen: "Perusahaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-27",
-  },
-  {
-    id: "dok-028",
-    rakId: "rak-021-2",
-    namaDokumen: "Formulir Permohonan",
-    jenisDokumen: "Pembiayaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-02-28",
-  },
-  {
     id: "dok-009",
     rakId: "rak-022-1",
     namaDokumen: "Nota Internal",
@@ -1100,36 +1016,12 @@ export const dokumenArsipData: DokumenArsip[] = [
     tanggalInput: "2026-02-11",
   },
   {
-    id: "dok-012",
-    rakId: "rak-022-2",
-    namaDokumen: "Dokumen Perizinan",
-    jenisDokumen: "Perusahaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-12",
-  },
-  {
     id: "dok-013",
     rakId: "rak-101-1",
     namaDokumen: "Akad Pembiayaan",
     jenisDokumen: "Pembiayaan",
     jenis: "DIGITAL",
     tanggalInput: "2026-02-13",
-  },
-  {
-    id: "dok-014",
-    rakId: "rak-101-1",
-    namaDokumen: "Lampiran Akad",
-    jenisDokumen: "Pembiayaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-14",
-  },
-  {
-    id: "dok-029",
-    rakId: "rak-101-1",
-    namaDokumen: "Daftar Agunan",
-    jenisDokumen: "Pembiayaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-03-01",
   },
   {
     id: "dok-015",
@@ -1140,36 +1032,12 @@ export const dokumenArsipData: DokumenArsip[] = [
     tanggalInput: "2026-02-15",
   },
   {
-    id: "dok-016",
-    rakId: "rak-101-2",
-    namaDokumen: "Berkas Audit Cabang",
-    jenisDokumen: "Perusahaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-16",
-  },
-  {
-    id: "dok-030",
-    rakId: "rak-101-2",
-    namaDokumen: "Ringkasan Kredit",
-    jenisDokumen: "Pembiayaan",
-    jenis: "DIGITAL",
-    tanggalInput: "2026-03-02",
-  },
-  {
     id: "dok-017",
     rakId: "rak-102-1",
     namaDokumen: "Sertifikat Agunan",
     jenisDokumen: "Pembiayaan",
     jenis: "DIGITAL",
     tanggalInput: "2026-02-17",
-  },
-  {
-    id: "dok-018",
-    rakId: "rak-102-1",
-    namaDokumen: "Dokumen Penilaian",
-    jenisDokumen: "Pembiayaan",
-    jenis: "FISIK",
-    tanggalInput: "2026-02-18",
   },
   {
     id: "dok-019",
@@ -1195,6 +1063,15 @@ const tempatPenyimpananById = new Map(
 const dokumenById = new Map(dummyDokumen.map((item) => [item.id, item]));
 const lemariIdByKode = new Map(lemariData.map((item) => [item.kodeLemari, item.id]));
 const lemariAliasByKode = new Map([["L-001", "L-201"]]);
+const lemariById = new Map(lemariData.map((item) => [item.id, item]));
+const lemariIdsByKantor = lemariData.reduce((accumulator, item) => {
+  const list = accumulator.get(item.kantorId) ?? [];
+  list.push(item.id);
+  accumulator.set(item.kantorId, list);
+  return accumulator;
+}, new Map<string, string[]>());
+const dokumenIdsByLemari = new Map<string, number[]>();
+const dokumenIdsByKantor = new Map<string, number[]>();
 
 function resolveLemariIdByKode(kodeLemari: string | undefined) {
   if (!kodeLemari) return null;
@@ -1211,29 +1088,201 @@ function resolveLemariIdByDokumenId(dokumenId: number) {
   return resolveLemariIdByKode(tempat?.kodeLemari);
 }
 
-export const disposisiData: DisposisiArsip[] = dummyDisposisi
-  .filter((item) => item.status === "Approved" || item.status === "Rejected")
-  .map((item) => {
-    const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
-    if (!lemariId) return null;
-    return {
+dummyDokumen.forEach((item) => {
+  const lemariId = resolveLemariIdByDokumenId(item.id);
+  if (!lemariId) return;
+  const lemari = lemariById.get(lemariId);
+  if (!lemari) return;
+  const lemariList = dokumenIdsByLemari.get(lemariId) ?? [];
+  lemariList.push(item.id);
+  dokumenIdsByLemari.set(lemariId, lemariList);
+  const kantorList = dokumenIdsByKantor.get(lemari.kantorId) ?? [];
+  kantorList.push(item.id);
+  dokumenIdsByKantor.set(lemari.kantorId, kantorList);
+});
+
+function formatIsoDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(date: Date, offset: number) {
+  const next = new Date(date);
+  next.setDate(date.getDate() + offset);
+  return next;
+}
+
+function parseDateValue(value: string) {
+  const iso = parseLegacyDateToIso(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+const disposisiStatusMap: Record<Disposisi["status"], DisposisiArsip["status"]> = {
+  Pending: "PENDING",
+  Approved: "SELESAI",
+  Rejected: "DITOLAK",
+};
+
+const baseDisposisiData: DisposisiArsip[] = dummyDisposisi.flatMap((item) => {
+  const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
+  if (!lemariId) return [];
+  return [
+    {
       id: `disp-${String(item.id).padStart(3, "0")}`,
       lemariId,
-    };
-  })
-  .filter((item): item is DisposisiArsip => item !== null);
+      dokumenId: item.dokumenId,
+      status: disposisiStatusMap[item.status],
+    },
+  ];
+});
 
-export const peminjamanData: PeminjamanArsip[] = dummyPeminjaman
-  .filter((item) => item.status === "Dikembalikan")
-  .map((item) => {
-    const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
-    if (!lemariId) return null;
-    return {
+const activeDisposisiStatuses: DisposisiArsip["status"][] = ["PENDING", "PROSES"];
+const activeDisposisiCountByKantor = new Map<string, number>();
+baseDisposisiData.forEach((item) => {
+  if (!activeDisposisiStatuses.includes(item.status)) return;
+  const kantorId = lemariById.get(item.lemariId)?.kantorId;
+  if (!kantorId) return;
+  activeDisposisiCountByKantor.set(
+    kantorId,
+    (activeDisposisiCountByKantor.get(kantorId) ?? 0) + 1,
+  );
+});
+
+const disposisiExtras: DisposisiArsip[] = [];
+let disposisiExtraIndex = 1;
+kantorData.forEach((kantor) => {
+  const current = activeDisposisiCountByKantor.get(kantor.id) ?? 0;
+  const needed = Math.max(0, 2 - current);
+  if (needed === 0) return;
+  const lemariIds = lemariIdsByKantor.get(kantor.id) ?? [];
+  const targetLemariId = lemariIds[0];
+  if (!targetLemariId) return;
+  const dokumenIds = dokumenIdsByLemari.get(targetLemariId) ?? [];
+  for (let i = 0; i < needed; i += 1) {
+    const docId =
+      dokumenIds.length > 0 ? dokumenIds[i % dokumenIds.length] : undefined;
+    disposisiExtras.push({
+      id: `disp-extra-${String(disposisiExtraIndex).padStart(3, "0")}`,
+      lemariId: targetLemariId,
+      dokumenId: docId,
+      status: i % 2 === 0 ? "PENDING" : "PROSES",
+    });
+    disposisiExtraIndex += 1;
+  }
+});
+
+export const disposisiData: DisposisiArsip[] = [
+  ...baseDisposisiData,
+  ...disposisiExtras,
+];
+
+const today = new Date();
+const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+const basePeminjamanData: PeminjamanArsip[] = dummyPeminjaman.flatMap((item) => {
+  const lemariId = resolveLemariIdByDokumenId(item.dokumenId);
+  if (!lemariId) return [];
+  const dokumen = dokumenById.get(item.dokumenId);
+  return [
+    {
       id: `pinj-${String(item.id).padStart(3, "0")}`,
       lemariId,
-    };
-  })
-  .filter((item): item is PeminjamanArsip => item !== null);
+      dokumenId: item.dokumenId,
+      namaDokumen: dokumen?.namaDokumen ?? item.detail,
+      peminjam: item.peminjam,
+      tanggalPinjam: item.tglPinjam,
+      tanggalKembali: item.tglKembali,
+      status: item.status,
+    },
+  ];
+});
+
+const peminjamanCountByKantor = new Map<
+  string,
+  { future: number; past: number }
+>();
+
+basePeminjamanData.forEach((item) => {
+  if (item.status !== "Dipinjam") return;
+  const kantorId = lemariById.get(item.lemariId)?.kantorId;
+  if (!kantorId) return;
+  const dateValue = parseDateValue(item.tanggalKembali);
+  const entry = peminjamanCountByKantor.get(kantorId) ?? { future: 0, past: 0 };
+  if (dateValue && dateValue < todayStart) {
+    entry.past += 1;
+  } else if (dateValue && dateValue > todayStart) {
+    entry.future += 1;
+  }
+  peminjamanCountByKantor.set(kantorId, entry);
+});
+
+const peminjamanExtras: PeminjamanArsip[] = [];
+let peminjamanExtraIndex = 1;
+const peminjamOptions = ["FAISAL", "ANNAS", "ANGGITA", "BURHAN"];
+
+kantorData.forEach((kantor) => {
+  const counts = peminjamanCountByKantor.get(kantor.id) ?? { future: 0, past: 0 };
+  const futureNeeded = Math.max(0, 2 - counts.future);
+  const pastNeeded = Math.max(0, 1 - counts.past);
+  const docIds = dokumenIdsByKantor.get(kantor.id) ?? [];
+  const fallbackLemariId = (lemariIdsByKantor.get(kantor.id) ?? [])[0];
+
+  for (let i = 0; i < futureNeeded; i += 1) {
+    const docId = docIds.length > 0 ? docIds[(peminjamanExtraIndex + i) % docIds.length] : undefined;
+    const lemariId = docId ? resolveLemariIdByDokumenId(docId) : fallbackLemariId;
+    if (!lemariId) continue;
+    const dueDate = formatIsoDate(addDays(todayStart, 7 + i));
+    const pinjamDate = formatIsoDate(addDays(todayStart, -(3 + i)));
+    peminjamanExtras.push({
+      id: `pinj-extra-${String(peminjamanExtraIndex).padStart(3, "0")}`,
+      lemariId,
+      dokumenId: docId,
+      namaDokumen:
+        (docId ? dokumenById.get(docId)?.namaDokumen : undefined) ??
+        "Dokumen Arsip",
+      peminjam: peminjamOptions[peminjamanExtraIndex % peminjamOptions.length],
+      tanggalPinjam: pinjamDate,
+      tanggalKembali: dueDate,
+      status: "Dipinjam",
+    });
+    peminjamanExtraIndex += 1;
+  }
+
+  for (let i = 0; i < pastNeeded; i += 1) {
+    const docId = docIds.length > 0 ? docIds[(peminjamanExtraIndex + i) % docIds.length] : undefined;
+    const lemariId = docId ? resolveLemariIdByDokumenId(docId) : fallbackLemariId;
+    if (!lemariId) continue;
+    const dueDate = formatIsoDate(addDays(todayStart, -(4 + i)));
+    const pinjamDate = formatIsoDate(addDays(todayStart, -(10 + i)));
+    peminjamanExtras.push({
+      id: `pinj-extra-${String(peminjamanExtraIndex).padStart(3, "0")}`,
+      lemariId,
+      dokumenId: docId,
+      namaDokumen:
+        (docId ? dokumenById.get(docId)?.namaDokumen : undefined) ??
+        "Dokumen Arsip",
+      peminjam: peminjamOptions[peminjamanExtraIndex % peminjamOptions.length],
+      tanggalPinjam: pinjamDate,
+      tanggalKembali: dueDate,
+      status: "Dipinjam",
+    });
+    peminjamanExtraIndex += 1;
+  }
+});
+
+export const peminjamanData: PeminjamanArsip[] = [
+  ...basePeminjamanData,
+  ...peminjamanExtras,
+];
 
 export interface SuratUser {
   id: number;
@@ -3437,7 +3486,7 @@ export const progressPihakKetiga: ProgressPihakKetiga[] = pihakKetigaData.flatMa
         id: `ppk-${item.id}-${String(index + 1).padStart(3, "0")}`,
         pihakKetigaId: item.id,
         namaNasabah: getProgressPihakKetigaName(entityIndex, index),
-        noKontrak: `${contractPrefix}/${String(index + 1).padStart(3, "0")}`,
+        noKontrak: `${contractPrefix}${String(index + 1).padStart(3, "0")}`,
         status,
         tanggalMulai,
         tanggalSelesai,

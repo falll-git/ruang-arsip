@@ -5,7 +5,7 @@ import { ArrowUpDown, Printer, Search, SearchX } from "lucide-react";
 
 import { cetakDokumenLegalData } from "@/lib/data";
 import type { CetakDokumenLegalType, CetakDokumenRecord } from "@/lib/types";
-import { parseDateString } from "@/lib/utils/date";
+import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 import LegalViewButton from "@/components/legal/LegalViewButton";
 import LaporanLegalDetailModal from "@/components/legal/LaporanLegalDetailModal";
 
@@ -14,12 +14,6 @@ type JenisFilter = CetakDokumenLegalType | "SEMUA";
 
 const monthFormatter = new Intl.DateTimeFormat("id-ID", {
   month: "long",
-});
-
-const longDateFormatter = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
 });
 
 const jenisDokumenOptions: Array<{
@@ -35,8 +29,7 @@ const jenisDokumenOptions: Array<{
 ];
 
 function formatLongDate(value: string) {
-  const date = parseDateString(value);
-  return date ? longDateFormatter.format(date) : value;
+  return formatDateDisplay(value);
 }
 
 function getMonthKey(value: string) {

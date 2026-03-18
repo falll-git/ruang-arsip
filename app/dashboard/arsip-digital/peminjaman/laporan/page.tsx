@@ -21,6 +21,17 @@ import {
 } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
+function formatPersonName(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "-") return value;
+  return trimmed
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default function LaporanPeminjamanPage() {
   const { role } = useAuth();
   const { dokumen, peminjaman } = useArsipDigitalWorkflow();
@@ -291,7 +302,7 @@ export default function LaporanPeminjamanPage() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Approved By
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
@@ -312,30 +323,20 @@ export default function LaporanPeminjamanPage() {
                     {item.namaDokumen}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                        {item.peminjam.substring(0, 1)}
-                      </div>
-                      <span className="text-sm text-gray-700">
-                        {item.peminjam}
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-gray-800">
+                      {formatPersonName(item.peminjam)}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {formatDateDisplay(item.tglPinjam)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {formatDateDisplay(item.tglKembali)}
-                    {item.isTerlambat && (
-                      <span className="block text-[10px] text-red-600 font-bold mt-1">
-                        TERLAMBAT
-                      </span>
-                    )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.approvedBy}
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {formatPersonName(item.approvedBy)}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
                         ${

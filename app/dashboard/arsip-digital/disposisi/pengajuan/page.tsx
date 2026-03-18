@@ -9,6 +9,11 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { filterDigitalDocuments } from "@/lib/rbac";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 export default function PengajuanDisposisiPage() {
   const { role, user } = useAuth();
   const { showToast } = useAppToast();
@@ -152,7 +157,7 @@ export default function PengajuanDisposisiPage() {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="w-16 px-6 py-4 text-center">
+                <th className="w-16 px-6 py-3 text-center">
                   <div className="flex justify-center">
                     <UiverseCheckbox
                       checked={
@@ -165,22 +170,22 @@ export default function PengajuanDisposisiPage() {
                     />
                   </div>
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Kode
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Jenis Dokumen
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">
                   Nama Dokumen
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
                   Detail
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Pemilik
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
                   Aksi
                 </th>
               </tr>
@@ -193,7 +198,7 @@ export default function PengajuanDisposisiPage() {
                   onClick={() => handleCheckbox(doc.id)}
                 >
                   <td
-                    className="px-6 py-4 text-center"
+                    className="px-6 py-3 text-center"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex justify-center">
@@ -205,35 +210,30 @@ export default function PengajuanDisposisiPage() {
                       />
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-3">
                     <span className="text-primary-600 bg-primary-50 px-2 py-1 rounded border border-primary-100 text-xs font-medium tabular-nums">
                       {doc.kode}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-3 text-sm text-gray-600">
                     {doc.jenisDokumen}
                   </td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-800">
                     {doc.namaDokumen}
                   </td>
                   <td
-                    className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate"
+                    className="px-6 py-3 text-sm text-gray-600 max-w-xs truncate"
                     title={doc.detail}
                   >
                     {doc.detail}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                        {doc.pemilik.substring(0, 1)}
-                      </div>
-                      <span className="text-sm text-gray-700">
-                        {doc.pemilik}
-                      </span>
-                    </div>
+                  <td className="px-6 py-3">
+                    <span className="text-sm font-semibold text-gray-800">
+                      {formatPersonName(doc.pemilik)}
+                    </span>
                   </td>
                   <td
-                    className="px-6 py-4 text-right"
+                    className="px-6 py-3 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -298,7 +298,10 @@ export default function PengajuanDisposisiPage() {
                             {doc.kode}
                           </span>
                           <span className="text-xs text-gray-500">
-                            &bull; Pemilik: {doc.pemilik}
+                            &bull; Pemilik:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {formatPersonName(doc.pemilik)}
+                            </span>
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">

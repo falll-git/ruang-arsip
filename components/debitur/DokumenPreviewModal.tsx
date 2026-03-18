@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 type PreviewDocument = {
@@ -49,11 +50,16 @@ export default function DokumenPreviewModal({
 
         <div className="flex-1 overflow-auto bg-gray-50 p-4">
           {isImage ? (
-            <img
-              src={document.filePath}
-              alt={document.namaDokumen}
-              className="mx-auto max-h-[70vh] w-full rounded-lg bg-white object-contain shadow"
-            />
+            <div className="relative mx-auto h-[70vh] w-full max-w-5xl">
+              <Image
+                src={document.filePath}
+                alt={document.namaDokumen}
+                fill
+                sizes="100vw"
+                className="rounded-lg bg-white object-contain shadow"
+                unoptimized
+              />
+            </div>
           ) : (
             <iframe
               src={document.filePath}

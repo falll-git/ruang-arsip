@@ -91,21 +91,6 @@ dummyUsers.forEach((user) => {
 
 const personLookup = new Map<string, string>(personLookupEntries);
 
-const kindMeta: Record<DocumentKind, { title: string; subtitle: string }> = {
-  "surat-masuk": {
-    title: "Surat Masuk",
-    subtitle: "Dokumen dari pihak eksternal",
-  },
-  "surat-keluar": {
-    title: "Surat Keluar",
-    subtitle: "Dokumen yang telah dikirim",
-  },
-  memorandum: {
-    title: "Memorandum",
-    subtitle: "Memo internal antar divisi",
-  },
-};
-
 function normalizePersonName(value: string) {
   return personLookup.get(value.toLowerCase()) ?? value;
 }
@@ -145,43 +130,6 @@ function getSearchPlaceholder(activeKind: DocumentKind) {
   }
 
   return "Cari no memo, perihal, divisi, pembuat...";
-}
-
-function getDateColumnLabel(activeKind: DocumentKind) {
-  if (activeKind === "surat-masuk") {
-    return "Tgl Penerimaan";
-  }
-
-  if (activeKind === "surat-keluar") {
-    return "Tgl Pengiriman";
-  }
-
-  if (activeKind === "memorandum") {
-    return "Tanggal Memo";
-  }
-
-  return "Tanggal";
-}
-
-function getKindBadgeStyles(kind: DocumentKind) {
-  if (kind === "surat-masuk") {
-    return "bg-blue-50 text-blue-700 border-blue-200";
-  }
-
-  if (kind === "surat-keluar") {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  }
-
-  return "bg-amber-50 text-amber-700 border-amber-200";
-}
-
-function getInitials(value: string) {
-  return value
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 }
 
 export default function CetakDokumenClient() {
@@ -376,8 +324,6 @@ export default function CetakDokumenClient() {
     showToast("Dokumen dibuka ke mode cetak.", "success");
   };
 
-  const activeMeta = kindMeta[activeKind];
-
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -449,18 +395,10 @@ export default function CetakDokumenClient() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,420px)]">
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-2 border-b border-gray-100 bg-gray-50/70 px-5 py-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Menampilkan {filteredRecords.length} dokumen
-              </p>
-              <p className="text-sm text-gray-500">
-                {activeMeta.subtitle}. Klik baris untuk melihat detail dan cetak.
-              </p>
-            </div>
-            <div className="text-sm text-gray-500">
-              Sortir berdasarkan {getDateColumnLabel(activeKind).toLowerCase()}.
-            </div>
+          <div className="border-b border-gray-100 bg-gray-50/70 px-5 py-4">
+            <p className="text-center text-sm font-semibold text-gray-900">
+              Menampilkan {filteredRecords.length} dokumen
+            </p>
           </div>
 
           {filteredRecords.length > 0 ? (
@@ -563,8 +501,16 @@ export default function CetakDokumenClient() {
                             <td className="px-5 py-4 text-sm text-gray-700">
                               {record.subject}
                             </td>
-                            <td className="px-5 py-4 text-sm text-gray-700">
-                              {record.secondaryText}
+                            <td className="px-5 py-4 text-sm font-semibold">
+                              <span
+                                className={
+                                  record.secondaryText === "Rahasia"
+                                    ? "text-red-600"
+                                    : "text-gray-900"
+                                }
+                              >
+                                {record.secondaryText}
+                              </span>
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-600">
                               {formatDateDisplay(record.sortDate)}
@@ -581,7 +527,7 @@ export default function CetakDokumenClient() {
                             <td className="px-5 py-4 text-sm text-gray-700">
                               {record.subject}
                             </td>
-                            <td className="px-5 py-4 text-sm text-gray-700">
+                            <td className="px-5 py-4 text-sm font-semibold text-gray-900">
                               {record.secondaryText}
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-600">
@@ -599,15 +545,8 @@ export default function CetakDokumenClient() {
                             <td className="px-5 py-4 text-sm text-gray-700">
                               {record.primaryText}
                             </td>
-                            <td className="px-5 py-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-600">
-                                  {getInitials(record.secondaryText)}
-                                </div>
-                                <span className="font-medium text-gray-700">
-                                  {record.secondaryText}
-                                </span>
-                              </div>
+                            <td className="px-5 py-4 text-sm font-medium text-gray-700">
+                              {record.secondaryText}
                             </td>
                             <td className="px-5 py-4 text-sm text-gray-600">
                               {formatDateDisplay(record.sortDate)}
@@ -641,15 +580,10 @@ export default function CetakDokumenClient() {
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span
-                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getKindBadgeStyles(selectedRecord.kind)}`}
-                  >
-                    {kindMeta[selectedRecord.kind].title}
-                  </span>
-                  <h2 className="mt-3 text-xl font-bold text-gray-900">
+                  <h2 className="text-xl font-bold text-gray-900">
                     {selectedRecord.subject}
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm font-semibold text-gray-900">
                     {selectedRecord.code} - {formatDateDisplay(selectedRecord.sortDate)}
                   </p>
                 </div>
@@ -694,6 +628,11 @@ export default function CetakDokumenClient() {
                     <DetailField
                       label="Sifat Surat"
                       value={selectedRecord.record.sifat}
+                      valueClassName={
+                        selectedRecord.record.sifat === "Rahasia"
+                          ? "font-semibold text-red-600"
+                          : "font-semibold text-gray-900"
+                      }
                     />
                     <DetailField
                       label="Perihal Surat"
@@ -743,6 +682,11 @@ export default function CetakDokumenClient() {
                     <DetailField
                       label="Sifat Surat"
                       value={selectedRecord.record.sifat}
+                      valueClassName={
+                        selectedRecord.record.sifat === "Rahasia"
+                          ? "font-semibold text-red-600"
+                          : "font-semibold text-gray-900"
+                      }
                     />
                     <DetailField
                       label="Disposisi Kepada"
@@ -832,11 +776,13 @@ function DetailField({
   value,
   className,
   mono = false,
+  valueClassName,
 }: {
   label: string;
   value: string;
   className?: string;
   mono?: boolean;
+  valueClassName?: string;
 }) {
   return (
     <div
@@ -846,7 +792,9 @@ function DetailField({
         {label}
       </p>
       <p
-        className={`mt-2 text-sm leading-relaxed text-gray-800 ${mono ? "tabular-nums" : "font-medium"}`}
+        className={`mt-2 text-sm leading-relaxed ${mono ? "tabular-nums" : ""} ${
+          valueClassName ?? "font-semibold text-gray-900"
+        }`}
       >
         {value}
       </p>

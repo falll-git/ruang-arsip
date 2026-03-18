@@ -10,6 +10,11 @@ import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 export default function HistorisPenyimpananPage() {
   const { role } = useAuth();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
@@ -211,7 +216,7 @@ export default function HistorisPenyimpananPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{item.jam}</td>
                   <td className="px-6 py-4">
-                    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 tabular-nums">
+                    <span className="inline-flex items-center rounded-lg border-2 border-gray-800 bg-white px-3 py-1 text-xs font-semibold text-gray-900 tabular-nums">
                       {item.kode}
                     </span>
                   </td>
@@ -237,10 +242,8 @@ export default function HistorisPenyimpananPage() {
                   <td className="px-6 py-4 text-sm font-medium text-gray-800">
                     {item.lokasiBaru}
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                      {item.user}
-                    </span>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                    {formatPersonName(item.user)}
                   </td>
                 </tr>
               ))}

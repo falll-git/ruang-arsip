@@ -25,6 +25,7 @@ import type {
   PihakKetigaKategori,
   ProgressPihakKetigaStatus,
 } from "@/lib/types";
+import { formatDateDisplay } from "@/lib/utils/date";
 
 const defaultDocumentUrl = "/documents/contoh-dok.pdf";
 
@@ -83,19 +84,7 @@ const kategoriMeta: Record<
 };
 
 function formatShortDate(value: string) {
-  const dateValue = new Date(value);
-
-  if (Number.isNaN(dateValue.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-    .format(dateValue)
-    .replace(/\//g, "-");
+  return formatDateDisplay(value, value);
 }
 
 function formatNumber(value: number) {
@@ -120,17 +109,15 @@ function PihakKetigaCard({
       onClick={() => onSelect(item)}
       className="group overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${meta.iconWrapperClassName}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-lg shadow-blue-500/20"
+          style={{
+            background: "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
+          }}
         >
-          <CategoryIcon className="h-[18px] w-[18px]" aria-hidden="true" />
+          <CategoryIcon className="h-[18px] w-[18px] text-white" aria-hidden="true" />
         </div>
-        <span
-          className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.badgeClassName}`}
-        >
-          {meta.label}
-        </span>
       </div>
 
       <h4
@@ -354,20 +341,18 @@ export default function PihakKetigaModal({
               <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-6 py-6">
                 <div className="flex items-center gap-4">
                   <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${meta.iconWrapperClassName}`}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-blue-500/20"
+                    style={{
+                      background: "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
+                    }}
                   >
-                    <HeaderIcon className="h-5 w-5" aria-hidden="true" />
+                    <HeaderIcon className="h-5 w-5 text-white" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="text-xl font-bold text-gray-900">
                         Pihak Ketiga - {meta.label}
                       </h3>
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.badgeClassName}`}
-                      >
-                        {items.length} pihak ketiga
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -525,7 +510,7 @@ export default function PihakKetigaModal({
                             >
                               <td className="px-4 py-3 text-gray-700">{index + 1}</td>
                               <td className="px-4 py-3">
-                                <span className="inline-flex rounded-xl border border-gray-300 px-3 py-1 font-semibold text-gray-700">
+                                <span className="font-semibold text-gray-700">
                                   {item.kodeDokumen}
                                 </span>
                               </td>
@@ -588,6 +573,7 @@ export default function PihakKetigaModal({
 
       {detailItem !== null ? (
         <div
+          data-dashboard-overlay="true"
           className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
           onClick={() => setDetailPihakKetigaId(null)}
         >

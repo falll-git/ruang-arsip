@@ -1,3 +1,5 @@
+import { parseDateString } from "@/lib/utils/date";
+
 const rupiahFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
@@ -6,9 +8,9 @@ const rupiahFormatter = new Intl.NumberFormat("id-ID", {
 
 const numberFormatter = new Intl.NumberFormat("id-ID");
 
-const longDateFormatter = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "long",
+const shortDateFormatter = new Intl.DateTimeFormat("id-ID", {
+  day: "2-digit",
+  month: "short",
   year: "numeric",
 });
 
@@ -21,5 +23,16 @@ export function formatNumber(value: number) {
 }
 
 export function formatLongDate(value: Date | string | number) {
-  return longDateFormatter.format(new Date(value));
+  if (value instanceof Date) {
+    return shortDateFormatter.format(value);
+  }
+
+  if (typeof value === "string") {
+    const parsedString = parseDateString(value);
+    if (parsedString) return shortDateFormatter.format(parsedString);
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value ?? "");
+  return shortDateFormatter.format(parsed);
 }

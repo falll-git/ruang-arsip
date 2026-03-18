@@ -1,89 +1,227 @@
 "use client";
 
-import { Archive, ChevronRight } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  FolderOpen,
+  Layers,
+  Search,
+  SearchX,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { Lemari, Rak } from "@/lib/types";
+import type { Kantor, Lemari, Rak } from "@/lib/types";
+import { useMemo, useState } from "react";
+
+type RakWithMeta = Rak & {
+  kapasitas?: number;
+  status?: "Aktif" | "Nonaktif";
+};
 
 type RakGridModalProps = {
   lemari: Lemari;
-  namaKantor: string;
+  kantor: Kantor;
   rakList: Rak[];
   onClose: () => void;
-  onSelectRak: (rakId: string) => void;
+  onBack: () => void;
+  onSelectRak: (rak: Rak) => void;
 };
+
+function getStatusBadgeClass(status: "Aktif" | "Nonaktif") {
+  return status === "Aktif"
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+    : "border-gray-200 bg-gray-100 text-gray-700";
+}
 
 export default function RakGridModal({
   lemari,
-  namaKantor,
+  kantor,
   rakList,
   onClose,
+  onBack,
   onSelectRak,
 }: RakGridModalProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredRak = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return rakList;
+    return rakList.filter((item) => item.namaRak.toLowerCase().includes(query));
+  }, [rakList, searchTerm]);
+
+  const hasNoData = rakList.length === 0;
+  const hasNoFilteredData = rakList.length > 0 && filteredRak.length === 0;
+
   return (
     <div
       data-dashboard-overlay="true"
-      className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[1400] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="flex max-h-[80vh] w-[94vw] max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
+        className="flex max-h-[85vh] w-[96vw] max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-scale-in"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="border-b border-gray-100 bg-gray-50/50 px-5 py-4">
-          <h3 className="truncate text-lg font-bold text-gray-900">
-            {lemari.kodeLemari} {"\u00B7"} {namaKantor}
-          </h3>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-5 py-6">
-          <div className="grid grid-cols-3 gap-4">
-            {rakList.map((rak) => (
-              <button
-                key={rak.id}
-                type="button"
-                onClick={() => onSelectRak(rak.id)}
-                className="group rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg shadow-blue-500/20"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
-                    }}
-                  >
-                    <Archive className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                      Total Arsip
-                    </span>
-                    <span className="text-xl font-bold text-gray-800 tabular-nums">
-                      {rak.totalArsip}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-sm font-semibold text-gray-900">{rak.namaRak}</p>
-
-                <div className="mt-4 flex items-center justify-between text-primary-600 font-medium group-hover:translate-x-1 transition-transform">
-                  <span className="text-sm">Lihat Dokumen</span>
-                  <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                </div>
-              </button>
-            ))}
+        <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50/50 px-5 py-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
+            aria-label="Kembali"
+          >
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h3 className="truncate text-lg font-bold text-gray-900">
+              {lemari.kodeLemari} {"\u00B7"} {kantor.namaKantor}
+            </h3>
+            <p className="text-sm text-gray-500">{filteredRak.length} Rak</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end border-t border-gray-100 bg-gray-50 px-5 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-          >
+        <div className="flex-1 overflow-y-auto px-5 py-6">
+          <div className="mb-5">
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="input input-with-icon"
+                placeholder="Cari nomor rak..."
+              />
+            </div>
+          </div>
+
+          {hasNoData ? (
+            <div className="flex min-h-[300px] flex-col items-center justify-center px-6 text-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-50 text-gray-300">
+                <FolderOpen className="h-7 w-7" aria-hidden="true" />
+              </div>
+              <p className="text-base font-medium text-gray-700">Belum ada rak</p>
+            </div>
+          ) : hasNoFilteredData ? (
+            <div className="flex min-h-[260px] flex-col items-center justify-center px-6 text-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-50 text-gray-300">
+                <SearchX className="h-7 w-7" aria-hidden="true" />
+              </div>
+              <p className="text-base font-medium text-gray-700">
+                Tidak ada rak yang sesuai
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {filteredRak.map((rak, idx) => {
+                const metadata = rak as RakWithMeta;
+                const hasKapasitas = typeof metadata.kapasitas === "number";
+                const status = metadata.status;
+
+                return (
+                  <div
+                    key={rak.id}
+                    className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 animate-slide-up text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    style={{ animationDelay: `${idx * 0.1}s` }}
+                  >
+                    <div className="flex items-start justify-between mb-6">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #157ec3 0%, #0d5a8f 100%)",
+                        }}
+                      >
+                        <Layers className="w-7 h-7 text-white" aria-hidden="true" />
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                          Total Arsip
+                        </span>
+                        <span className="text-2xl font-bold text-gray-800 tabular-nums">
+                          {rak.totalArsip}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="rounded-xl bg-gray-50">
+                        <div className="flex items-center justify-between px-4 py-3 text-sm">
+                          <span className="flex items-center gap-3 text-gray-600 whitespace-nowrap">
+                            <Layers
+                              className="h-4 w-4 text-gray-500"
+                              aria-hidden="true"
+                            />
+                            Nama Rak
+                          </span>
+                          <span className="font-semibold text-gray-800 text-right whitespace-nowrap">
+                            {rak.namaRak}
+                          </span>
+                        </div>
+                        {hasKapasitas ? (
+                          <>
+                            <div className="h-px w-full bg-gray-200" />
+                            <div className="flex items-center justify-between px-4 py-3 text-sm">
+                              <span className="flex items-center gap-3 text-gray-600 whitespace-nowrap">
+                                <Layers
+                                  className="h-4 w-4 text-gray-500"
+                                  aria-hidden="true"
+                                />
+                                Kapasitas
+                              </span>
+                              <span className="min-w-[2.5rem] font-semibold text-gray-800 tabular-nums text-right">
+                                {metadata.kapasitas}
+                              </span>
+                            </div>
+                          </>
+                        ) : null}
+                        {status === "Aktif" || status === "Nonaktif" ? (
+                          <>
+                            <div className="h-px w-full bg-gray-200" />
+                            <div className="flex items-center justify-between px-4 py-3 text-sm">
+                              <span className="flex items-center gap-3 text-gray-600 whitespace-nowrap">
+                                <Layers
+                                  className="h-4 w-4 text-gray-500"
+                                  aria-hidden="true"
+                                />
+                                Status
+                              </span>
+                              <span
+                                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(
+                                  status,
+                                )}`}
+                              >
+                                {status}
+                              </span>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => onSelectRak(rak)}
+                      className="mt-6 flex w-full items-center justify-between text-primary-600 font-medium group-hover:translate-x-1 transition-transform"
+                    >
+                      <span className="text-sm">Lihat Dokumen</span>
+                      <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-5 py-4">
+          <Button type="button" variant="outline" onClick={onBack}>
+            Kembali
+          </Button>
+          <Button type="button" variant="outline" onClick={onClose}>
             Tutup
           </Button>
         </div>

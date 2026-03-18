@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Inbox, X, User, AlertCircle } from "lucide-react";
+import { Check, Inbox, X, AlertCircle } from "lucide-react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -10,6 +10,11 @@ import { useProtectedAction } from "@/hooks/useProtectedAction";
 import { canApproveAsLegal } from "@/lib/rbac";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function PermintaanDisposisiPage() {
   const { showToast } = useAppToast();
@@ -203,14 +208,9 @@ export default function PermintaanDisposisiPage() {
                       {item.detail}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                          {item.pemohon.substring(0, 1)}
-                        </div>
-                        <span className="text-sm text-gray-700">
-                          {item.pemohon}
-                        </span>
-                      </div>
+                      <span className="text-sm font-semibold text-gray-800">
+                        {formatPersonName(item.pemohon)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatDateDisplay(item.tglPengajuan)}
@@ -321,12 +321,9 @@ export default function PermintaanDisposisiPage() {
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
                     Pemohon
                   </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <p className="font-medium text-gray-800">
-                      {selectedItem?.pemohon}
-                    </p>
-                  </div>
+                  <p className="font-semibold text-gray-800 mt-1">
+                    {formatPersonName(selectedItem?.pemohon ?? "-")}
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
@@ -339,7 +336,7 @@ export default function PermintaanDisposisiPage() {
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               {actionType === "approve" && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -350,9 +347,6 @@ export default function PermintaanDisposisiPage() {
                     value={tanggalExpired}
                     onChange={setTanggalExpired}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Sampai kapan user dapat mengakses dokumen ini.
-                  </p>
                 </div>
               )}
 

@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   FileBarChart2,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
@@ -15,6 +16,11 @@ import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function AcceptPeminjamanPage() {
   const { user } = useAuth();
@@ -291,18 +297,26 @@ export default function AcceptPeminjamanPage() {
             className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-3">
+            <div
+              className={`p-6 border-b border-gray-100 flex items-center justify-between ${
+                actionType === "approve" ? "bg-emerald-50" : "bg-red-50"
+              }`}
+            >
+              <div className="flex items-start gap-4">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${actionType === "approve" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
+                  className={`shrink-0 ${
+                    actionType === "approve"
+                      ? "text-emerald-500"
+                      : "text-red-500"
+                  }`}
                 >
                   {actionType === "approve" ? (
-                    <Check className="w-5 h-5" />
+                    <CheckCircle2 className="h-6 w-6" />
                   ) : (
-                    <X className="w-5 h-5" />
+                    <AlertTriangle className="h-6 w-6" />
                   )}
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-gray-900">
                   {actionType === "approve"
                     ? selectedItem.tipe === "Peminjaman"
                       ? "Setujui Peminjaman"
@@ -314,33 +328,21 @@ export default function AcceptPeminjamanPage() {
               </div>
               <button
                 onClick={closeModal}
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+                className="p-2 hover:bg-white/60 rounded-full transition-colors text-gray-500"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-4">
               <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 space-y-4">
-                <div className="flex justify-between">
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500 uppercase font-semibold">
-                      Kode
-                    </label>
-                    <p className="text-sm font-bold text-primary-600 tabular-nums">
-                      {selectedItem.kode}
-                    </p>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <label className="text-xs text-gray-500 uppercase font-semibold">
-                      Tipe
-                    </label>
-                    <p>
-                      <span className="badge badge-sm badge-info">
-                        {selectedItem.tipe}
-                      </span>
-                    </p>
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-500 uppercase font-semibold">
+                    Kode
+                  </label>
+                  <p className="text-sm font-bold text-primary-600 tabular-nums">
+                    {selectedItem.kode}
+                  </p>
                 </div>
                 <div className="w-full h-px bg-gray-200" />
                 <div className="space-y-1">
@@ -356,7 +358,7 @@ export default function AcceptPeminjamanPage() {
                     Pemohon
                   </label>
                   <p className="font-medium text-gray-800">
-                    {selectedItem.pemohon}
+                    {formatPersonName(selectedItem.pemohon)}
                   </p>
                 </div>
               </div>
@@ -370,9 +372,6 @@ export default function AcceptPeminjamanPage() {
                     value={tanggalPenyerahan}
                     onChange={setTanggalPenyerahan}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Tanggal dokumen fisik diserahkan/diterima.
-                  </p>
                 </div>
               )}
 

@@ -70,7 +70,7 @@ function TenggatWaktuModalContent({
             event.preventDefault();
             handleSave();
           }}
-          className="space-y-5 p-7"
+          className="space-y-4 p-7"
         >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -81,13 +81,9 @@ function TenggatWaktuModalContent({
               onChange={setTenggatWaktu}
               placeholder="Pilih tanggal..."
             />
-            {tenggatWaktu ? (
-              <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-600 leading-relaxed">
-                Notifikasi WA akan dikirim ke penerima disposisi
-                <br />
-                sejak surat dikirim hingga tenggat waktu berakhir.
-              </div>
-            ) : null}
+            <p className="mt-2 text-xs text-gray-600">
+              Notifikasi WhatsApp akan dikirim ke penerima
+            </p>
           </div>
 
           <div>

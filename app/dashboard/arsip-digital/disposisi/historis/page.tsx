@@ -18,9 +18,15 @@ import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton"
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { filterDigitalDocuments } from "@/lib/rbac";
+import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import { lemariData } from "@/lib/data";
+
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 interface HistorisItem {
   id: number;
@@ -42,6 +48,7 @@ interface HistorisItem {
   tglAksi: string;
   fileUrl?: string;
   lemariId?: string;
+  kantorId?: string;
 }
 
 export default function HistorisDisposisiPage() {
@@ -51,6 +58,7 @@ export default function HistorisDisposisiPage() {
   const { openPreview } = useDocumentPreviewContext();
   const searchParams = useSearchParams();
   const filterLemariId = searchParams.get("lemariId");
+  const filterKantorId = searchParams.get("kantorId");
   const [activeTab, setActiveTab] = useState<"permohonan" | "persetujuan">(
     "permohonan",
   );
@@ -76,7 +84,11 @@ export default function HistorisDisposisiPage() {
 
   const lemariIdByKode = useMemo(
     () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
-    [lemariData],
+    [],
+  );
+  const kantorIdByLemari = useMemo(
+    () => new Map(lemariData.map((lemari) => [lemari.id, lemari.kantorId])),
+    [],
   );
 
   const completedDisposisi = useMemo(
@@ -100,6 +112,7 @@ export default function HistorisDisposisiPage() {
         ? lemariAliasByKode.get(kodeLemari) ?? kodeLemari
         : undefined;
       const lemariId = mappedKode ? lemariIdByKode.get(mappedKode) : undefined;
+      const kantorId = lemariId ? kantorIdByLemari.get(lemariId) : undefined;
       const lokasi =
         dokumenItem?.tempatPenyimpanan ||
         tempat?.kodeLemari ||
@@ -126,24 +139,29 @@ export default function HistorisDisposisiPage() {
         tglAksi: item.tglAksi || item.tglPengajuan,
         fileUrl: dokumenItem?.fileUrl,
         lemariId,
+        kantorId,
       };
     });
   }, [
     accessibleById,
     completedDisposisi,
+    kantorIdByLemari,
     lemariAliasByKode,
     lemariIdByKode,
     tempatById,
   ]);
 
   const data = useMemo(() => {
+    if (filterKantorId) {
+      return historisData.filter((item) => item.kantorId === filterKantorId);
+    }
     if (!filterLemariId) return historisData;
     return historisData.filter((item) => item.lemariId === filterLemariId);
-  }, [filterLemariId, historisData]);
+  }, [filterKantorId, filterLemariId, historisData]);
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
-      {filterLemariId ? (
+      {filterLemariId || filterKantorId ? (
         <div className="mb-4">
           <Link
             href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
@@ -164,7 +182,9 @@ export default function HistorisDisposisiPage() {
         <button
           onClick={() => setActiveTab("permohonan")}
           className={
-            activeTab === "permohonan" ? "btn btn-primary" : "btn btn-outline"
+            activeTab === "permohonan"
+              ? "btn btn-primary"
+              : "btn btn-outline !border-gray-400 !text-gray-800 !shadow-none hover:!border-gray-500 hover:!shadow-none"
           }
         >
           <Send className="w-4 h-4" aria-hidden="true" />
@@ -173,7 +193,9 @@ export default function HistorisDisposisiPage() {
         <button
           onClick={() => setActiveTab("persetujuan")}
           className={
-            activeTab === "persetujuan" ? "btn btn-primary" : "btn btn-outline"
+            activeTab === "persetujuan"
+              ? "btn btn-primary"
+              : "btn btn-outline !border-gray-400 !text-gray-800 !shadow-none hover:!border-gray-500 hover:!shadow-none"
           }
         >
           <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
@@ -278,17 +300,19 @@ export default function HistorisDisposisiPage() {
                       {item.namaDokumen}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {activeTab === "permohonan"
-                          ? item.pemilik || "-"
-                          : item.pemohon || "-"}
+                      <span className="text-sm font-semibold text-gray-800">
+                        {formatPersonName(
+                          (activeTab === "permohonan"
+                            ? item.pemilik
+                            : item.pemohon) || "-",
+                        )}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.tglPengajuan}
+                      {formatDateDisplay(item.tglPengajuan)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {item.tglAksi}
+                      {formatDateDisplay(item.tglAksi)}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -459,7 +483,7 @@ export default function HistorisDisposisiPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <p className="font-medium text-gray-800">
-                      {selectedItem.tglPengajuan}
+                      {formatDateDisplay(selectedItem.tglPengajuan)}
                     </p>
                   </div>
                 </div>
@@ -470,7 +494,7 @@ export default function HistorisDisposisiPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <p className="font-medium text-gray-800">
-                      {selectedItem.tglAksi}
+                      {formatDateDisplay(selectedItem.tglAksi)}
                     </p>
                   </div>
                 </div>
@@ -481,7 +505,7 @@ export default function HistorisDisposisiPage() {
                   <div className="flex items-center gap-2 mt-1">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <p className="font-medium text-gray-800">
-                      {selectedItem.tglInput}
+                      {formatDateDisplay(selectedItem.tglInput)}
                     </p>
                   </div>
                 </div>
@@ -509,7 +533,9 @@ export default function HistorisDisposisiPage() {
                     Akses Berlaku Sampai
                   </label>
                   <p className="font-medium text-gray-800 mt-1">
-                    {selectedItem.tglExpired || "-"}
+                    {selectedItem.tglExpired
+                      ? formatDateDisplay(selectedItem.tglExpired)
+                      : "-"}
                   </p>
                 </div>
                 <div className="md:col-span-2">
@@ -541,7 +567,9 @@ export default function HistorisDisposisiPage() {
                       <p className="text-sm text-green-700 mt-1">
                         Anda memiliki akses penuh ke dokumen ini sampai tanggal{" "}
                         <span className="font-bold">
-                          {selectedItem.tglExpired || "-"}
+                          {selectedItem.tglExpired
+                            ? formatDateDisplay(selectedItem.tglExpired)
+                            : "-"}
                         </span>
                         .
                       </p>

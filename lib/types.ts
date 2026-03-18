@@ -55,14 +55,31 @@ export interface DokumenArsip {
   tanggalInput: string;
 }
 
+export type DisposisiArsipStatus = "PENDING" | "PROSES" | "SELESAI" | "DITOLAK";
+
 export interface DisposisiArsip {
   id: string;
   lemariId: string;
+  dokumenId?: number;
+  status: DisposisiArsipStatus;
 }
+
+export type PeminjamanArsipStatus =
+  | "Pending"
+  | "Disetujui"
+  | "Ditolak"
+  | "Dipinjam"
+  | "Dikembalikan";
 
 export interface PeminjamanArsip {
   id: string;
   lemariId: string;
+  dokumenId?: number;
+  namaDokumen: string;
+  peminjam: string;
+  tanggalPinjam: string;
+  tanggalKembali: string;
+  status: PeminjamanArsipStatus;
 }
 
 export type ProgressPihakKetigaStatus = "PROSES" | "SELESAI" | "EXPIRED";

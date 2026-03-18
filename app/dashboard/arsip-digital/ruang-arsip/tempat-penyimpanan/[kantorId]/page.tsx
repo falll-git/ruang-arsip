@@ -37,12 +37,12 @@ export default function KantorLemariPage() {
         );
         return accumulator;
       }, new Map<string, number>()),
-    [rakData],
+    [],
   );
 
   const lemariByKantor = useMemo(
     () => lemariData.filter((item) => item.kantorId === kantorId),
-    [kantorId, lemariData],
+    [kantorId],
   );
 
   const filteredLemari = useMemo(() => {
@@ -256,10 +256,11 @@ export default function KantorLemariPage() {
       {selectedLemari && !selectedRakId ? (
         <RakGridModal
           lemari={selectedLemari}
-          namaKantor={kantor.namaKantor}
+          kantor={kantor}
           rakList={rakList}
+          onBack={() => setSelectedLemariId(null)}
           onClose={handleCloseAll}
-          onSelectRak={(rakId) => setSelectedRakId(rakId)}
+          onSelectRak={(rak) => setSelectedRakId(rak.id)}
         />
       ) : null}
 

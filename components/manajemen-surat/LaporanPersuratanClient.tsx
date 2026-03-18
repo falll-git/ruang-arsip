@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  AlertTriangle,
   ArrowUpDown,
   Building2,
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
   FileText,
   Inbox,
@@ -38,7 +40,11 @@ import {
 import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 
 type ReportKind = "surat-masuk" | "surat-keluar" | "memorandum";
-type SortValue = "terbaru" | "terlama";
+type SortValue =
+  | "terbaru"
+  | "terlama"
+  | "tenggat-terdekat"
+  | "tenggat-terlama";
 
 type SuratMasukRecord = SuratMasuk & {
   fileUrl: string;
@@ -90,6 +96,11 @@ interface ActiveSectionConfig {
 }
 
 const DEFAULT_FILE_URL = "/documents/contoh-dok.pdf";
+const TENGGAT_FORMATTER = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 const personLookup = new Map(
   dummyUsers.flatMap((user) => [
@@ -105,7 +116,7 @@ function normalizePersonName(value: string) {
 function sortByDate<T>(
   records: T[],
   getDate: (record: T) => string,
-  sort: SortValue,
+  sort: "terbaru" | "terlama",
 ) {
   return [...records].sort((left, right) => {
     const leftDate = parseDateString(getDate(left)) ?? new Date(0);
@@ -119,8 +130,105 @@ function sortByDate<T>(
   });
 }
 
+function sortByTenggat<T>(
+  records: T[],
+  getTenggat: (record: T) => string | undefined,
+  sort: "tenggat-terdekat" | "tenggat-terlama",
+) {
+  return [...records].sort((left, right) => {
+    const leftValue = getTenggat(left);
+    const rightValue = getTenggat(right);
+    const leftDate = leftValue ? new Date(leftValue) : undefined;
+    const rightDate = rightValue ? new Date(rightValue) : undefined;
+    const leftTime =
+      leftDate && !Number.isNaN(leftDate.getTime()) ? leftDate.getTime() : null;
+    const rightTime =
+      rightDate && !Number.isNaN(rightDate.getTime()) ? rightDate.getTime() : null;
+
+    if (leftTime === null && rightTime === null) return 0;
+    if (leftTime === null) return 1;
+    if (rightTime === null) return -1;
+
+    return sort === "tenggat-terdekat"
+      ? leftTime - rightTime
+      : rightTime - leftTime;
+  });
+}
+
+function sortRecords<T>(
+  records: T[],
+  getDate: (record: T) => string,
+  getTenggat: (record: T) => string | undefined,
+  sort: SortValue,
+) {
+  if (sort === "tenggat-terdekat" || sort === "tenggat-terlama") {
+    return sortByTenggat(records, getTenggat, sort);
+  }
+
+  return sortByDate(records, getDate, sort);
+}
+
 function formatDisplayDate(value: string) {
   return formatDateDisplay(value);
+}
+
+function formatTenggatDate(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return TENGGAT_FORMATTER.format(parsed);
+}
+
+function getTenggatStats<T>(
+  records: T[],
+  getTenggat: (record: T) => string | undefined,
+  today: Date,
+) {
+  let memilikiTenggat = 0;
+  let melewatiTenggat = 0;
+
+  records.forEach((record) => {
+    const value = getTenggat(record);
+    if (!value) return;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return;
+    memilikiTenggat += 1;
+    if (parsed < today) {
+      melewatiTenggat += 1;
+    }
+  });
+
+  return { memilikiTenggat, melewatiTenggat };
+}
+
+function getTenggatStatus(value: string | undefined, today: Date) {
+  if (!value) {
+    return {
+      label: "—",
+      variant: "none" as const,
+    };
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return {
+      label: "—",
+      variant: "none" as const,
+    };
+  }
+
+  if (parsed < today) {
+    return {
+      label: "Lewat",
+      variant: "overdue" as const,
+    };
+  }
+
+  return {
+    label: "Aktif",
+    variant: "active" as const,
+  };
 }
 
 function summarize(values: string[], limit = 2) {
@@ -168,94 +276,6 @@ const memorandumRecords: MemorandumRecord[] = sortByDate(
   (record) => record.tanggal,
   "terbaru",
 );
-
-const summaryCards: SummaryCardConfig[] = [
-  {
-    kind: "surat-masuk",
-    title: "Surat Masuk",
-    icon: Inbox,
-    totalLabel: "TOTAL SURAT",
-    totalValue: suratMasukRecords.length,
-    ctaLabel: "Lihat Daftar Surat",
-    infoRows: [
-      {
-        icon: CalendarDays,
-        label: "Terbaru",
-        value: formatDisplayDate(suratMasukRecords[0]?.tanggalTerima ?? ""),
-      },
-      {
-        icon: Shield,
-        label: "Sifat",
-        value: "Rahasia & Biasa",
-      },
-      {
-        icon: Users,
-        label: "Disposisi",
-        value: `${new Set(
-          suratMasukRecords
-            .filter((record) => record.statusDisposisi !== "Selesai")
-            .flatMap((record) => record.disposisiKepada),
-        ).size} User`,
-      },
-    ],
-  },
-  {
-    kind: "surat-keluar",
-    title: "Surat Keluar",
-    icon: Send,
-    totalLabel: "TOTAL SURAT",
-    totalValue: suratKeluarRecords.length,
-    ctaLabel: "Lihat Daftar Surat",
-    infoRows: [
-      {
-        icon: CalendarDays,
-        label: "Terbaru",
-        value: formatDisplayDate(suratKeluarRecords[0]?.tanggalKirim ?? ""),
-      },
-      {
-        icon: Shield,
-        label: "Sifat",
-        value: "Rahasia & Biasa",
-      },
-      {
-        icon: Mail,
-        label: "Media",
-        value: summarize(
-          [...new Set(suratKeluarRecords.map((record) => record.media))],
-          3,
-        ),
-      },
-    ],
-  },
-  {
-    kind: "memorandum",
-    title: "Memorandum",
-    icon: FileText,
-    totalLabel: "TOTAL MEMO",
-    totalValue: memorandumRecords.length,
-    ctaLabel: "Lihat Daftar Memo",
-    infoRows: [
-      {
-        icon: CalendarDays,
-        label: "Terbaru",
-        value: formatDisplayDate(memorandumRecords[0]?.tanggal ?? ""),
-      },
-      {
-        icon: Building2,
-        label: "Divisi",
-        value: summarize(
-          [...new Set(memorandumRecords.map((record) => record.divisiPengirim))],
-          3,
-        ),
-      },
-      {
-        icon: UserRound,
-        label: "Pembuat",
-        value: `${new Set(memorandumRecords.map((record) => record.pembuatMemo)).size} User`,
-      },
-    ],
-  },
-];
 
 const activeSectionConfig: Record<ReportKind, ActiveSectionConfig> = {
   "surat-masuk": {
@@ -337,7 +357,6 @@ function ReportSectionShell({
   title,
   subtitle,
   icon: Icon,
-  countLabel,
   searchValue,
   onSearchChange,
   searchPlaceholder,
@@ -349,7 +368,6 @@ function ReportSectionShell({
   title: string;
   subtitle: string;
   icon: LucideIcon;
-  countLabel: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
   searchPlaceholder: string;
@@ -372,9 +390,6 @@ function ReportSectionShell({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
-            {countLabel}
-          </span>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             <X className="h-4 w-4" aria-hidden="true" />
             Tutup List
@@ -420,6 +435,8 @@ function ReportSectionShell({
               >
                 <option value="terbaru">Terbaru</option>
                 <option value="terlama">Terlama</option>
+                <option value="tenggat-terdekat">Tenggat Terdekat</option>
+                <option value="tenggat-terlama">Tenggat Terlama</option>
               </select>
             </div>
           </div>
@@ -438,6 +455,152 @@ export default function LaporanPersuratanClient() {
   const [sortValue, setSortValue] = useState<SortValue>("terbaru");
   const [selectedDetail, setSelectedDetail] = useState<DetailState | null>(null);
   const reportRef = useRef<HTMLDivElement | null>(null);
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+  const tenggatStats = useMemo(
+    () => ({
+      suratMasuk: getTenggatStats(
+        suratMasukRecords,
+        (record) => record.tenggatWaktu,
+        today,
+      ),
+      suratKeluar: getTenggatStats(
+        suratKeluarRecords,
+        (record) => record.tenggatWaktu,
+        today,
+      ),
+      memorandum: getTenggatStats(
+        memorandumRecords,
+        (record) => record.tenggatWaktu,
+        today,
+      ),
+    }),
+    [today],
+  );
+
+  const summaryCards: SummaryCardConfig[] = useMemo(
+    () => [
+      {
+        kind: "surat-masuk",
+        title: "Surat Masuk",
+        icon: Inbox,
+        totalLabel: "TOTAL SURAT",
+        totalValue: suratMasukRecords.length,
+        ctaLabel: "Lihat Daftar Surat",
+        infoRows: [
+          {
+            icon: CalendarDays,
+            label: "Terbaru",
+            value: formatDisplayDate(suratMasukRecords[0]?.tanggalTerima ?? ""),
+          },
+          {
+            icon: Shield,
+            label: "Sifat",
+            value: "Rahasia & Biasa",
+          },
+          {
+            icon: Users,
+            label: "Disposisi",
+            value: `${new Set(
+              suratMasukRecords
+                .filter((record) => record.statusDisposisi !== "Selesai")
+                .flatMap((record) => record.disposisiKepada),
+            ).size} User`,
+          },
+          {
+            icon: CalendarDays,
+            label: "Memiliki Tenggat Waktu",
+            value: `${tenggatStats.suratMasuk.memilikiTenggat}`,
+          },
+          {
+            icon: AlertTriangle,
+            label: "Melewati tenggat waktu",
+            value: `${tenggatStats.suratMasuk.melewatiTenggat}`,
+          },
+        ],
+      },
+      {
+        kind: "surat-keluar",
+        title: "Surat Keluar",
+        icon: Send,
+        totalLabel: "TOTAL SURAT",
+        totalValue: suratKeluarRecords.length,
+        ctaLabel: "Lihat Daftar Surat",
+        infoRows: [
+          {
+            icon: CalendarDays,
+            label: "Terbaru",
+            value: formatDisplayDate(suratKeluarRecords[0]?.tanggalKirim ?? ""),
+          },
+          {
+            icon: Shield,
+            label: "Sifat",
+            value: "Rahasia & Biasa",
+          },
+          {
+            icon: Mail,
+            label: "Media",
+            value: summarize(
+              [...new Set(suratKeluarRecords.map((record) => record.media))],
+              3,
+            ),
+          },
+          {
+            icon: CalendarDays,
+            label: "Memiliki Tenggat Waktu",
+            value: `${tenggatStats.suratKeluar.memilikiTenggat}`,
+          },
+          {
+            icon: AlertTriangle,
+            label: "Melewati tenggat waktu",
+            value: `${tenggatStats.suratKeluar.melewatiTenggat}`,
+          },
+        ],
+      },
+      {
+        kind: "memorandum",
+        title: "Memorandum",
+        icon: FileText,
+        totalLabel: "TOTAL MEMO",
+        totalValue: memorandumRecords.length,
+        ctaLabel: "Lihat Daftar Memo",
+        infoRows: [
+          {
+            icon: CalendarDays,
+            label: "Terbaru",
+            value: formatDisplayDate(memorandumRecords[0]?.tanggal ?? ""),
+          },
+          {
+            icon: Building2,
+            label: "Divisi",
+            value: summarize(
+              [...new Set(memorandumRecords.map((record) => record.divisiPengirim))],
+              3,
+            ),
+          },
+          {
+            icon: UserRound,
+            label: "Pembuat",
+            value: `${new Set(memorandumRecords.map((record) => record.pembuatMemo)).size} User`,
+          },
+          {
+            icon: CalendarDays,
+            label: "Memiliki Tenggat Waktu",
+            value: `${tenggatStats.memorandum.memilikiTenggat}`,
+          },
+          {
+            icon: AlertTriangle,
+            label: "Melewati tenggat waktu",
+            value: `${tenggatStats.memorandum.melewatiTenggat}`,
+          },
+        ],
+      },
+    ],
+    [tenggatStats],
+  );
 
   useEffect(() => {
     if (!activeKind || !reportRef.current) return;
@@ -450,7 +613,7 @@ export default function LaporanPersuratanClient() {
 
   const filteredSuratMasuk = useMemo(() => {
     const keyword = searchValue.trim().toLowerCase();
-    return sortByDate(
+    return sortRecords(
       suratMasukRecords.filter((record) => {
         if (!keyword) return true;
 
@@ -467,13 +630,14 @@ export default function LaporanPersuratanClient() {
           .includes(keyword);
       }),
       (record) => record.tanggalTerima,
+      (record) => record.tenggatWaktu,
       sortValue,
     );
   }, [searchValue, sortValue]);
 
   const filteredSuratKeluar = useMemo(() => {
     const keyword = searchValue.trim().toLowerCase();
-    return sortByDate(
+    return sortRecords(
       suratKeluarRecords.filter((record) => {
         if (!keyword) return true;
 
@@ -491,13 +655,14 @@ export default function LaporanPersuratanClient() {
           .includes(keyword);
       }),
       (record) => record.tanggalKirim,
+      (record) => record.tenggatWaktu,
       sortValue,
     );
   }, [searchValue, sortValue]);
 
   const filteredMemorandum = useMemo(() => {
     const keyword = searchValue.trim().toLowerCase();
-    return sortByDate(
+    return sortRecords(
       memorandumRecords.filter((record) => {
         if (!keyword) return true;
 
@@ -514,20 +679,12 @@ export default function LaporanPersuratanClient() {
           .includes(keyword);
       }),
       (record) => record.tanggal,
+      (record) => record.tenggatWaktu,
       sortValue,
     );
   }, [searchValue, sortValue]);
 
   const activeConfig = activeKind ? activeSectionConfig[activeKind] : null;
-
-  const activeCountLabel =
-    activeKind === "surat-masuk"
-      ? `${filteredSuratMasuk.length} surat`
-      : activeKind === "surat-keluar"
-        ? `${filteredSuratKeluar.length} surat`
-        : activeKind === "memorandum"
-          ? `${filteredMemorandum.length} memorandum`
-          : "";
 
   const handleSelectCard = (kind: ReportKind) => {
     setActiveKind(kind);
@@ -617,7 +774,6 @@ export default function LaporanPersuratanClient() {
             title={activeConfig.title}
             subtitle={activeConfig.subtitle}
             icon={activeConfig.icon}
-            countLabel={activeCountLabel}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             searchPlaceholder={activeConfig.searchPlaceholder}
@@ -648,6 +804,15 @@ export default function LaporanPersuratanClient() {
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Disposisi
                       </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-36">
+                        Tenggat Waktu
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-28">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
+                        Keterangan
+                      </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                         Aksi
                       </th>
@@ -672,10 +837,10 @@ export default function LaporanPersuratanClient() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            className={`text-sm font-semibold ${
                               record.sifat === "Rahasia"
-                                ? "border border-red-300 text-red-700"
-                                : "bg-gray-100 text-gray-700"
+                                ? "text-red-600"
+                                : "text-gray-900"
                             }`}
                           >
                             {record.sifat}
@@ -683,6 +848,49 @@ export default function LaporanPersuratanClient() {
                         </td>
                         <td className="px-6 py-4 text-gray-700">
                           {record.disposisiKepada.join(", ")}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {record.tenggatWaktu ? (
+                            <span className="whitespace-nowrap text-sm text-gray-700">
+                              {formatTenggatDate(record.tenggatWaktu)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {(() => {
+                            const status = getTenggatStatus(
+                              record.tenggatWaktu,
+                              today,
+                            );
+                            if (status.variant === "none") {
+                              return <span className="text-gray-400">—</span>;
+                            }
+                            if (status.variant === "overdue") {
+                              return (
+                                <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                  <AlertTriangle className="mr-1 h-3 w-3" aria-hidden="true" />
+                                  {status.label}
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                <CheckCircle2 className="mr-1 h-3 w-3" aria-hidden="true" />
+                                {status.label}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          {record.keteranganTenggat ? (
+                            <p className="line-clamp-2 text-sm text-gray-600">
+                              {record.keteranganTenggat}
+                            </p>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <DetailButton
@@ -723,6 +931,15 @@ export default function LaporanPersuratanClient() {
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Media
                       </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-36">
+                        Tenggat Waktu
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-28">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
+                        Keterangan
+                      </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                         Aksi
                       </th>
@@ -747,16 +964,59 @@ export default function LaporanPersuratanClient() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            className={`text-sm font-semibold ${
                               record.sifat === "Rahasia"
-                                ? "border border-red-300 text-red-700"
-                                : "bg-gray-100 text-gray-700"
+                                ? "text-red-600"
+                                : "text-gray-900"
                             }`}
                           >
                             {record.sifat}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-700">{record.media}</td>
+                        <td className="px-6 py-4 text-center">
+                          {record.tenggatWaktu ? (
+                            <span className="whitespace-nowrap text-sm text-gray-700">
+                              {formatTenggatDate(record.tenggatWaktu)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {(() => {
+                            const status = getTenggatStatus(
+                              record.tenggatWaktu,
+                              today,
+                            );
+                            if (status.variant === "none") {
+                              return <span className="text-gray-400">—</span>;
+                            }
+                            if (status.variant === "overdue") {
+                              return (
+                                <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                  <AlertTriangle className="mr-1 h-3 w-3" aria-hidden="true" />
+                                  {status.label}
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                <CheckCircle2 className="mr-1 h-3 w-3" aria-hidden="true" />
+                                {status.label}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          {record.keteranganTenggat ? (
+                            <p className="line-clamp-2 text-sm text-gray-600">
+                              {record.keteranganTenggat}
+                            </p>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 text-center">
                           <DetailButton
                             onClick={() =>
@@ -796,6 +1056,15 @@ export default function LaporanPersuratanClient() {
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Tanggal
                       </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-36">
+                        Tenggat Waktu
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-28">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
+                        Keterangan
+                      </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                         Aksi
                       </th>
@@ -812,7 +1081,7 @@ export default function LaporanPersuratanClient() {
                       >
                         <td className="px-6 py-4 text-gray-500">{index + 1}</td>
                         <td className="px-6 py-4 text-gray-900">
-                          <span className="rounded border border-blue-100 bg-blue-50 px-2 py-1 text-blue-700 tabular-nums">
+                          <span className="font-semibold text-gray-900 tabular-nums">
                             {record.noMemo}
                           </span>
                         </td>
@@ -825,6 +1094,49 @@ export default function LaporanPersuratanClient() {
                         </td>
                         <td className="px-6 py-4 text-gray-600">
                           {formatDisplayDate(record.tanggal)}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {record.tenggatWaktu ? (
+                            <span className="whitespace-nowrap text-sm text-gray-700">
+                              {formatTenggatDate(record.tenggatWaktu)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {(() => {
+                            const status = getTenggatStatus(
+                              record.tenggatWaktu,
+                              today,
+                            );
+                            if (status.variant === "none") {
+                              return <span className="text-gray-400">—</span>;
+                            }
+                            if (status.variant === "overdue") {
+                              return (
+                                <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
+                                  <AlertTriangle className="mr-1 h-3 w-3" aria-hidden="true" />
+                                  {status.label}
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                <CheckCircle2 className="mr-1 h-3 w-3" aria-hidden="true" />
+                                {status.label}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          {record.keteranganTenggat ? (
+                            <p className="line-clamp-2 text-sm text-gray-600">
+                              {record.keteranganTenggat}
+                            </p>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <DetailButton

@@ -8,7 +8,7 @@ import { exportToExcel } from "@/lib/utils/exportExcel";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { filterDigitalDocuments } from "@/lib/rbac";
-import { parseDateString } from "@/lib/utils/date";
+import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { lemariData } from "@/lib/data";
@@ -26,12 +26,18 @@ function getDurationText(startValue: string, endValue: string) {
   return `${days} hari`;
 }
 
+const formatPersonName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 export default function HistorisPeminjamanPage() {
   const { role } = useAuth();
   const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
   const searchParams = useSearchParams();
   const filterLemariId = searchParams.get("lemariId");
+  const filterKantorId = searchParams.get("kantorId");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPeminjam, setFilterPeminjam] = useState("Semua");
 
@@ -54,7 +60,11 @@ export default function HistorisPeminjamanPage() {
 
   const lemariIdByKode = useMemo(
     () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
-    [lemariData],
+    [],
+  );
+  const kantorIdByLemari = useMemo(
+    () => new Map(lemariData.map((lemari) => [lemari.id, lemari.kantorId])),
+    [],
   );
 
   const historisPeminjaman = useMemo(() => {
@@ -86,14 +96,25 @@ export default function HistorisPeminjamanPage() {
           durasi,
           approvedBy: p.approver ?? "-",
           lemariId,
+          kantorId: lemariId ? kantorIdByLemari.get(lemariId) : undefined,
         };
       });
-  }, [dokumenAksesById, lemariAliasByKode, lemariIdByKode, peminjaman, tempatById]);
+  }, [
+    dokumenAksesById,
+    kantorIdByLemari,
+    lemariAliasByKode,
+    lemariIdByKode,
+    peminjaman,
+    tempatById,
+  ]);
 
   const historisByLemari = useMemo(() => {
+    if (filterKantorId) {
+      return historisPeminjaman.filter((item) => item.kantorId === filterKantorId);
+    }
     if (!filterLemariId) return historisPeminjaman;
     return historisPeminjaman.filter((item) => item.lemariId === filterLemariId);
-  }, [filterLemariId, historisPeminjaman]);
+  }, [filterKantorId, filterLemariId, historisPeminjaman]);
 
   const peminjamList = [
     "Semua",
@@ -129,8 +150,8 @@ export default function HistorisPeminjamanPage() {
         kode: item.kode,
         namaDokumen: item.namaDokumen,
         peminjam: item.peminjam,
-        tglPinjam: item.tglPinjam,
-        tglKembali: item.tglKembali,
+        tglPinjam: formatDateDisplay(item.tglPinjam),
+        tglKembali: formatDateDisplay(item.tglKembali),
         durasi: item.durasi,
         approvedBy: item.approvedBy,
       })),
@@ -149,7 +170,7 @@ export default function HistorisPeminjamanPage() {
 
   return (
     <div className="animate-fade-in">
-      {filterLemariId ? (
+      {filterLemariId || filterKantorId ? (
         <div className="mb-4">
           <Link
             href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
@@ -273,29 +294,27 @@ export default function HistorisPeminjamanPage() {
                 <tr key={item.id} className="transition-colors hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-500">{idx + 1}</td>
                   <td className="px-6 py-4">
-                    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 tabular-nums">
+                    <span className="inline-flex items-center rounded-lg border-2 border-gray-800 bg-white px-3 py-1 text-xs font-semibold text-gray-900 tabular-nums">
                       {item.kode}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-800">
                     {item.namaDokumen}
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                      {item.peminjam}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{item.tglPinjam}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.tglKembali}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                      {item.durasi}
-                    </span>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                    {formatPersonName(item.peminjam)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {item.approvedBy}
+                    {formatDateDisplay(item.tglPinjam)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {formatDateDisplay(item.tglKembali)}
+                  </td>
+                  <td className="px-6 py-4 text-center text-sm font-semibold text-gray-800">
+                    {item.durasi}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-800">
+                    {formatPersonName(item.approvedBy || "-")}
                   </td>
                 </tr>
               ))}
