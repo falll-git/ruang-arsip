@@ -407,19 +407,20 @@ export default function DetailDebiturPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {notaris.map((item, index) => (
-                          <tr key={item.id} className="hover:bg-gray-50">
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                          <tr
+                            key={item.id}
+                            className="transition-colors hover:bg-gray-50"
+                          >
+                            <td className="py-3 px-4 text-sm text-gray-500">
                               {index + 1}
                             </td>
-                            <td className="py-3 px-4">
-                              <span className="inline-flex px-2 py-1 rounded bg-blue-50 border border-blue-100 text-xs font-bold text-gray-900">
-                                {item.jenisDokumen}
-                              </span>
+                            <td className="py-3 px-4 text-sm font-medium text-gray-700">
+                              {item.jenisDokumen}
                             </td>
-                            <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                            <td className="py-3 px-4 text-sm font-semibold text-gray-900">
                               {item.namaNotaris}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-600">
+                            <td className="py-3 px-4 text-sm text-gray-500">
                               {item.keterangan || "-"}
                             </td>
                             <td className="py-3 px-4 text-center">

@@ -321,33 +321,33 @@ export default function KlaimAsuransiPage() {
         <div className="card p-5 md:col-span-2">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-gray-900">Total Nilai Klaim Cair</p>
-              <p className="text-3xl font-extrabold text-gray-900">
+              <p className="text-xs text-gray-500">Total Nilai Klaim Cair</p>
+              <p className="text-2xl font-bold text-gray-900">
                 {formatCurrency(summary.totalNilai)}
               </p>
-              <p className="text-sm text-gray-900 mt-1">
+              <p className="text-xs text-gray-500">
                 {summary.cair} klaim telah cair
               </p>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
-              <DollarSign className="w-7 h-7 text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+              <DollarSign className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
         <div className="card p-5">
           <div className="flex flex-col items-center">
-            <p className="text-3xl font-extrabold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900">
               {summary.pengajuan + summary.verifikasi}
             </p>
-            <p className="text-xs text-gray-900 mt-1">Dalam Proses</p>
+            <p className="text-xs text-gray-500">Dalam Proses</p>
           </div>
         </div>
         <div className="card p-5">
           <div className="flex flex-col items-center">
-            <p className="text-3xl font-extrabold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900">
               {summary.ditolak}
             </p>
-            <p className="text-xs text-gray-900 mt-1">Ditolak</p>
+            <p className="text-xs text-gray-500">Ditolak</p>
           </div>
         </div>
       </div>

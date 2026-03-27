@@ -307,73 +307,73 @@ export default function ProgressAsuransiPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="card p-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
-              <FileText className="w-7 h-7 text-primary" aria-hidden="true" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <FileText className="w-6 h-6 text-primary" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900">
                 {summary.total}
               </p>
-              <p className="text-sm text-gray-900 mt-1">Total</p>
+              <p className="text-xs text-gray-500">Total</p>
             </div>
           </div>
         </div>
         <div className="card p-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
-              <Clock className="w-7 h-7 text-amber-600" aria-hidden="true" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
+              <Clock className="w-6 h-6 text-yellow-600" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900">
                 {summary.proses}
               </p>
-              <p className="text-sm text-gray-900 mt-1">Proses</p>
+              <p className="text-xs text-gray-500">Proses</p>
             </div>
           </div>
         </div>
         <div className="card p-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
               <CheckCircle
-                className="w-7 h-7 text-emerald-600"
+                className="w-6 h-6 text-green-600"
                 aria-hidden="true"
               />
             </div>
             <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900">
                 {summary.aktif}
               </p>
-              <p className="text-sm text-gray-900 mt-1">Aktif</p>
+              <p className="text-xs text-gray-500">Aktif</p>
             </div>
           </div>
         </div>
         <div className="card p-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
               <AlertTriangle
-                className="w-7 h-7 text-rose-600"
+                className="w-6 h-6 text-red-600"
                 aria-hidden="true"
               />
             </div>
             <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900">
                 {summary.expired}
               </p>
-              <p className="text-sm text-gray-900 mt-1">Expired</p>
+              <p className="text-xs text-gray-500">Expired</p>
             </div>
           </div>
         </div>
         <div className="card p-5">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center">
-              <Shield className="w-7 h-7 text-orange-600" aria-hidden="true" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-primary" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-3xl font-extrabold text-gray-900 leading-none">
+              <p className="text-2xl font-bold text-gray-900">
                 {summary.klaim}
               </p>
-              <p className="text-sm text-gray-900 mt-1">Klaim</p>
+              <p className="text-xs text-gray-500">Klaim</p>
             </div>
           </div>
         </div>

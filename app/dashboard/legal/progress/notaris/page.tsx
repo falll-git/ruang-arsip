@@ -334,21 +334,25 @@ export default function ProgressNotarisPage() {
           label="Total"
           value={summary.total}
           icon={<Scale className="w-6 h-6 text-blue-600" />}
+          iconWrapperClassName="bg-blue-100"
         />
         <MiniCard
           label="Proses"
           value={summary.proses}
           icon={<Clock className="w-6 h-6 text-yellow-600" />}
+          iconWrapperClassName="bg-yellow-100"
         />
         <MiniCard
           label="Selesai"
           value={summary.selesai}
           icon={<CheckCircle className="w-6 h-6 text-green-600" />}
+          iconWrapperClassName="bg-green-100"
         />
         <MiniCard
           label="Bermasalah"
           value={summary.bermasalah}
           icon={<AlertTriangle className="w-6 h-6 text-red-600" />}
+          iconWrapperClassName="bg-red-100"
         />
       </div>
 
@@ -966,15 +970,19 @@ function MiniCard({
   label,
   value,
   icon,
+  iconWrapperClassName = "bg-gray-100",
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
+  iconWrapperClassName?: string;
 }) {
   return (
     <div className="card p-5">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+        <div
+          className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconWrapperClassName}`}
+        >
           {icon}
         </div>
         <div>

@@ -1744,8 +1744,8 @@ const dummyNotarisDebitur: NotarisDebitur[] = [
     id: "NTR-DBT-001",
     debiturId: "DBT001",
     jenisDokumen: "Akad",
-    namaNotaris: "Notaris Neta",
-    keterangan: "Akta akad pembiayaan utama nasabah.",
+    namaNotaris: "Notaris A",
+    keterangan: "Akta akad pembiayaan utama untuk fasilitas murabahah nasabah.",
     filePath: "/contoh-dok/akad-pembiayaan.pdf",
     fileType: "pdf",
   },
@@ -1753,45 +1753,99 @@ const dummyNotarisDebitur: NotarisDebitur[] = [
     id: "NTR-DBT-002",
     debiturId: "DBT001",
     jenisDokumen: "APHT",
-    namaNotaris: "Notaris Boby",
-    keterangan: "Pengikatan hak tanggungan agunan pembiayaan.",
+    namaNotaris: "Notaris A",
+    keterangan: "Pengikatan hak tanggungan atas sertifikat agunan pembiayaan.",
     filePath: "/contoh-dok/sertifikat-jaminan.pdf",
     fileType: "pdf",
   },
   {
     id: "NTR-DBT-003",
     debiturId: "DBT001",
-    jenisDokumen: "Fidusia",
-    namaNotaris: "Notaris Rendra",
-    keterangan: "Akta fidusia jaminan kendaraan nasabah.",
+    jenisDokumen: "Surat Kuasa",
+    namaNotaris: "Notaris B",
+    keterangan: "Surat kuasa pengurusan dokumen legal untuk pencairan akad.",
     filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
     fileType: "pdf",
   },
   {
     id: "NTR-DBT-004",
-    debiturId: "DBT001",
-    jenisDokumen: "Roya",
-    namaNotaris: "Notaris Wulan",
-    keterangan: "Proses roya untuk jaminan lama yang telah lunas.",
-    filePath: "/contoh-dok/npwp.pdf",
+    debiturId: "DBT002",
+    jenisDokumen: "Akad",
+    namaNotaris: "Notaris B",
+    keterangan: "Akta akad pembiayaan investasi atas nama debitur.",
+    filePath: "/contoh-dok/akad-pembiayaan.pdf",
     fileType: "pdf",
   },
   {
     id: "NTR-DBT-005",
-    debiturId: "DBT001",
-    jenisDokumen: "Surat Kuasa",
-    namaNotaris: "Notaris Tegar",
-    keterangan: "Surat kuasa pengurusan dokumen legal pembiayaan.",
-    filePath: "/contoh-dok/kartu-keluarga.pdf",
+    debiturId: "DBT002",
+    jenisDokumen: "Fidusia",
+    namaNotaris: "Notaris B",
+    keterangan: "Akta fidusia untuk pengikatan jaminan kendaraan operasional.",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
     fileType: "pdf",
   },
   {
     id: "NTR-DBT-006",
-    debiturId: "DBT002",
-    jenisDokumen: "Fidusia",
-    namaNotaris: "Notaris B",
-    keterangan: "Dokumen jaminan fidusia kendaraan.",
+    debiturId: "DBT003",
+    jenisDokumen: "APHT",
+    namaNotaris: "Notaris C",
+    keterangan: "Dokumen APHT untuk pengikatan agunan ruko nasabah.",
     filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-007",
+    debiturId: "DBT003",
+    jenisDokumen: "Roya",
+    namaNotaris: "Notaris C",
+    keterangan: "Proses roya atas jaminan sebelumnya yang telah diselesaikan.",
+    filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-008",
+    debiturId: "DBT004",
+    jenisDokumen: "Fidusia",
+    namaNotaris: "Notaris A",
+    keterangan: "Dokumen fidusia atas jaminan kendaraan pembiayaan nasabah.",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-009",
+    debiturId: "DBT004",
+    jenisDokumen: "Surat Kuasa",
+    namaNotaris: "Notaris A",
+    keterangan: "Surat kuasa pengurusan balik nama dan administrasi jaminan.",
+    filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-010",
+    debiturId: "DBT005",
+    jenisDokumen: "Akad",
+    namaNotaris: "Notaris C",
+    keterangan: "Akta akad pembiayaan korporasi untuk fasilitas modal kerja.",
+    filePath: "/contoh-dok/akad-pembiayaan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-011",
+    debiturId: "DBT005",
+    jenisDokumen: "APHT",
+    namaNotaris: "Notaris C",
+    keterangan: "APHT atas aset tanah dan bangunan yang dijadikan agunan utama.",
+    filePath: "/contoh-dok/sertifikat-jaminan.pdf",
+    fileType: "pdf",
+  },
+  {
+    id: "NTR-DBT-012",
+    debiturId: "DBT005",
+    jenisDokumen: "Surat Kuasa",
+    namaNotaris: "Notaris B",
+    keterangan: "Surat kuasa pelengkap untuk penandatanganan dan legal review.",
+    filePath: "/contoh-dok/surat-pernyataan-restrukturisasi.pdf",
     fileType: "pdf",
   },
 ];
@@ -2040,8 +2094,32 @@ export function getDokumenByDebiturId(id: string): DokumenDebitur[] {
   return dummyDokumenDebitur.filter((d) => d.debiturId === id);
 }
 
+const notarisDocumentOrder: Record<NotarisDebitur["jenisDokumen"], number> = {
+  Akad: 0,
+  APHT: 1,
+  Fidusia: 2,
+  Roya: 3,
+  "Surat Kuasa": 4,
+};
+
+function sortNotarisDebitur(items: NotarisDebitur[]) {
+  return [...items].sort((left, right) => {
+    const documentOrder =
+      notarisDocumentOrder[left.jenisDokumen] -
+      notarisDocumentOrder[right.jenisDokumen];
+    if (documentOrder !== 0) return documentOrder;
+
+    const notarisOrder = left.namaNotaris.localeCompare(right.namaNotaris);
+    if (notarisOrder !== 0) return notarisOrder;
+
+    return left.id.localeCompare(right.id);
+  });
+}
+
 export function getNotarisByDebiturId(id: string): NotarisDebitur[] {
-  const notarisByDebitur = dummyNotarisDebitur.filter((item) => item.debiturId === id);
+  const notarisByDebitur = sortNotarisDebitur(
+    dummyNotarisDebitur.filter((item) => item.debiturId === id),
+  );
   if (notarisByDebitur.length > 0) {
     return notarisByDebitur;
   }
@@ -2051,17 +2129,19 @@ export function getNotarisByDebiturId(id: string): NotarisDebitur[] {
     return [];
   }
 
-  return dummyProgressNotaris
-    .filter((item) => item.noKontrak === debitur.noKontrak)
-    .map((item) => ({
-      id: `NTR-${item.id}`,
-      debiturId: id,
-      jenisDokumen: item.jenisAkta,
-      namaNotaris: item.namaNotaris,
-      keterangan: item.catatan,
-      filePath: item.lampiranFilePath,
-      fileType: item.lampiranFileType,
-    }));
+  return sortNotarisDebitur(
+    dummyProgressNotaris
+      .filter((item) => item.noKontrak === debitur.noKontrak)
+      .map((item) => ({
+        id: `NTR-${item.id}`,
+        debiturId: id,
+        jenisDokumen: item.jenisAkta,
+        namaNotaris: item.namaNotaris,
+        keterangan: item.catatan,
+        filePath: item.lampiranFilePath,
+        fileType: item.lampiranFileType,
+      })),
+  );
 }
 
 export function getActionPlanByDebiturId(id: string): ActionPlan[] {
