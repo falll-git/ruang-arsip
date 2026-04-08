@@ -120,16 +120,6 @@ export default function ManajemenUserPage() {
     });
   }, [searchTerm, users]);
 
-  const stats = useMemo(
-    () => ({
-      total: users.length,
-      aktif: users.filter((user) => user.is_active).length,
-      it: users.filter((user) => user.role === ROLES.SUPERADMIN).length,
-      restrict: users.filter((user) => user.is_restrict).length,
-    }),
-    [users],
-  );
-
   const requireSuperAdminAction = () => {
     return ensureAllowed(canManageUsers, { redirectTo: "/dashboard" });
   };
@@ -270,26 +260,7 @@ export default function ManajemenUserPage() {
         icon={<Users />}
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
-        <div className="card p-4 text-center">
-          <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-          <p className="text-sm text-gray-500">Total User</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-3xl font-bold text-gray-900">{stats.aktif}</p>
-          <p className="text-sm text-gray-500">User Aktif</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-3xl font-bold text-gray-900">{stats.it}</p>
-          <p className="text-sm text-gray-500">User IT</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-3xl font-bold text-gray-900">{stats.restrict}</p>
-          <p className="text-sm text-gray-500">Akses Restrict</p>
-        </div>
-      </div>
-
-      <div className="card p-6 mb-6">
+      <div className="card p-6 mt-6 mb-5">
         <div className="flex flex-col md:flex-row gap-4 items-end justify-between">
           <div className="flex-1 w-full">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
