@@ -49,6 +49,18 @@ type SubmitPeminjamanParams = {
   peminjam: string;
 };
 
+type CreateDokumenParams = {
+  kode: string;
+  jenisDokumen: string;
+  namaDokumen: string;
+  detail: string;
+  userInput: string;
+  tempatPenyimpanan: string;
+  tempatPenyimpananId: number;
+  isRestrict: boolean;
+  fileUrl?: string;
+};
+
 type ProcessPeminjamanParams = {
   id: number;
   action: "approve" | "reject";
@@ -61,6 +73,7 @@ type ArsipDigitalWorkflowValue = {
   dokumen: Dokumen[];
   disposisi: Disposisi[];
   peminjaman: Peminjaman[];
+  createDokumen: (params: CreateDokumenParams) => Dokumen;
   submitDisposisi: (params: SubmitDisposisiParams) => number;
   processDisposisi: (params: ProcessDisposisiParams) => boolean;
   submitPeminjaman: (params: SubmitPeminjamanParams) => number;
@@ -215,6 +228,43 @@ export function ArsipDigitalWorkflowProvider({
     if (!hydrated) return;
     saveToStorage({ dokumen, disposisi, peminjaman });
   }, [disposisi, dokumen, hydrated, peminjaman]);
+
+  const createDokumen = useCallback(
+    ({
+      kode,
+      jenisDokumen,
+      namaDokumen,
+      detail,
+      userInput,
+      tempatPenyimpanan,
+      tempatPenyimpananId,
+      isRestrict,
+      fileUrl,
+    }: CreateDokumenParams) => {
+      const nextId = dokumen.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+
+      const newDokumen: Dokumen = {
+        id: nextId,
+        kode: kode.trim(),
+        jenisDokumen: jenisDokumen.trim(),
+        namaDokumen: namaDokumen.trim(),
+        detail: detail.trim(),
+        tglInput: toIsoDate(new Date()),
+        userInput: userInput.trim() || "SYSTEM",
+        tempatPenyimpanan,
+        tempatPenyimpananId,
+        statusPinjam: "Tersedia",
+        statusPeminjaman: "Tersedia",
+        levelAkses: isRestrict ? "RESTRICT" : "NON_RESTRICT",
+        restrict: isRestrict,
+        fileUrl: fileUrl ?? "/documents/contoh-dok.pdf",
+      };
+
+      setDokumen((prev) => [...prev, newDokumen]);
+      return newDokumen;
+    },
+    [dokumen],
+  );
 
   const submitDisposisi = useCallback(
     ({ dokumenIds, alasanPengajuan, pemohon }: SubmitDisposisiParams) => {
@@ -412,6 +462,7 @@ export function ArsipDigitalWorkflowProvider({
       dokumen,
       disposisi,
       peminjaman,
+      createDokumen,
       submitDisposisi,
       processDisposisi,
       submitPeminjaman,
@@ -419,6 +470,7 @@ export function ArsipDigitalWorkflowProvider({
       resetWorkflowData,
     }),
     [
+      createDokumen,
       disposisi,
       dokumen,
       peminjaman,

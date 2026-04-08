@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Clock, FolderOpen, Search } from "lucide-react";
+import { ArrowLeft, Clock, FolderOpen, Search } from "lucide-react";
 
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { kantorData, lemariData, peminjamanData } from "@/lib/data";
+import { filterDigitalDocuments } from "@/lib/rbac";
 import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 
 type JatuhTempoRow = {
-  id: string;
+  id: number;
   namaDokumen: string;
   peminjam: string;
   tanggalPinjam: string;
@@ -33,44 +36,66 @@ function diffInDays(later: Date, earlier: Date) {
 }
 
 export default function JatuhTempoPage() {
+  const { role, user } = useAuth();
+  const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const searchParams = useSearchParams();
   const kantorId = searchParams.get("kantorId");
   const [searchTerm, setSearchTerm] = useState("");
   const today = useMemo(() => startOfDay(new Date()), []);
 
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
+
   const kantorName = useMemo(() => {
     if (!kantorId) return null;
-    return kantorData.find((kantor) => kantor.id === kantorId)?.namaKantor ?? null;
-  }, [kantorId]);
+    return (
+      tempatPenyimpanan.find((tempat) => tempat.kodeKantor === kantorId)
+        ?.namaKantor ?? null
+    );
+  }, [kantorId, tempatPenyimpanan]);
 
-  const lemariById = useMemo(
-    () => new Map(lemariData.map((lemari) => [lemari.id, lemari])),
-    [],
+  const dokumenById = useMemo(
+    () => new Map(accessibleDokumen.map((item) => [item.id, item])),
+    [accessibleDokumen],
+  );
+
+  const tempatById = useMemo(
+    () => new Map(tempatPenyimpanan.map((item) => [item.id, item])),
+    [tempatPenyimpanan],
   );
 
   const jatuhTempoRows = useMemo<JatuhTempoRow[]>(() => {
-    return peminjamanData
+    return peminjaman
       .filter((item) => item.status === "Dipinjam")
       .map((item) => {
-        const dueDate = parseDateString(item.tanggalKembali);
-        const pinjamDate = parseDateString(item.tanggalPinjam);
-        if (!dueDate) return null;
+        const dokumenItem = dokumenById.get(item.dokumenId);
+        const dueDate = parseDateString(item.tglKembali);
+        const pinjamDate = parseDateString(item.tglPinjam);
+        if (!dueDate || !dokumenItem) return null;
+
         const dueDay = startOfDay(dueDate);
         const pinjamDay = pinjamDate ? startOfDay(pinjamDate) : null;
         if (dueDay >= today) return null;
-        const kantor = lemariById.get(item.lemariId)?.kantorId ?? null;
+
+        const tempat = dokumenItem.tempatPenyimpananId
+          ? tempatById.get(dokumenItem.tempatPenyimpananId)
+          : undefined;
+
         return {
           id: item.id,
-          namaDokumen: item.namaDokumen,
+          namaDokumen: dokumenItem.namaDokumen,
           peminjam: item.peminjam,
-          tanggalPinjam: item.tanggalPinjam,
-          tanggalKembali: item.tanggalKembali,
+          tanggalPinjam: item.tglPinjam,
+          tanggalKembali: item.tglKembali,
           keterlambatanHari: pinjamDay ? diffInDays(dueDay, pinjamDay) : 0,
-          kantorId: kantor,
+          kantorId: tempat?.kodeKantor ?? null,
         };
       })
       .filter((item): item is JatuhTempoRow => item !== null);
-  }, [lemariById, today]);
+  }, [dokumenById, peminjaman, tempatById, today]);
 
   const rowsByKantor = useMemo(() => {
     if (!kantorId) return jatuhTempoRows;
@@ -117,7 +142,8 @@ export default function JatuhTempoPage() {
           href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
           className="btn btn-outline btn-sm"
         >
-          ← Kembali ke Ruang Arsip Digital
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Kembali ke Ruang Arsip Digital
         </Link>
       </div>
 

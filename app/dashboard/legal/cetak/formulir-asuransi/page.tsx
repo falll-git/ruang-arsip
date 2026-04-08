@@ -147,7 +147,7 @@ export default function CetakFormulirAsuransiPage() {
       noKontrak: selectedNasabah.noKontrak,
       namaNasabah: selectedNasabah.nama,
       detail: `Formulir ${jenisFormulir} - ${jenisAsuransi}`,
-      user: "Faisal",
+      user: "Dwi",
     };
     setHistory([newHistory, ...history]);
     setCurrentPage(1);

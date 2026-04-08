@@ -125,7 +125,7 @@ export default function CetakHaftsheetPage() {
       noKontrak: selectedNasabah.noKontrak,
       namaNasabah: selectedNasabah.nama,
       detail: `Checklist dokumen (${countChecked()}/${totalItems})`,
-      user: "Faisal",
+      user: "Dwi",
     };
     setHistory([newHistory, ...history]);
     setCurrentPage(1);

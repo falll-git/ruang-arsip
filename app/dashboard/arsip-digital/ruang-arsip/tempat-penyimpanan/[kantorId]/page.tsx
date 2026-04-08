@@ -7,13 +7,20 @@ import { ArrowLeft, Box, ChevronRight, Search, SearchX, Warehouse } from "lucide
 
 import DokumenModal from "@/components/arsip/DokumenModal";
 import RakGridModal from "@/components/arsip/RakGridModal";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import { dokumenArsipData, kantorData, lemariData, rakData } from "@/lib/data";
+import { buildArsipDigitalStorageData } from "@/lib/arsip-digital-storage";
+import { filterDigitalDocuments } from "@/lib/rbac";
 import type { Lemari } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 6;
 
 export default function KantorLemariPage() {
+  const { role, user } = useAuth();
+  const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen, disposisi, peminjaman } = useArsipDigitalWorkflow();
   const params = useParams<{ kantorId?: string | string[] }>();
   const kantorId = Array.isArray(params.kantorId)
     ? params.kantorId[0] ?? ""
@@ -23,26 +30,35 @@ export default function KantorLemariPage() {
   const [selectedLemariId, setSelectedLemariId] = useState<string | null>(null);
   const [selectedRakId, setSelectedRakId] = useState<string | null>(null);
 
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
+
+  const storageData = useMemo(
+    () =>
+      buildArsipDigitalStorageData({
+        tempatPenyimpanan,
+        dokumen: accessibleDokumen,
+        disposisi,
+        peminjaman,
+      }),
+    [accessibleDokumen, disposisi, peminjaman, tempatPenyimpanan],
+  );
+
   const kantor = useMemo(
-    () => kantorData.find((item) => item.id === kantorId) ?? null,
-    [kantorId],
+    () => storageData.kantorList.find((item) => item.id === kantorId) ?? null,
+    [kantorId, storageData.kantorList],
   );
 
   const totalArsipByLemariId = useMemo(
-    () =>
-      rakData.reduce((accumulator, item) => {
-        accumulator.set(
-          item.lemariId,
-          (accumulator.get(item.lemariId) ?? 0) + item.totalArsip,
-        );
-        return accumulator;
-      }, new Map<string, number>()),
-    [],
+    () => storageData.totalDokumenByLemariId,
+    [storageData.totalDokumenByLemariId],
   );
 
   const lemariByKantor = useMemo(
-    () => lemariData.filter((item) => item.kantorId === kantorId),
-    [kantorId],
+    () => storageData.lemariList.filter((item) => item.kantorId === kantorId),
+    [kantorId, storageData.lemariList],
   );
 
   const filteredLemari = useMemo(() => {
@@ -66,16 +82,16 @@ export default function KantorLemariPage() {
   }, [effectiveCurrentPage, filteredLemari]);
 
   const selectedLemari: Lemari | null = selectedLemariId
-    ? lemariData.find((item) => item.id === selectedLemariId) ?? null
+    ? storageData.lemariList.find((item) => item.id === selectedLemariId) ?? null
     : null;
   const selectedRak = selectedRakId
-    ? rakData.find((item) => item.id === selectedRakId) ?? null
+    ? storageData.rakList.find((item) => item.id === selectedRakId) ?? null
     : null;
   const rakList = selectedLemari
-    ? rakData.filter((item) => item.lemariId === selectedLemari.id)
+    ? storageData.rakList.filter((item) => item.lemariId === selectedLemari.id)
     : [];
   const dokumenRak = selectedRak
-    ? dokumenArsipData.filter((item) => item.rakId === selectedRak.id)
+    ? storageData.dokumenArsipList.filter((item) => item.rakId === selectedRak.id)
     : [];
 
   const handleOpenLemari = (lemariId: string) => {

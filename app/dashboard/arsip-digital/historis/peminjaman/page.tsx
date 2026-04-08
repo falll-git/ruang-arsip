@@ -11,7 +11,6 @@ import { filterDigitalDocuments } from "@/lib/rbac";
 import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
-import { lemariData } from "@/lib/data";
 
 function getDurationText(startValue: string, endValue: string) {
   const startDate = parseDateString(startValue);
@@ -32,7 +31,7 @@ const formatPersonName = (value: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function HistorisPeminjamanPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
   const searchParams = useSearchParams();
@@ -43,8 +42,8 @@ export default function HistorisPeminjamanPage() {
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dokumen);
-  }, [dokumen, role]);
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
 
   const dokumenAksesById = useMemo(
     () => new Map(dokumenAkses.map((d) => [d.id, d])),
@@ -54,17 +53,6 @@ export default function HistorisPeminjamanPage() {
   const tempatById = useMemo(
     () => new Map(tempatPenyimpanan.map((item) => [item.id, item])),
     [tempatPenyimpanan],
-  );
-
-  const lemariAliasByKode = useMemo(() => new Map([["L-001", "L-201"]]), []);
-
-  const lemariIdByKode = useMemo(
-    () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
-    [],
-  );
-  const kantorIdByLemari = useMemo(
-    () => new Map(lemariData.map((lemari) => [lemari.id, lemari.kantorId])),
-    [],
   );
 
   const historisPeminjaman = useMemo(() => {
@@ -77,15 +65,15 @@ export default function HistorisPeminjamanPage() {
         const tempat = dokumen?.tempatPenyimpananId
           ? tempatById.get(dokumen.tempatPenyimpananId)
           : undefined;
-        const kodeLemari = tempat?.kodeLemari;
-        const mappedKode = kodeLemari
-          ? lemariAliasByKode.get(kodeLemari) ?? kodeLemari
-          : undefined;
-        const lemariId = mappedKode ? lemariIdByKode.get(mappedKode) : undefined;
         const durasi = getDurationText(
           p.tglPinjam,
           p.tglPengembalian ?? p.tglKembali,
         );
+
+        const lemariId = tempat
+          ? `${tempat.kodeKantor}::${tempat.kodeLemari}`
+          : undefined;
+
         return {
           id: p.id,
           kode: dokumen?.kode ?? `DOK-${p.dokumenId}`,
@@ -96,17 +84,10 @@ export default function HistorisPeminjamanPage() {
           durasi,
           approvedBy: p.approver ?? "-",
           lemariId,
-          kantorId: lemariId ? kantorIdByLemari.get(lemariId) : undefined,
+          kantorId: tempat?.kodeKantor,
         };
       });
-  }, [
-    dokumenAksesById,
-    kantorIdByLemari,
-    lemariAliasByKode,
-    lemariIdByKode,
-    peminjaman,
-    tempatById,
-  ]);
+  }, [dokumenAksesById, peminjaman, tempatById]);
 
   const historisByLemari = useMemo(() => {
     if (filterKantorId) {

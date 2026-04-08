@@ -7,10 +7,10 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import {
   RBAC_DENIED_MESSAGE,
-  USER_ROLE_LABEL,
+  ROLE_LABELS,
   getDashboardRouteDecision,
   type RouteAccessDecision,
-  type UserRole,
+  type Role,
 } from "@/lib/rbac";
 
 function stripQuery(href: string): string {
@@ -21,24 +21,22 @@ function stripQuery(href: string): string {
 
 function getDeniedTooltip(
   decision: RouteAccessDecision,
-  role: UserRole | null,
+  role: Role | null,
 ): string {
-  const roleLabel = role ? USER_ROLE_LABEL[role] : "Belum login";
+  const roleLabel = role ? ROLE_LABELS[role] : "Belum login";
   switch (decision.reason) {
     case "AUTH_REQUIRED":
       return "Silakan login terlebih dahulu.";
-    case "USER_MANAGEMENT_ONLY_MASTER":
-      return `Hanya MASTER USER yang dapat mengakses fitur ini. (Role Anda: ${roleLabel})`;
-    case "RESTRICT_DATA_ONLY":
-      return `Fitur ini hanya untuk akses RESTRICT. (Role Anda: ${roleLabel})`;
-    case "NON_RESTRICT_DATA_ONLY":
-      return `Fitur ini hanya untuk akses NON RESTRICT. (Role Anda: ${roleLabel})`;
-    case "DIGITAL_ARCHIVE_ONLY":
-      return `Fitur ini hanya untuk modul Arsip Digital. (Role Anda: ${roleLabel})`;
-    case "DIGITAL_ARCHIVE_ADMIN_ONLY":
-      return `Fitur ini hanya untuk Admin Arsip Digital. (Role Anda: ${roleLabel})`;
-    case "LEGAL_ONLY":
-      return `Fitur ini hanya untuk role Legal. (Role Anda: ${roleLabel})`;
+    case "ROLE_REQUIRED": {
+      const allowedRoles =
+        decision.allowedRoles?.map((allowedRole) => ROLE_LABELS[allowedRole]) ??
+        [];
+      if (allowedRoles.length === 0) {
+        return `Akses ditolak untuk role ${roleLabel}.`;
+      }
+
+      return `${decision.label ?? "Fitur ini"} hanya dapat diakses oleh ${allowedRoles.join(", ")}. (Role Anda: ${roleLabel})`;
+    }
     case "UNKNOWN_ROUTE_DENIED":
       return `Tidak ada akses untuk route ini. (Role Anda: ${roleLabel})`;
     case "ALLOWED":

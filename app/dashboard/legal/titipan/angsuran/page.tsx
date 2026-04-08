@@ -131,7 +131,7 @@ export default function TitipanAngsuranPage() {
       nominal,
       tanggalSetor: todayIsoDate(),
       status: "Pending",
-      userInput: "Faisal",
+      userInput: "Dwi",
       keterangan: formKeterangan,
     };
     setData([newItem, ...data]);

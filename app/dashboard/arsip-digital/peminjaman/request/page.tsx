@@ -28,7 +28,10 @@ export default function RequestPeminjamanPage() {
 
   const dokumenList = useMemo(() => {
     if (!role) return [];
-    const accessibleDokumen = filterDigitalDocuments(role, dokumen);
+    const accessibleDokumen = filterDigitalDocuments(
+      user?.is_restrict ?? false,
+      dokumen,
+    );
     return accessibleDokumen.map((d) => {
       const tempat = tempatPenyimpanan.find(
         (t) => t.id === d.tempatPenyimpananId,
@@ -45,7 +48,7 @@ export default function RequestPeminjamanPage() {
           : `Tempat ID: ${d.tempatPenyimpananId}`,
       };
     });
-  }, [dokumen, role, tempatPenyimpanan]);
+  }, [dokumen, role, tempatPenyimpanan, user?.is_restrict]);
 
   const filteredDokumen = dokumenList.filter(
     (doc) =>

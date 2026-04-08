@@ -1,123 +1,208 @@
 export const RBAC_DENIED_MESSAGE = "Maaf, Anda tidak bisa mengakses fitur ini.";
 
-export const USER_ROLES = {
-  FULL_AKSES: "FULL_AKSES",
-  FUNGSI_LEGAL: "FUNGSI_LEGAL",
-  AKSES_RESTRICT: "AKSES_RESTRICT",
-  MASTER_USER: "MASTER_USER",
+export const ROLES = {
+  VIEWER: "VIEWER",
+  ADMIN: "ADMIN",
+  LEGAL: "LEGAL",
+  SUPERADMIN: "SUPERADMIN",
 } as const;
 
-export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+export type Role = keyof typeof ROLES;
 
-export const USER_ROLE_LABEL: Record<UserRole, string> = {
-  FULL_AKSES: "FULL AKSES",
-  FUNGSI_LEGAL: "FUNGSI LEGAL",
-  AKSES_RESTRICT: "AKSES RESTRICT",
-  MASTER_USER: "MASTER USER",
+export const ROLE_LABELS: Record<Role, string> = {
+  VIEWER: "Manajer",
+  ADMIN: "Admin",
+  LEGAL: "Legal",
+  SUPERADMIN: "IT",
 };
 
 export type DataAccessLevel = "RESTRICT" | "NON_RESTRICT";
 
-export function canManageUsers(role: UserRole): boolean {
-  return role === USER_ROLES.MASTER_USER;
+type RouteRule = {
+  prefix: string;
+  label: string;
+  roles: readonly Role[];
+};
+
+const ALL_ROLES: readonly Role[] = [
+  ROLES.VIEWER,
+  ROLES.ADMIN,
+  ROLES.LEGAL,
+  ROLES.SUPERADMIN,
+];
+
+const DASHBOARD_ROUTE_RULES: readonly RouteRule[] = [
+  {
+    prefix: "/dashboard/users",
+    label: "Manajemen User",
+    roles: [ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/arsip-digital/parameter",
+    label: "Parameter",
+    roles: [ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/informasi-debitur/admin",
+    label: "Admin",
+    roles: [ROLES.ADMIN, ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/legal/upload-ideb",
+    label: "Upload IDEB",
+    roles: [ROLES.LEGAL, ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/legal/laporan",
+    label: "Laporan Legal",
+    roles: [ROLES.VIEWER, ROLES.LEGAL, ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/legal/cetak",
+    label: "Cetak Dok Legal",
+    roles: [ROLES.LEGAL, ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/legal/titipan",
+    label: "Dana Titipan",
+    roles: [ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/legal/progress",
+    label: "Input Progress PHK3",
+    roles: [ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/legal",
+    label: "Legal",
+    roles: [ROLES.VIEWER, ROLES.LEGAL, ROLES.SUPERADMIN],
+  },
+  {
+    prefix: "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
+    label: "Input Surat Masuk",
+    roles: [ROLES.ADMIN],
+  },
+  {
+    prefix: "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
+    label: "Input Surat Keluar",
+    roles: [ROLES.ADMIN],
+  },
+  {
+    prefix: "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
+    label: "Input Memorandum",
+    roles: [ROLES.ADMIN],
+  },
+  {
+    prefix: "/dashboard/manajemen-surat/laporan",
+    label: "Laporan",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/manajemen-surat/cetak-dokumen",
+    label: "Cetak Dokumen",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/informasi-debitur/marketing",
+    label: "Input Progress",
+    roles: [ROLES.ADMIN],
+  },
+  {
+    prefix: "/dashboard/informasi-debitur",
+    label: "List Debitur",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/arsip-digital/disposisi/historis",
+    label: "Historis",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/arsip-digital/disposisi",
+    label: "Disposisi Dokumen",
+    roles: [ROLES.VIEWER, ROLES.ADMIN, ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/arsip-digital/peminjaman/laporan",
+    label: "Laporan Arsip",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/arsip-digital/peminjaman/request",
+    label: "Peminjaman Dokumen",
+    roles: [ROLES.ADMIN, ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/arsip-digital/peminjaman/accept",
+    label: "Peminjaman Dokumen",
+    roles: [ROLES.ADMIN, ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/arsip-digital/historis",
+    label: "Historis",
+    roles: ALL_ROLES,
+  },
+  {
+    prefix: "/dashboard/arsip-digital/input-dokumen",
+    label: "Penyimpanan Arsip",
+    roles: [ROLES.ADMIN, ROLES.LEGAL],
+  },
+  {
+    prefix: "/dashboard/arsip-digital/ruang-arsip",
+    label: "Penyimpanan Arsip",
+    roles: [ROLES.ADMIN, ROLES.LEGAL],
+  },
+];
+
+function matchesPath(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function canAccessRestrictData(role: UserRole): boolean {
+function hasRole(role: Role, roles: readonly Role[]) {
+  return roles.includes(role);
+}
+
+export function isRole(value: unknown): value is Role {
   return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.AKSES_RESTRICT ||
-    role === USER_ROLES.MASTER_USER
+    typeof value === "string" &&
+    (Object.keys(ROLES) as Role[]).includes(value as Role)
   );
 }
 
-export function canAccessNonRestrictData(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.MASTER_USER
-  );
-}
-
-export function canAccessDigitalArchive(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.AKSES_RESTRICT ||
-    role === USER_ROLES.MASTER_USER
-  );
-}
-
-export function canAccessDigitalArchiveAdmin(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.MASTER_USER
-  );
-}
-
-export function canViewDigitalDocument(
-  role: UserRole,
-  levelAkses: DataAccessLevel,
-): boolean {
-  return canViewDataByLevel(role, levelAkses);
+export function canManageUsers(role: Role): boolean {
+  return role === ROLES.SUPERADMIN;
 }
 
 export function filterDigitalDocuments<
   T extends { levelAkses: DataAccessLevel },
->(role: UserRole, documents: T[]): T[] {
-  return documents.filter((d) => canViewDigitalDocument(role, d.levelAkses));
-}
-
-export function canApproveAsLegal(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.MASTER_USER
+>(isRestrict: boolean, documents: T[]): T[] {
+  return documents.filter((document) =>
+    document.levelAkses === "NON_RESTRICT" || isRestrict,
   );
 }
 
-export function canAccessLegalModule(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.MASTER_USER
-  );
-}
-
-export function canAccessSuratModule(role: UserRole): boolean {
-  return (
-    role === USER_ROLES.FULL_AKSES ||
-    role === USER_ROLES.FUNGSI_LEGAL ||
-    role === USER_ROLES.AKSES_RESTRICT ||
-    role === USER_ROLES.MASTER_USER
-  );
-}
-
-export function canViewDataByLevel(
-  role: UserRole,
-  level: DataAccessLevel,
-): boolean {
-  return level === "RESTRICT"
-    ? canAccessRestrictData(role)
-    : canAccessNonRestrictData(role);
+export function canManageDisposisi(role: Role): boolean {
+  return hasRole(role, [ROLES.VIEWER, ROLES.ADMIN, ROLES.LEGAL]);
 }
 
 export interface RouteAccessDecision {
   allowed: boolean;
-  reason:
-    | "ALLOWED"
-    | "AUTH_REQUIRED"
-    | "USER_MANAGEMENT_ONLY_MASTER"
-    | "RESTRICT_DATA_ONLY"
-    | "NON_RESTRICT_DATA_ONLY"
-    | "DIGITAL_ARCHIVE_ONLY"
-    | "DIGITAL_ARCHIVE_ADMIN_ONLY"
-    | "LEGAL_ONLY"
-    | "UNKNOWN_ROUTE_DENIED";
+  reason: "ALLOWED" | "AUTH_REQUIRED" | "ROLE_REQUIRED" | "UNKNOWN_ROUTE_DENIED";
+  label?: string;
+  allowedRoles?: readonly Role[];
 }
 
 function allow(): RouteAccessDecision {
   return { allowed: true, reason: "ALLOWED" };
+}
+
+function denyRoleAccess(rule: RouteRule): RouteAccessDecision {
+  return {
+    allowed: false,
+    reason: "ROLE_REQUIRED",
+    label: rule.label,
+    allowedRoles: rule.roles,
+  };
 }
 
 function deny(reason: RouteAccessDecision["reason"]): RouteAccessDecision {
@@ -126,70 +211,18 @@ function deny(reason: RouteAccessDecision["reason"]): RouteAccessDecision {
 
 export function getDashboardRouteDecision(
   pathname: string,
-  role: UserRole | null | undefined,
+  role: Role | null | undefined,
 ): RouteAccessDecision {
   if (!role) return deny("AUTH_REQUIRED");
 
   if (pathname === "/dashboard") return allow();
 
-  if (pathname.startsWith("/dashboard/users")) {
-    return canManageUsers(role) ? allow() : deny("USER_MANAGEMENT_ONLY_MASTER");
-  }
+  const matchedRule = DASHBOARD_ROUTE_RULES.find((rule) =>
+    matchesPath(pathname, rule.prefix),
+  );
 
-  if (pathname.startsWith("/dashboard/legal")) {
-    return canAccessLegalModule(role) ? allow() : deny("LEGAL_ONLY");
-  }
-
-  if (pathname.startsWith("/dashboard/manajemen-surat")) {
-    return canAccessSuratModule(role) ? allow() : deny("UNKNOWN_ROUTE_DENIED");
-  }
-
-  if (pathname.startsWith("/dashboard/laporan")) {
-    return canAccessLegalModule(role) ? allow() : deny("LEGAL_ONLY");
-  }
-
-  if (pathname.startsWith("/dashboard/informasi-debitur")) {
-    if (
-      pathname.startsWith("/dashboard/informasi-debitur/admin/upload-restrik")
-    ) {
-      return canAccessRestrictData(role) ? allow() : deny("RESTRICT_DATA_ONLY");
-    }
-    if (pathname.startsWith("/dashboard/informasi-debitur/admin/upload-slik")) {
-      return canAccessNonRestrictData(role)
-        ? allow()
-        : deny("NON_RESTRICT_DATA_ONLY");
-    }
-    return canAccessNonRestrictData(role)
-      ? allow()
-      : deny("NON_RESTRICT_DATA_ONLY");
-  }
-
-  if (pathname.startsWith("/dashboard/arsip-digital")) {
-    if (!canAccessDigitalArchive(role)) return deny("DIGITAL_ARCHIVE_ONLY");
-
-    const arsipSelfServiceAllowed = [
-      "/dashboard/arsip-digital/ruang-arsip/list-dokumen",
-      "/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan",
-      "/dashboard/arsip-digital/input-dokumen",
-      "/dashboard/arsip-digital/disposisi/pengajuan",
-      "/dashboard/arsip-digital/disposisi/historis",
-      "/dashboard/arsip-digital/peminjaman/request",
-      "/dashboard/arsip-digital/peminjaman/laporan",
-      "/dashboard/arsip-digital/historis/penyimpanan",
-      "/dashboard/arsip-digital/historis/peminjaman",
-    ];
-
-    if (arsipSelfServiceAllowed.some((prefix) => pathname.startsWith(prefix))) {
-      return allow();
-    }
-
-    if (pathname.startsWith("/dashboard/arsip-digital/peminjaman/accept")) {
-      return canApproveAsLegal(role) ? allow() : deny("LEGAL_ONLY");
-    }
-
-    return canAccessDigitalArchiveAdmin(role)
-      ? allow()
-      : deny("DIGITAL_ARCHIVE_ADMIN_ONLY");
+  if (matchedRule) {
+    return hasRole(role, matchedRule.roles) ? allow() : denyRoleAccess(matchedRule);
   }
 
   if (pathname.startsWith("/dashboard")) {

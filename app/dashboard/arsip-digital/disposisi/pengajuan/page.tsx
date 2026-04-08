@@ -26,7 +26,7 @@ export default function PengajuanDisposisiPage() {
 
   const dokumenList = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dokumen).map((d) => ({
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen).map((d) => ({
       id: d.id,
       kode: d.kode,
       jenisDokumen: d.jenisDokumen,
@@ -34,7 +34,7 @@ export default function PengajuanDisposisiPage() {
       detail: d.detail,
       pemilik: d.userInput,
     }));
-  }, [dokumen, role]);
+  }, [dokumen, role, user?.is_restrict]);
 
   const filteredDokumen = dokumenList.filter(
     (doc) =>

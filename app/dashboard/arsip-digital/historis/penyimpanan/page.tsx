@@ -16,7 +16,7 @@ const formatPersonName = (value: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function HistorisPenyimpananPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
   const { dokumen } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,8 +24,8 @@ export default function HistorisPenyimpananPage() {
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dokumen);
-  }, [dokumen, role]);
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
 
   const historisPenyimpanan = useMemo(() => {
     return dokumenAkses.map((d, idx) => {

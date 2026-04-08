@@ -158,7 +158,7 @@ export default function DashboardOverviewClient() {
     const list: ModuleCard[] = [
       {
         title: "Laporan Arsip Digital",
-        href: "/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan",
+        href: "/dashboard/arsip-digital/peminjaman/laporan",
         accentColor: "#157ec3",
         subtitle: "Dokumen dan penyimpanan",
         buttonText: "Akses Laporan",
@@ -218,7 +218,7 @@ export default function DashboardOverviewClient() {
         <div className="flex items-center justify-between gap-6">
           <div className="min-w-0">
             <h1 className="mb-2 text-xl font-bold leading-tight lg:text-3xl">
-              Assalamualaikum, {user?.namaLengkap ?? "Pengguna"}!
+              Assalamualaikum, {user?.name ?? "Pengguna"}!
             </h1>
           </div>
 
@@ -226,7 +226,7 @@ export default function DashboardOverviewClient() {
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-3 py-1.5 backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]" />
               <span className="text-sm font-semibold">
-                {user?.divisi ?? "-"}
+                {user?.division_id ?? "-"}
               </span>
               <span className="text-white/45">|</span>
               <span className="text-sm text-white/80">Sesi aktif</span>

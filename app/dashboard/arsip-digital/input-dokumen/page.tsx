@@ -2,21 +2,36 @@
 
 import { useMemo, useState } from "react";
 import { Check, UploadCloud, FileText, Database } from "lucide-react";
-import { dummyDokumen } from "@/lib/data";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 
+type RestrictOption = "Ya" | "Tidak";
+
+type FormState = {
+  tempatPenyimpananId: string;
+  jenisDokumenKode: string;
+  namaDokumen: string;
+  keterangan: string;
+  restrict: RestrictOption;
+};
+
+const INITIAL_FORM_STATE: FormState = {
+  tempatPenyimpananId: "",
+  jenisDokumenKode: "",
+  namaDokumen: "",
+  keterangan: "",
+  restrict: "Tidak",
+};
+
 export default function InputDokumenPage() {
+  const { user } = useAuth();
   const { showToast } = useAppToast();
   const { tempatPenyimpanan, jenisDokumen } = useArsipDigitalMasterData();
-  const [formData, setFormData] = useState(() => ({
-    tempatPenyimpananId: "",
-    jenisDokumenKode: "",
-    namaDokumen: "",
-    keterangan: "",
-    restrict: "Tidak",
-  }));
+  const { dokumen, createDokumen } = useArsipDigitalWorkflow();
+  const [formData, setFormData] = useState<FormState>(INITIAL_FORM_STATE);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -59,7 +74,7 @@ export default function InputDokumenPage() {
     const prefix = jenis.kode.replace(/\s+/g, "-").toUpperCase();
     const re = new RegExp(`^${prefix}-${periode}-(\\d{4})$`);
 
-    const lastSequence = dummyDokumen.reduce((max, d) => {
+    const lastSequence = dokumen.reduce((max, d) => {
       const match = d.kode.match(re);
       if (!match) return max;
       const num = Number(match[1]);
@@ -69,6 +84,7 @@ export default function InputDokumenPage() {
 
     return `${prefix}-${periode}-${String(lastSequence + 1).padStart(4, "0")}`;
   }, [
+    dokumen,
     formData.jenisDokumenKode,
     formData.tempatPenyimpananId,
     jenisDokumenList,
@@ -122,18 +138,36 @@ export default function InputDokumenPage() {
       return;
     }
 
+    const selectedTempat = tempatPenyimpananList.find(
+      (item) => String(item.id) === formData.tempatPenyimpananId,
+    );
+    const selectedJenis = jenisDokumenList.find(
+      (item) => item.kode === formData.jenisDokumenKode,
+    );
+
+    if (!selectedTempat || !selectedJenis) {
+      showToast("Parameter dokumen belum valid. Silakan pilih ulang.", "warning");
+      return;
+    }
+
     setIsLoading(true);
 
     setTimeout(() => {
+      createDokumen({
+        kode: kodeDokumen,
+        jenisDokumen: selectedJenis.nama,
+        namaDokumen: formData.namaDokumen.trim(),
+        detail: formData.keterangan.trim() || formData.namaDokumen.trim(),
+        userInput: user?.username ?? "SYSTEM",
+        tempatPenyimpanan: selectedTempat.kodeLemari,
+        tempatPenyimpananId: selectedTempat.id,
+        isRestrict: formData.restrict === "Ya",
+        fileUrl: "/documents/contoh-dok.pdf",
+      });
+
       setIsLoading(false);
       showToast("Dokumen berhasil disimpan!", "success");
-      setFormData({
-        tempatPenyimpananId: "",
-        jenisDokumenKode: "",
-        namaDokumen: "",
-        keterangan: "",
-        restrict: "Tidak",
-      });
+      setFormData(INITIAL_FORM_STATE);
       setFile(null);
     }, 1500);
   };
@@ -201,9 +235,6 @@ export default function InputDokumenPage() {
                     <option value="Tidak">Tidak</option>
                     <option value="Ya">Ya</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Pilih &quot;Ya&quot; jika dokumen bersifat restricted.
-                  </p>
                 </div>
 
                 <div>
@@ -389,13 +420,7 @@ export default function InputDokumenPage() {
                 type="button"
                 className="btn btn-outline"
                 onClick={() => {
-                  setFormData({
-                    tempatPenyimpananId: "",
-                    jenisDokumenKode: "",
-                    namaDokumen: "",
-                    keterangan: "",
-                    restrict: "Tidak",
-                  });
+                  setFormData(INITIAL_FORM_STATE);
                   setFile(null);
                 }}
               >

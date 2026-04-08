@@ -104,8 +104,8 @@ const TENGGAT_FORMATTER = new Intl.DateTimeFormat("id-ID", {
 
 const personLookup = new Map(
   dummyUsers.flatMap((user) => [
-    [user.username.toLowerCase(), user.namaLengkap],
-    [user.namaLengkap.toLowerCase(), user.namaLengkap],
+    [user.username.toLowerCase(), user.name],
+    [user.name.toLowerCase(), user.name],
   ]),
 );
 

@@ -33,7 +33,7 @@ function formatPersonName(value: string) {
 }
 
 export default function LaporanPeminjamanPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { dokumen, peminjaman } = useArsipDigitalWorkflow();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -42,8 +42,8 @@ export default function LaporanPeminjamanPage() {
 
   const dokumenAkses = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dokumen);
-  }, [dokumen, role]);
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
 
   const dokumenAksesById = useMemo(
     () => new Map(dokumenAkses.map((d) => [d.id, d])),

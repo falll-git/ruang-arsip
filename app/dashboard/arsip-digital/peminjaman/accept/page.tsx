@@ -16,6 +16,7 @@ import FeatureHeader from "@/components/ui/FeatureHeader";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
+import { filterDigitalDocuments } from "@/lib/rbac";
 
 const formatPersonName = (value: string) =>
   value
@@ -23,7 +24,7 @@ const formatPersonName = (value: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function AcceptPeminjamanPage() {
-  const { user } = useAuth();
+  const { role, user } = useAuth();
   const { showToast } = useAppToast();
   const { dokumen, peminjaman, processPeminjaman } = useArsipDigitalWorkflow();
   const [showModal, setShowModal] = useState(false);
@@ -46,11 +47,25 @@ export default function AcceptPeminjamanPage() {
   const [alasanAksi, setAlasanAksi] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
+
+  const accessibleDokumenById = useMemo(
+    () => new Map(accessibleDokumen.map((item) => [item.id, item])),
+    [accessibleDokumen],
+  );
+
   const data = useMemo(() => {
     return peminjaman
-      .filter((p) => p.status === "Pending" || p.status === "Dipinjam")
+      .filter(
+        (p) =>
+          (p.status === "Pending" || p.status === "Dipinjam") &&
+          accessibleDokumenById.has(p.dokumenId),
+      )
       .map((p) => {
-        const dokumenItem = dokumen.find((d) => d.id === p.dokumenId);
+        const dokumenItem = accessibleDokumenById.get(p.dokumenId);
         return {
           id: p.id,
           kode: dokumenItem?.kode ?? `DOK-${p.dokumenId}`,
@@ -62,7 +77,7 @@ export default function AcceptPeminjamanPage() {
           tipe: p.status === "Dipinjam" ? ("Pengembalian" as const) : ("Peminjaman" as const),
         };
       });
-  }, [dokumen, peminjaman]);
+  }, [accessibleDokumenById, peminjaman]);
 
   const closeModal = () => {
     setShowModal(false);

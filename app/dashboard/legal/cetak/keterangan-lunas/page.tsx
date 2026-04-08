@@ -103,7 +103,7 @@ export default function CetakKeteranganLunasPage() {
       noKontrak: selectedNasabah.noKontrak,
       namaNasabah: selectedNasabah.nama,
       detail: "Surat Keterangan Lunas",
-      user: "Faisal",
+      user: "Dwi",
     };
     setHistory([newHistory, ...history]);
     setCurrentPage(1);

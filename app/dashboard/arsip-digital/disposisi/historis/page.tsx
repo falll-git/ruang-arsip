@@ -21,7 +21,6 @@ import { filterDigitalDocuments } from "@/lib/rbac";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
-import { lemariData } from "@/lib/data";
 
 const formatPersonName = (value: string) =>
   value
@@ -52,7 +51,7 @@ interface HistorisItem {
 }
 
 export default function HistorisDisposisiPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { tempatPenyimpanan } = useArsipDigitalMasterData();
   const { dokumen, disposisi } = useArsipDigitalWorkflow();
   const { openPreview } = useDocumentPreviewContext();
@@ -67,8 +66,8 @@ export default function HistorisDisposisiPage() {
 
   const accessibleDokumen = useMemo(() => {
     if (!role) return [];
-    return filterDigitalDocuments(role, dokumen);
-  }, [dokumen, role]);
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
 
   const accessibleById = useMemo(
     () => new Map(accessibleDokumen.map((item) => [item.id, item])),
@@ -78,17 +77,6 @@ export default function HistorisDisposisiPage() {
   const tempatById = useMemo(
     () => new Map(tempatPenyimpanan.map((item) => [item.id, item])),
     [tempatPenyimpanan],
-  );
-
-  const lemariAliasByKode = useMemo(() => new Map([["L-001", "L-201"]]), []);
-
-  const lemariIdByKode = useMemo(
-    () => new Map(lemariData.map((lemari) => [lemari.kodeLemari, lemari.id])),
-    [],
-  );
-  const kantorIdByLemari = useMemo(
-    () => new Map(lemariData.map((lemari) => [lemari.id, lemari.kantorId])),
-    [],
   );
 
   const completedDisposisi = useMemo(
@@ -107,12 +95,10 @@ export default function HistorisDisposisiPage() {
       const tempat = dokumenItem?.tempatPenyimpananId
         ? tempatById.get(dokumenItem.tempatPenyimpananId)
         : undefined;
-      const kodeLemari = tempat?.kodeLemari;
-      const mappedKode = kodeLemari
-        ? lemariAliasByKode.get(kodeLemari) ?? kodeLemari
+      const lemariId = tempat
+        ? `${tempat.kodeKantor}::${tempat.kodeLemari}`
         : undefined;
-      const lemariId = mappedKode ? lemariIdByKode.get(mappedKode) : undefined;
-      const kantorId = lemariId ? kantorIdByLemari.get(lemariId) : undefined;
+      const kantorId = tempat?.kodeKantor;
       const lokasi =
         dokumenItem?.tempatPenyimpanan ||
         tempat?.kodeLemari ||
@@ -145,9 +131,6 @@ export default function HistorisDisposisiPage() {
   }, [
     accessibleById,
     completedDisposisi,
-    kantorIdByLemari,
-    lemariAliasByKode,
-    lemariIdByKode,
     tempatById,
   ]);
 

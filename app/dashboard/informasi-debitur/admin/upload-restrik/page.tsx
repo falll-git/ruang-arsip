@@ -4,11 +4,25 @@ import { useState, useEffect } from "react";
 import { FileSpreadsheet, UploadCloud } from "lucide-react";
 import { dummyUploadRestrik } from "@/lib/data";
 import type { UploadRestrik } from "@/lib/types/modul3";
-import StatusBadge from "@/components/marketing/StatusBadge";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { todayIsoDate } from "@/lib/utils/date";
 import { formatInformasiDebiturDate } from "@/lib/utils/informasi-debitur";
+
+const PILL_BASE_CLASS =
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold";
+
+function getUploadStatusPillClass(status: UploadRestrik["status"]) {
+  switch (status) {
+    case "Selesai":
+      return `${PILL_BASE_CLASS} border-emerald-200 bg-emerald-50 text-emerald-700`;
+    case "Pending":
+      return `${PILL_BASE_CLASS} border-amber-200 bg-amber-50 text-amber-700`;
+    case "Diproses":
+    default:
+      return `${PILL_BASE_CLASS} border-gray-200 bg-gray-100 text-gray-700`;
+  }
+}
 
 export default function UploadRestrikPage() {
   const [data, setData] = useState<UploadRestrik[]>([...dummyUploadRestrik]);
@@ -218,7 +232,9 @@ export default function UploadRestrikPage() {
                   {item.totalRecord}
                 </td>
                 <td className="px-5 py-4 text-center">
-                  <StatusBadge status={item.status} />
+                  <span className={getUploadStatusPillClass(item.status)}>
+                    {item.status}
+                  </span>
                 </td>
               </tr>
             ))}

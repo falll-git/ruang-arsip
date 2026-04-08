@@ -34,7 +34,7 @@ export default function InputSuratKeluarPage() {
     mediaPengiriman: "",
     sifatSurat: "",
   });
-  const [selectedDisposisi, setSelectedDisposisi] = useState<number[]>([]);
+  const [selectedDisposisi, setSelectedDisposisi] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -51,7 +51,7 @@ export default function InputSuratKeluarPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDisposisiToggle = (userId: number) => {
+  const handleDisposisiToggle = (userId: string) => {
     setSelectedDisposisi((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)

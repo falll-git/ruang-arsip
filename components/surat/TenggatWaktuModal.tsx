@@ -20,21 +20,12 @@ type TenggatWaktuModalContentProps = Omit<TenggatWaktuModalProps, "isOpen">;
 function TenggatWaktuModalContent({
   onSave,
   onSkip,
-  disposisi,
 }: TenggatWaktuModalContentProps) {
   const [tenggatWaktu, setTenggatWaktu] = useState("");
   const [keteranganTenggat, setKeteranganTenggat] = useState("");
 
   const handleSave = () => {
     const trimmedKeterangan = keteranganTenggat.trim();
-    if (tenggatWaktu) {
-      console.log({
-        action: "NOTIF_WA_TENGGAT",
-        tenggatWaktu,
-        keterangan: trimmedKeterangan,
-        disposisi,
-      });
-    }
 
     onSave({
       tenggatWaktu: tenggatWaktu || undefined,

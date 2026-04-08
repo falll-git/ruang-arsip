@@ -16,12 +16,10 @@ import {
 import { useMemo, useState, type CSSProperties } from "react";
 
 import { Button } from "@/components/ui/button";
-import { dokumenArsipData, disposisiData, peminjamanData, rakData } from "@/lib/data";
 import { exportDokumenPerKantor } from "@/lib/export-arsip";
 import type { Kantor, Lemari } from "@/lib/types";
-import { parseDateString } from "@/lib/utils/date";
 
-const ACTIVE_DISPOSISI_STATUS = new Set(["PENDING", "PROSES"]);
+import type { StorageDokumenArsip, StorageRak } from "@/lib/arsip-digital-storage";
 
 type LemariWithMeta = Lemari & {
   kapasitas?: number;
@@ -31,6 +29,13 @@ type LemariWithMeta = Lemari & {
 type LemariGridModalProps = {
   kantor: Kantor;
   lemariList: Lemari[];
+  rakList: StorageRak[];
+  dokumenList: StorageDokumenArsip[];
+  totalDokumenByLemariId: Map<string, number>;
+  jumlahRakByLemariId: Map<string, number>;
+  disposisiByLemariId: Map<string, number>;
+  dipinjamByLemariId: Map<string, number>;
+  jatuhTempoByLemariId: Map<string, number>;
   onSelectLemari: (lemari: Lemari) => void;
   onClose: () => void;
 };
@@ -44,61 +49,18 @@ function getStatusBadgeClass(status: "Aktif" | "Nonaktif") {
 export default function LemariGridModal({
   kantor,
   lemariList,
+  rakList,
+  dokumenList,
+  totalDokumenByLemariId,
+  jumlahRakByLemariId,
+  disposisiByLemariId,
+  dipinjamByLemariId,
+  jatuhTempoByLemariId,
   onSelectLemari,
   onClose,
 }: LemariGridModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
-  const today = useMemo(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }, []);
-
-  const {
-    totalDokumenByLemariId,
-    jumlahRakByLemariId,
-    disposisiByLemariId,
-    dipinjamByLemariId,
-    jatuhTempoByLemariId,
-  } = useMemo(() => {
-    const totalDokumen = new Map<string, number>();
-    const jumlahRak = new Map<string, number>();
-    const disposisi = new Map<string, number>();
-    const dipinjam = new Map<string, number>();
-    const jatuhTempo = new Map<string, number>();
-
-    rakData.forEach((item) => {
-      totalDokumen.set(
-        item.lemariId,
-        (totalDokumen.get(item.lemariId) ?? 0) + item.totalArsip,
-      );
-      jumlahRak.set(item.lemariId, (jumlahRak.get(item.lemariId) ?? 0) + 1);
-    });
-
-    disposisiData.forEach((item) => {
-      if (!ACTIVE_DISPOSISI_STATUS.has(item.status)) return;
-      disposisi.set(item.lemariId, (disposisi.get(item.lemariId) ?? 0) + 1);
-    });
-
-    peminjamanData.forEach((item) => {
-      if (item.status !== "Dipinjam") return;
-      dipinjam.set(item.lemariId, (dipinjam.get(item.lemariId) ?? 0) + 1);
-      const parsed = parseDateString(item.tanggalKembali);
-      if (!parsed) return;
-      const compare = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-      if (compare < today) {
-        jatuhTempo.set(item.lemariId, (jatuhTempo.get(item.lemariId) ?? 0) + 1);
-      }
-    });
-
-    return {
-      totalDokumenByLemariId: totalDokumen,
-      jumlahRakByLemariId: jumlahRak,
-      disposisiByLemariId: disposisi,
-      dipinjamByLemariId: dipinjam,
-      jatuhTempoByLemariId: jatuhTempo,
-    };
-  }, [today]);
 
   const filteredLemari = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -119,8 +81,8 @@ export default function LemariGridModal({
         kantorId: kantor.id,
         kantorNama: kantor.namaKantor,
         lemariList,
-        rakList: rakData,
-        dokumenList: dokumenArsipData,
+        rakList,
+        dokumenList,
       });
     } finally {
       setExportLoading(false);

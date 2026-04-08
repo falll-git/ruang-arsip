@@ -124,7 +124,7 @@ export default function CetakAkadPage() {
       noKontrak: selectedNasabah.noKontrak,
       namaNasabah: selectedNasabah.nama,
       detail: `${jenisAkad} - ${selectedNasabah.produk}`,
-      user: "Faisal",
+      user: "Dwi",
     };
     setHistory([newHistory, ...history]);
     setCurrentPage(1);

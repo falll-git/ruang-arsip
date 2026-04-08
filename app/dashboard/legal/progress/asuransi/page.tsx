@@ -167,7 +167,7 @@ export default function ProgressAsuransiPage() {
       periodeAkhir: formPeriodeAkhir,
       status: "Proses",
       catatan: formCatatan,
-      userInput: "Faisal",
+      userInput: "Dwi",
       lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
       lampiranFileName: formFile?.name,
       lampiranFileType: formFile ? "pdf" : undefined,

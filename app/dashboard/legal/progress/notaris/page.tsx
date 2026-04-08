@@ -206,7 +206,7 @@ export default function ProgressNotarisPage() {
       tanggalMasuk: formTanggalMasuk || todayIsoDate(),
       estimasiSelesai: formEstimasiSelesai,
       status: "Proses",
-      userInput: "Faisal",
+      userInput: "Dwi",
       catatan: formCatatan,
       lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
       lampiranFileName: formFile?.name,

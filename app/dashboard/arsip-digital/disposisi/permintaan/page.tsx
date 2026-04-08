@@ -4,10 +4,11 @@ import { useMemo, useState } from "react";
 import { Check, Inbox, X, AlertCircle } from "lucide-react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import DatePickerInput from "@/components/ui/DatePickerInput";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
-import { canApproveAsLegal } from "@/lib/rbac";
+import { canManageDisposisi, filterDigitalDocuments } from "@/lib/rbac";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
@@ -17,6 +18,7 @@ const formatPersonName = (value: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export default function PermintaanDisposisiPage() {
+  const { role, user } = useAuth();
   const { showToast } = useAppToast();
   const { ensureAllowed } = useProtectedAction();
   const { dokumen, disposisi, processDisposisi } = useArsipDigitalWorkflow();
@@ -40,11 +42,23 @@ export default function PermintaanDisposisiPage() {
   const [alasanAksi, setAlasanAksi] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
+
+  const accessibleDokumenById = useMemo(
+    () => new Map(accessibleDokumen.map((item) => [item.id, item])),
+    [accessibleDokumen],
+  );
+
   const data = useMemo(() => {
     return disposisi
-      .filter((d) => d.status === "Pending")
+      .filter(
+        (d) => d.status === "Pending" && accessibleDokumenById.has(d.dokumenId),
+      )
       .map((d) => {
-        const dokumenItem = dokumen.find((doc) => doc.id === d.dokumenId);
+        const dokumenItem = accessibleDokumenById.get(d.dokumenId);
         return {
           id: d.id,
           kode: dokumenItem?.kode ?? `DOK-${d.dokumenId}`,
@@ -56,20 +70,20 @@ export default function PermintaanDisposisiPage() {
           status: d.status,
         };
       });
-  }, [disposisi, dokumen]);
+  }, [accessibleDokumenById, disposisi]);
 
   const handleAction = (
     item: (typeof data)[0],
     type: "approve" | "reject",
   ) => {
-    if (!ensureAllowed(canApproveAsLegal)) return;
+    if (!ensureAllowed(canManageDisposisi)) return;
     setSelectedItem(item);
     setActionType(type);
     setShowModal(true);
   };
 
   const handleSubmit = () => {
-    if (!ensureAllowed(canApproveAsLegal)) return;
+    if (!ensureAllowed(canManageDisposisi)) return;
     if (!selectedItem || !actionType) return;
 
     const updated = processDisposisi({

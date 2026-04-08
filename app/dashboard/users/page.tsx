@@ -2,42 +2,79 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Pencil, Plus, Search, Trash2, Users, X } from "lucide-react";
+import { Pencil, Plus, Save, Search, Trash2, Users, X } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
-import { dummyDivisiList, dummyUsers, type User } from "@/lib/data";
+import { dummyDivisiList, dummyUsers, type StoredUser } from "@/lib/data";
 import {
   RBAC_DENIED_MESSAGE,
-  USER_ROLE_LABEL,
-  USER_ROLES,
+  ROLE_LABELS,
+  ROLES,
   canManageUsers,
-  type UserRole,
+  type Role,
 } from "@/lib/rbac";
 
 type UserFormState = {
-  namaLengkap: string;
+  name: string;
   username: string;
-  divisi: string;
-  tipeAkun: "Internal" | "Eksternal";
-  role: UserRole;
-  atasanTerkait: string;
-  status: "Aktif" | "Nonaktif";
+  email: string;
+  division_id: string;
+  role: Role;
+  is_restrict: boolean;
+  is_active: boolean;
   password: string;
 };
 
 const EMPTY_FORM: UserFormState = {
-  namaLengkap: "",
+  name: "",
   username: "",
-  divisi: "",
-  tipeAkun: "Internal",
-  role: USER_ROLES.FUNGSI_LEGAL,
-  atasanTerkait: "",
-  status: "Aktif",
+  email: "",
+  division_id: "",
+  role: ROLES.VIEWER,
+  is_restrict: false,
+  is_active: true,
   password: "",
 };
+
+const ROLE_OPTIONS: Role[] = [
+  ROLES.VIEWER,
+  ROLES.ADMIN,
+  ROLES.LEGAL,
+  ROLES.SUPERADMIN,
+];
+
+const PILL_BASE_CLASS =
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold";
+
+function getRolePillClass(role: Role) {
+  switch (role) {
+    case ROLES.SUPERADMIN:
+      return `${PILL_BASE_CLASS} border-rose-200 bg-rose-50 text-rose-700`;
+    case ROLES.ADMIN:
+      return `${PILL_BASE_CLASS} border-emerald-200 bg-emerald-50 text-emerald-700`;
+    case ROLES.LEGAL:
+      return `${PILL_BASE_CLASS} border-blue-200 bg-blue-50 text-blue-700`;
+    case ROLES.VIEWER:
+    default:
+      return `${PILL_BASE_CLASS} border-amber-200 bg-amber-50 text-amber-700`;
+  }
+}
+
+function getRestrictPillClass(isRestrict: boolean) {
+  return isRestrict
+    ? `${PILL_BASE_CLASS} border-emerald-200 bg-emerald-50 text-emerald-700`
+    : `${PILL_BASE_CLASS} border-amber-200 bg-amber-50 text-amber-700`;
+}
+
+function getStatusPillClass(isActive: boolean) {
+  return isActive
+    ? `${PILL_BASE_CLASS} border-emerald-200 bg-emerald-50 text-emerald-700`
+    : `${PILL_BASE_CLASS} border-gray-200 bg-gray-100 text-gray-700`;
+}
 
 export default function ManajemenUserPage() {
   const router = useRouter();
@@ -45,16 +82,16 @@ export default function ManajemenUserPage() {
   const { showToast } = useAppToast();
   const { ensureAllowed } = useProtectedAction();
 
-  const [users, setUsers] = useState<User[]>(dummyUsers);
+  const [users, setUsers] = useState<StoredUser[]>(dummyUsers);
   const [showModal, setShowModal] = useState(false);
-  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<StoredUser | null>(null);
   const [formData, setFormData] = useState<UserFormState>(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = useState<StoredUser | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isMaster = role ? canManageUsers(role) : false;
+  const isSuperAdmin = role ? canManageUsers(role) : false;
 
   useEffect(() => {
     if (!role) return;
@@ -63,67 +100,70 @@ export default function ManajemenUserPage() {
     router.replace("/dashboard");
   }, [role, router, showToast]);
 
-  const masterUserCount = useMemo(
-    () => users.filter((u) => u.role === USER_ROLES.MASTER_USER).length,
+  const superAdminCount = useMemo(
+    () => users.filter((user) => user.role === ROLES.SUPERADMIN).length,
     [users],
   );
 
   const filteredUsers = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return users;
-    return users.filter(
-      (u) =>
-        u.namaLengkap.toLowerCase().includes(term) ||
-        u.username.toLowerCase().includes(term) ||
-        u.divisi.toLowerCase().includes(term) ||
-        u.role.toLowerCase().includes(term),
-    );
+
+    return users.filter((user) => {
+      return (
+        user.name.toLowerCase().includes(term) ||
+        user.username.toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term) ||
+        user.division_id.toLowerCase().includes(term) ||
+        ROLE_LABELS[user.role].toLowerCase().includes(term)
+      );
+    });
   }, [searchTerm, users]);
 
-  const stats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       total: users.length,
-      aktif: users.filter((u) => u.status === "Aktif").length,
-      master: users.filter((u) => u.role === USER_ROLES.MASTER_USER).length,
-      restrict: users.filter((u) => u.role === USER_ROLES.AKSES_RESTRICT)
-        .length,
-    };
-  }, [users]);
+      aktif: users.filter((user) => user.is_active).length,
+      it: users.filter((user) => user.role === ROLES.SUPERADMIN).length,
+      restrict: users.filter((user) => user.is_restrict).length,
+    }),
+    [users],
+  );
 
-  const requireMasterAction = () => {
+  const requireSuperAdminAction = () => {
     return ensureAllowed(canManageUsers, { redirectTo: "/dashboard" });
   };
 
   const resetForm = () => setFormData(EMPTY_FORM);
 
   const handleAdd = () => {
-    if (!requireMasterAction()) return;
+    if (!requireSuperAdminAction()) return;
     setEditUser(null);
     resetForm();
     setShowModal(true);
   };
 
-  const handleEdit = (user: User) => {
-    if (!requireMasterAction()) return;
+  const handleEdit = (user: StoredUser) => {
+    if (!requireSuperAdminAction()) return;
     setEditUser(user);
     setFormData({
-      namaLengkap: user.namaLengkap,
+      name: user.name,
       username: user.username,
-      divisi: user.divisi,
-      tipeAkun: user.tipeAkun,
+      email: user.email,
+      division_id: user.division_id,
       role: user.role,
-      atasanTerkait: user.atasanTerkait || "",
-      status: user.status,
+      is_restrict: user.is_restrict,
+      is_active: user.is_active,
       password: "",
     });
     setShowModal(true);
   };
 
-  const handleDelete = (user: User) => {
-    if (!requireMasterAction()) return;
+  const handleDelete = (user: StoredUser) => {
+    if (!requireSuperAdminAction()) return;
 
-    if (user.role === USER_ROLES.MASTER_USER && masterUserCount <= 1) {
-      showToast("Tidak bisa menghapus Master User terakhir.", "warning");
+    if (user.role === ROLES.SUPERADMIN && superAdminCount <= 1) {
+      showToast("Tidak bisa menghapus user IT terakhir.", "warning");
       return;
     }
 
@@ -132,19 +172,24 @@ export default function ManajemenUserPage() {
   };
 
   const confirmDelete = () => {
-    if (!requireMasterAction()) return;
+    if (!requireSuperAdminAction()) return;
     if (!deleteUser) return;
 
-    setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
+    setUsers((prev) => prev.filter((user) => user.id !== deleteUser.id));
     showToast("User berhasil dihapus!", "success");
     setShowDelete(false);
     setDeleteUser(null);
   };
 
   const handleSubmit = () => {
-    if (!requireMasterAction()) return;
+    if (!requireSuperAdminAction()) return;
 
-    if (!formData.namaLengkap || !formData.username || !formData.divisi) {
+    if (
+      !formData.name.trim() ||
+      !formData.username.trim() ||
+      !formData.email.trim() ||
+      !formData.division_id
+    ) {
       showToast("Mohon lengkapi semua field yang diperlukan", "warning");
       return;
     }
@@ -154,47 +199,57 @@ export default function ManajemenUserPage() {
       return;
     }
 
-    const usernameTaken = users.some((u) => {
-      if (editUser && u.id === editUser.id) return false;
-      return (
-        u.username.toLowerCase() === formData.username.trim().toLowerCase()
-      );
+    const normalizedUsername = formData.username.trim().toLowerCase();
+    const normalizedEmail = formData.email.trim().toLowerCase();
+
+    const usernameTaken = users.some((user) => {
+      if (editUser && user.id === editUser.id) return false;
+      return user.username.toLowerCase() === normalizedUsername;
     });
     if (usernameTaken) {
       showToast("Username sudah digunakan.", "warning");
       return;
     }
 
+    const emailTaken = users.some((user) => {
+      if (editUser && user.id === editUser.id) return false;
+      return user.email.toLowerCase() === normalizedEmail;
+    });
+    if (emailTaken) {
+      showToast("Email sudah digunakan.", "warning");
+      return;
+    }
+
     if (
-      editUser?.role === USER_ROLES.MASTER_USER &&
-      formData.role !== USER_ROLES.MASTER_USER &&
-      masterUserCount <= 1
+      editUser?.role === ROLES.SUPERADMIN &&
+      formData.role !== ROLES.SUPERADMIN &&
+      superAdminCount <= 1
     ) {
-      showToast("Tidak bisa mengubah role Master User terakhir.", "warning");
+      showToast("Tidak bisa mengubah role IT terakhir.", "warning");
       return;
     }
 
     setIsLoading(true);
     setTimeout(() => {
-      const payload: Omit<User, "id"> = {
-        namaLengkap: formData.namaLengkap.trim(),
+      const payload: StoredUser = {
+        id: editUser?.id ?? crypto.randomUUID(),
+        name: formData.name.trim(),
         username: formData.username.trim(),
-        divisi: formData.divisi,
-        tipeAkun: formData.tipeAkun,
+        email: formData.email.trim(),
+        division_id: formData.division_id,
         role: formData.role,
-        atasanTerkait: formData.atasanTerkait || undefined,
-        status: formData.status,
-        password: formData.password || undefined,
+        is_restrict: formData.is_restrict,
+        is_active: formData.is_active,
+        password: formData.password || editUser?.password,
       };
 
       if (editUser) {
         setUsers((prev) =>
-          prev.map((u) => (u.id === editUser.id ? { ...u, ...payload } : u)),
+          prev.map((user) => (user.id === editUser.id ? payload : user)),
         );
         showToast("User berhasil diupdate!", "success");
       } else {
-        const newUser: User = { id: Date.now(), ...payload };
-        setUsers((prev) => [...prev, newUser]);
+        setUsers((prev) => [...prev, payload]);
         showToast("User berhasil ditambahkan!", "success");
       }
 
@@ -205,13 +260,13 @@ export default function ManajemenUserPage() {
     }, 900);
   };
 
-  if (!isMaster) return null;
+  if (!isSuperAdmin) return null;
 
   return (
     <div className="animate-fade-in">
       <FeatureHeader
         title="Manajemen User"
-        subtitle="Kelola pengguna, role, dan tipe akun sistem"
+        subtitle="Kelola pengguna, role, dan akses restrict sistem"
         icon={<Users />}
       />
 
@@ -225,8 +280,8 @@ export default function ManajemenUserPage() {
           <p className="text-sm text-gray-500">User Aktif</p>
         </div>
         <div className="card p-4 text-center">
-          <p className="text-3xl font-bold text-gray-900">{stats.master}</p>
-          <p className="text-sm text-gray-500">Master User</p>
+          <p className="text-3xl font-bold text-gray-900">{stats.it}</p>
+          <p className="text-sm text-gray-500">User IT</p>
         </div>
         <div className="card p-4 text-center">
           <p className="text-3xl font-bold text-gray-900">{stats.restrict}</p>
@@ -248,8 +303,8 @@ export default function ManajemenUserPage() {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari berdasarkan nama, username, divisi, atau role..."
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Cari berdasarkan nama, username, email, divisi, atau role..."
                 className="input input-with-icon"
               />
             </div>
@@ -282,10 +337,10 @@ export default function ManajemenUserPage() {
                   Divisi
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Tipe Akun
+                  Role
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Role
+                  Akses Restrict
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Status
@@ -296,71 +351,58 @@ export default function ManajemenUserPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredUsers.map((u, idx) => {
-                const roleBadge =
-                  u.role === USER_ROLES.MASTER_USER
-                    ? "badge-danger"
-                    : u.role === USER_ROLES.FULL_AKSES
-                      ? "badge-success"
-                      : u.role === USER_ROLES.FUNGSI_LEGAL
-                        ? "badge-info"
-                        : "badge-warning";
-
-                return (
-                  <tr key={u.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {idx + 1}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                      {u.namaLengkap}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex rounded-md bg-gray-100 px-2 py-1 text-sm text-gray-800 tabular-nums">
-                        {u.username}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">
-                      {u.divisi}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-600">
-                      {u.tipeAkun}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`badge ${roleBadge}`}>
-                        {USER_ROLE_LABEL[u.role]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`badge ${u.status === "Aktif" ? "badge-success" : "badge-danger"}`}
+              {filteredUsers.map((user, index) => (
+                <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {index + 1}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                    {user.name}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                    {user.username}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700">
+                    {user.division_id}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={getRolePillClass(user.role)}>
+                      {ROLE_LABELS[user.role]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={getRestrictPillClass(user.is_restrict)}>
+                      {user.is_restrict ? "Ya" : "Tidak"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={getStatusPillClass(user.is_active)}>
+                      {user.is_active ? "Aktif" : "Nonaktif"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                        title="Edit"
                       >
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEdit(u)}
-                          className="rounded-lg p-2 transition-colors hover:bg-gray-100"
-                          title="Edit"
-                        >
-                          <Pencil
-                            className="w-4 h-4 text-gray-600"
-                            aria-hidden="true"
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(u)}
-                          className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                        <Pencil
+                          className="w-4 h-4 text-gray-600"
+                          aria-hidden="true"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user)}
+                        className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
               {filteredUsers.length === 0 && (
                 <tr>
                   <td
@@ -377,29 +419,49 @@ export default function ManajemenUserPage() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800">
-                {editUser ? "Edit User" : "Tambah User"}
-              </h2>
+        <div
+          data-dashboard-overlay="true"
+          className="fixed inset-0 p-4"
+          style={{
+            background: "rgba(0, 0, 0, 0.55)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {editUser ? "Edit User" : "Tambah User"}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Isi data akun pengguna sistem.
+                </p>
+              </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl"
+                className="btn btn-ghost btn-sm"
+                title="Tutup"
               >
-                <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nama Lengkap <span className="text-red-500">*</span>
                 </label>
                 <input
-                  value={formData.namaLengkap}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, namaLengkap: e.target.value }))
+                  value={formData.name}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, name: event.target.value }))
                   }
                   className="input"
                   placeholder="Masukkan nama lengkap"
@@ -407,13 +469,16 @@ export default function ManajemenUserPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Username <span className="text-red-500">*</span>
                 </label>
                 <input
                   value={formData.username}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, username: e.target.value }))
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      username: event.target.value,
+                    }))
                   }
                   className="input"
                   placeholder="Masukkan username"
@@ -421,121 +486,75 @@ export default function ManajemenUserPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, email: event.target.value }))
+                  }
+                  className="input"
+                  placeholder="Masukkan email"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Divisi <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.divisi}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, divisi: e.target.value }))
+                  value={formData.division_id}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      division_id: event.target.value,
+                    }))
                   }
                   className="select"
                 >
                   <option value="">Pilih divisi</option>
-                  {dummyDivisiList.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
+                  {dummyDivisiList.map((division) => (
+                    <option key={division} value={division}>
+                      {division}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tipe Akun <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.tipeAkun}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      tipeAkun: e.target.value as UserFormState["tipeAkun"],
-                    }))
-                  }
-                  className="select"
-                >
-                  <option value="Internal">Internal</option>
-                  <option value="Eksternal">Eksternal</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Role <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.role}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      role: e.target.value as UserRole,
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      role: event.target.value as Role,
                     }))
                   }
                   className="select"
                 >
-                  <option value={USER_ROLES.MASTER_USER}>
-                    {USER_ROLE_LABEL[USER_ROLES.MASTER_USER]}
-                  </option>
-                  <option value={USER_ROLES.FULL_AKSES}>
-                    {USER_ROLE_LABEL[USER_ROLES.FULL_AKSES]}
-                  </option>
-                  <option value={USER_ROLES.FUNGSI_LEGAL}>
-                    {USER_ROLE_LABEL[USER_ROLES.FUNGSI_LEGAL]}
-                  </option>
-                  <option value={USER_ROLES.AKSES_RESTRICT}>
-                    {USER_ROLE_LABEL[USER_ROLES.AKSES_RESTRICT]}
-                  </option>
+                  {ROLE_OPTIONS.map((roleOption) => (
+                    <option key={roleOption} value={roleOption}>
+                      {ROLE_LABELS[roleOption]}
+                    </option>
+                  ))}
                 </select>
-
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      Full Akses
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 mt-1">
-                      {formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
-                        ? "Ya"
-                        : "Tidak"}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      Fungsi Legal
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 mt-1">
-                      {formData.role === USER_ROLES.FUNGSI_LEGAL ||
-                      formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
-                        ? "Ya"
-                        : "Tidak"}
-                    </p>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      Akses Restrik Data
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 mt-1">
-                      {formData.role === USER_ROLES.AKSES_RESTRICT ||
-                      formData.role === USER_ROLES.FULL_AKSES ||
-                      formData.role === USER_ROLES.MASTER_USER
-                        ? "Ya"
-                        : "Tidak"}
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      status: e.target.value as UserFormState["status"],
+                  value={formData.is_active ? "Aktif" : "Nonaktif"}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      is_active: event.target.value === "Aktif",
                     }))
                   }
                   className="select"
@@ -544,35 +563,45 @@ export default function ManajemenUserPage() {
                   <option value="Nonaktif">Nonaktif</option>
                 </select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Atasan Terkait
-                </label>
-                <input
-                  value={formData.atasanTerkait}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      atasanTerkait: e.target.value,
-                    }))
-                  }
-                  className="input"
-                  placeholder="Opsional"
-                />
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Akses Restrict
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Centang jika user dapat melihat data restrict
+                    </p>
+                  </div>
+                  <UiverseCheckbox
+                    checked={formData.is_restrict}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, is_restrict: checked }))
+                    }
+                    disabled={!isSuperAdmin}
+                    label={formData.is_restrict ? "Ya" : "Tidak"}
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {editUser ? "Password (Opsional)" : "Password *"}
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password{" "}
+                  {editUser ? (
+                    <span className="text-gray-400">(Opsional)</span>
+                  ) : (
+                    <span className="text-red-500">*</span>
+                  )}
                 </label>
                 <input
                   type="password"
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, password: e.target.value }))
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: event.target.value,
+                    }))
                   }
                   className="input"
                   placeholder={
@@ -584,7 +613,7 @@ export default function ManajemenUserPage() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+            <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
                 className="btn btn-outline"
@@ -594,9 +623,10 @@ export default function ManajemenUserPage() {
               <button
                 onClick={handleSubmit}
                 disabled={
-                  !formData.namaLengkap ||
-                  !formData.username ||
-                  !formData.divisi ||
+                  !formData.name.trim() ||
+                  !formData.username.trim() ||
+                  !formData.email.trim() ||
+                  !formData.division_id ||
                   (!editUser && !formData.password) ||
                   isLoading
                 }
@@ -618,7 +648,7 @@ export default function ManajemenUserPage() {
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4" aria-hidden="true" />
+                    <Save className="w-4 h-4" aria-hidden="true" />
                     <span>Simpan</span>
                   </>
                 )}
@@ -630,7 +660,7 @@ export default function ManajemenUserPage() {
 
       {showDelete && deleteUser && (
         <div className="modal-overlay" onClick={() => setShowDelete(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(event) => event.stopPropagation()}>
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                 <Trash2 className="w-8 h-8 text-red-600" aria-hidden="true" />
@@ -640,7 +670,7 @@ export default function ManajemenUserPage() {
               </h3>
               <p className="text-gray-500 mb-6">
                 Apakah Anda yakin ingin menghapus user{" "}
-                <strong>{deleteUser.namaLengkap}</strong>?
+                <strong>{deleteUser.name}</strong>?
               </p>
               <div className="flex justify-center gap-3">
                 <button

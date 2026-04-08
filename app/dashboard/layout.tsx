@@ -311,6 +311,133 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     marginLeft: shouldOffsetMain ? `${sidebarWidth}px` : "0px",
     width: shouldOffsetMain ? `calc(100% - ${sidebarWidth}px)` : "100%",
   };
+  const canAccessMenuRoute = (href: string) =>
+    getDashboardRouteDecision(href, role).allowed;
+
+  const canViewArsipInput = canAccessMenuRoute(
+    "/dashboard/arsip-digital/input-dokumen",
+  );
+  const canViewArsipStorage = canAccessMenuRoute(
+    "/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan",
+  );
+  const canViewArsipJatuhTempo = canAccessMenuRoute(
+    "/dashboard/arsip-digital/ruang-arsip/jatuh-tempo",
+  );
+  const canViewDisposisiPengajuan = canAccessMenuRoute(
+    "/dashboard/arsip-digital/disposisi/pengajuan",
+  );
+  const canViewDisposisiPermintaan = canAccessMenuRoute(
+    "/dashboard/arsip-digital/disposisi/permintaan",
+  );
+  const canViewDisposisiHistoris = canAccessMenuRoute(
+    "/dashboard/arsip-digital/disposisi/historis",
+  );
+  const canViewPeminjamanRequest = canAccessMenuRoute(
+    "/dashboard/arsip-digital/peminjaman/request",
+  );
+  const canViewPeminjamanAccept = canAccessMenuRoute(
+    "/dashboard/arsip-digital/peminjaman/accept",
+  );
+  const canViewPeminjamanLaporan = canAccessMenuRoute(
+    "/dashboard/arsip-digital/peminjaman/laporan",
+  );
+  const canViewHistorisPenyimpanan = canAccessMenuRoute(
+    "/dashboard/arsip-digital/historis/penyimpanan",
+  );
+  const canViewHistorisPeminjaman = canAccessMenuRoute(
+    "/dashboard/arsip-digital/historis/peminjaman",
+  );
+  const canViewSuratMasuk = canAccessMenuRoute(
+    "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
+  );
+  const canViewSuratKeluar = canAccessMenuRoute(
+    "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
+  );
+  const canViewInputMemo = canAccessMenuRoute(
+    "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
+  );
+  const canViewSuratLaporan = canAccessMenuRoute(
+    "/dashboard/manajemen-surat/laporan",
+  );
+  const canViewSuratCetak = canAccessMenuRoute(
+    "/dashboard/manajemen-surat/cetak-dokumen",
+  );
+  const canViewDebiturList = canAccessMenuRoute("/dashboard/informasi-debitur");
+  const canViewProgressActionPlan = canAccessMenuRoute(
+    "/dashboard/informasi-debitur/marketing/action-plan",
+  );
+  const canViewProgressHasilKunjungan = canAccessMenuRoute(
+    "/dashboard/informasi-debitur/marketing/hasil-kunjungan",
+  );
+  const canViewProgressLangkah = canAccessMenuRoute(
+    "/dashboard/informasi-debitur/marketing/langkah-penanganan",
+  );
+  const canViewLegalCetak = canAccessMenuRoute("/dashboard/legal/cetak/akad");
+  const canViewLegalTitipan = canAccessMenuRoute(
+    "/dashboard/legal/titipan/asuransi",
+  );
+  const canViewLegalProgress = canAccessMenuRoute(
+    "/dashboard/legal/progress/notaris",
+  );
+  const canViewLegalUploadIdeb = canAccessMenuRoute(
+    "/dashboard/legal/upload-ideb",
+  );
+  const canViewLegalLaporan = canAccessMenuRoute("/dashboard/legal/laporan");
+  const canViewAdminTools = canAccessMenuRoute(
+    "/dashboard/informasi-debitur/admin/upload-slik",
+  );
+  const canViewParameter = canAccessMenuRoute(
+    "/dashboard/arsip-digital/parameter/tempat-penyimpanan",
+  );
+  const canViewUserManagement = canAccessMenuRoute("/dashboard/users");
+
+  const showArsipMenu =
+    canViewArsipInput ||
+    canViewArsipStorage ||
+    canViewDisposisiPengajuan ||
+    canViewDisposisiPermintaan ||
+    canViewDisposisiHistoris ||
+    canViewPeminjamanRequest ||
+    canViewPeminjamanAccept ||
+    canViewPeminjamanLaporan ||
+    canViewHistorisPenyimpanan ||
+    canViewHistorisPeminjaman;
+  const showRuangArsipMenu = canViewArsipStorage || canViewArsipJatuhTempo;
+  const showDisposisiMenu =
+    canViewDisposisiPengajuan ||
+    canViewDisposisiPermintaan ||
+    canViewDisposisiHistoris;
+  const showPeminjamanMenu =
+    canViewPeminjamanRequest ||
+    canViewPeminjamanAccept ||
+    canViewPeminjamanLaporan;
+  const showHistorisMenu =
+    canViewHistorisPenyimpanan || canViewHistorisPeminjaman;
+  const showSuratMenu =
+    canViewSuratMasuk ||
+    canViewSuratKeluar ||
+    canViewInputMemo ||
+    canViewSuratLaporan ||
+    canViewSuratCetak;
+  const showKelolaSuratMenu =
+    canViewSuratMasuk || canViewSuratKeluar || canViewInputMemo;
+  const showDebiturMenu =
+    canViewDebiturList ||
+    canViewProgressActionPlan ||
+    canViewProgressHasilKunjungan ||
+    canViewProgressLangkah;
+  const showMarketingMenu =
+    canViewProgressActionPlan ||
+    canViewProgressHasilKunjungan ||
+    canViewProgressLangkah;
+  const showLegalMenu =
+    canViewLegalCetak ||
+    canViewLegalTitipan ||
+    canViewLegalProgress ||
+    canViewLegalUploadIdeb ||
+    canViewLegalLaporan;
+  const showAdministratorSection =
+    canViewAdminTools || canViewParameter || canViewUserManagement;
 
   return (
     <div
@@ -403,530 +530,610 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <div className="sidebar-arsip-group">
-            <button
-              onClick={() => setMenuArsip(!menuArsip)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/arsip-digital"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Archive className="w-5 h-5" />
+          {showArsipMenu && (
+            <div className="sidebar-arsip-group">
+              <button
+                onClick={() => setMenuArsip(!menuArsip)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/arsip-digital"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Archive className="w-5 h-5" />
+                  {sidebarOpen && (
+                    <span className="font-bold">Arsip Digital</span>
+                  )}
+                </div>
                 {sidebarOpen && (
-                  <span className="font-bold">Arsip Digital</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuArsip ? "rotate-180" : ""}`}
+                  />
                 )}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuArsip ? "rotate-180" : ""}`}
-                />
+              </button>
+
+              {sidebarOpen && menuArsip && (
+                <div className="mt-1 space-y-0.5">
+                  {canViewArsipInput && (
+                    <ProtectedLink
+                      href="/dashboard/arsip-digital/input-dokumen"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/arsip-digital/input-dokumen") ? "active" : ""}`}
+                    >
+                      <FilePlus className="w-4 h-4" />
+                      <span>Input Dokumen</span>
+                    </ProtectedLink>
+                  )}
+
+                  {showRuangArsipMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuRuangArsip(!menuRuangArsip)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/ruang-arsip"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4" />
+                          <span>Ruang Arsip</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuRuangArsip ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {menuRuangArsip && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewArsipStorage && (
+                            <>
+                              <ProtectedLink
+                                href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
+                                className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan") ? "active" : ""}`}
+                              >
+                                <Archive
+                                  className="w-4 h-4"
+                                  aria-hidden="true"
+                                />
+                                <span>Tempat Penyimpanan</span>
+                              </ProtectedLink>
+                              <ProtectedLink
+                                href="/dashboard/arsip-digital/ruang-arsip/list-dokumen"
+                                className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/list-dokumen") ? "active" : ""}`}
+                              >
+                                <List className="w-4 h-4" aria-hidden="true" />
+                                <span>List Dokumen</span>
+                              </ProtectedLink>
+                            </>
+                          )}
+                          {canViewArsipJatuhTempo && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/ruang-arsip/jatuh-tempo"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/jatuh-tempo") ? "active" : ""}`}
+                            >
+                              <Clock className="w-4 h-4" aria-hidden="true" />
+                              <span>Jatuh Tempo</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showDisposisiMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuDisposisi(!menuDisposisi)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/disposisi"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ArrowLeftRight className="w-4 h-4" />
+                          <span>Disposisi</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuDisposisi ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {menuDisposisi && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewDisposisiPengajuan && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/disposisi/pengajuan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/pengajuan") ? "active" : ""}`}
+                            >
+                              <FilePlus className="w-4 h-4" aria-hidden="true" />
+                              <span>Pengajuan Disposisi</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewDisposisiPermintaan && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/disposisi/permintaan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/permintaan") ? "active" : ""}`}
+                            >
+                              <Inbox className="w-4 h-4" aria-hidden="true" />
+                              <span>Permintaan Disposisi</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewDisposisiHistoris && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/disposisi/historis"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/historis") ? "active" : ""}`}
+                            >
+                              <History className="w-4 h-4" aria-hidden="true" />
+                              <span>Historis Disposisi</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showPeminjamanMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuPeminjaman(!menuPeminjaman)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/peminjaman"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" />
+                          <span>Peminjaman Fisik</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuPeminjaman ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {menuPeminjaman && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewPeminjamanRequest && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/peminjaman/request"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/request") ? "active" : ""}`}
+                            >
+                              <Send className="w-4 h-4" aria-hidden="true" />
+                              <span>Request Peminjaman</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewPeminjamanAccept && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/peminjaman/accept"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/accept") ? "active" : ""}`}
+                            >
+                              <FileCheck className="w-4 h-4" aria-hidden="true" />
+                              <span>Accept Peminjaman</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewPeminjamanLaporan && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/peminjaman/laporan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/laporan") ? "active" : ""}`}
+                            >
+                              <BarChart2 className="w-4 h-4" aria-hidden="true" />
+                              <span>Laporan Peminjaman</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showHistorisMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuHistoris(!menuHistoris)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/historis"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <History className="w-4 h-4" />
+                          <span>Historis</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuHistoris ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {menuHistoris && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewHistorisPenyimpanan && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/historis/penyimpanan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/penyimpanan") ? "active" : ""}`}
+                            >
+                              <Archive className="w-4 h-4" aria-hidden="true" />
+                              <span>Historis Penyimpanan</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewHistorisPeminjaman && (
+                            <ProtectedLink
+                              href="/dashboard/arsip-digital/historis/peminjaman"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/peminjaman") ? "active" : ""}`}
+                            >
+                              <BookOpen className="w-4 h-4" aria-hidden="true" />
+                              <span>Historis Peminjaman</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
+            </div>
+          )}
 
-            {sidebarOpen && menuArsip && (
-              <div className="mt-1 space-y-0.5">
-                <ProtectedLink
-                  href="/dashboard/arsip-digital/input-dokumen"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/arsip-digital/input-dokumen") ? "active" : ""}`}
-                >
-                  <FilePlus className="w-4 h-4" />
-                  <span>Input Dokumen</span>
-                </ProtectedLink>
-
-                <div>
-                  <button
-                    onClick={() => setMenuRuangArsip(!menuRuangArsip)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/ruang-arsip"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-4 h-4" />
-                      <span>Ruang Arsip</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuRuangArsip ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuRuangArsip && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/tempat-penyimpanan") ? "active" : ""}`}
-                      >
-                        <Archive className="w-4 h-4" aria-hidden="true" />
-                        <span>Tempat Penyimpanan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/ruang-arsip/list-dokumen"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/ruang-arsip/list-dokumen") ? "active" : ""}`}
-                      >
-                        <List className="w-4 h-4" aria-hidden="true" />
-                        <span>List Dokumen</span>
-                      </ProtectedLink>
-                    </div>
+          {showSuratMenu && (
+            <div>
+              <button
+                onClick={() => setMenuSurat(!menuSurat)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/manajemen-surat"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5" />
+                  {sidebarOpen && (
+                    <span className="font-bold">Manajemen Surat</span>
                   )}
                 </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuDisposisi(!menuDisposisi)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/disposisi"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ArrowLeftRight className="w-4 h-4" />
-                      <span>Disposisi</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuDisposisi ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuDisposisi && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/disposisi/pengajuan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/pengajuan") ? "active" : ""}`}
-                      >
-                        <FilePlus className="w-4 h-4" aria-hidden="true" />
-                        <span>Pengajuan Disposisi</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/disposisi/permintaan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/permintaan") ? "active" : ""}`}
-                      >
-                        <Inbox className="w-4 h-4" aria-hidden="true" />
-                        <span>Permintaan Disposisi</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/disposisi/historis"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/disposisi/historis") ? "active" : ""}`}
-                      >
-                        <History className="w-4 h-4" aria-hidden="true" />
-                        <span>Historis Disposisi</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuPeminjaman(!menuPeminjaman)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/peminjaman"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      <span>Peminjaman Fisik</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuPeminjaman ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuPeminjaman && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/peminjaman/request"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/request") ? "active" : ""}`}
-                      >
-                        <Send className="w-4 h-4" aria-hidden="true" />
-                        <span>Request Peminjaman</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/peminjaman/accept"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/accept") ? "active" : ""}`}
-                      >
-                        <FileCheck className="w-4 h-4" aria-hidden="true" />
-                        <span>Accept Peminjaman</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/peminjaman/laporan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/peminjaman/laporan") ? "active" : ""}`}
-                      >
-                        <BarChart2 className="w-4 h-4" aria-hidden="true" />
-                        <span>Laporan Peminjaman</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuHistoris(!menuHistoris)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/historis"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <History className="w-4 h-4" />
-                      <span>Historis</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuHistoris ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuHistoris && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/historis/penyimpanan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/penyimpanan") ? "active" : ""}`}
-                      >
-                        <Archive className="w-4 h-4" aria-hidden="true" />
-                        <span>Historis Penyimpanan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/arsip-digital/historis/peminjaman"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/historis/peminjaman") ? "active" : ""}`}
-                      >
-                        <BookOpen className="w-4 h-4" aria-hidden="true" />
-                        <span>Historis Peminjaman</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              onClick={() => setMenuSurat(!menuSurat)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/manajemen-surat"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5" />
                 {sidebarOpen && (
-                  <span className="font-bold">Manajemen Surat</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuSurat ? "rotate-180" : ""}`}
+                  />
                 )}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuSurat ? "rotate-180" : ""}`}
-                />
-              )}
-            </button>
+              </button>
 
-            {sidebarOpen && menuSurat && (
-              <div className="mt-1 space-y-0.5">
-                <div>
-                  <button
-                    onClick={() => setMenuKelolaSurat(!menuKelolaSurat)}
-                    className={`sidebar-submenu-item w-full justify-between ${
-                      isActiveGroup([
-                        "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
-                        "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
-                        "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
-                      ])
-                        ? "active"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-4 h-4" />
-                      <span>Kelola Surat</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuKelolaSurat ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {menuKelolaSurat && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/manajemen-surat/kelola-surat/input-surat-masuk"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-masuk") ? "active" : ""}`}
+              {sidebarOpen && menuSurat && (
+                <div className="mt-1 space-y-0.5">
+                  {showKelolaSuratMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuKelolaSurat(!menuKelolaSurat)}
+                        className={`sidebar-submenu-item w-full justify-between ${
+                          isActiveGroup([
+                            "/dashboard/manajemen-surat/kelola-surat/input-surat-masuk",
+                            "/dashboard/manajemen-surat/kelola-surat/input-surat-keluar",
+                            "/dashboard/manajemen-surat/kelola-surat/input-memorandum",
+                          ])
+                            ? "active"
+                            : ""
+                        }`}
                       >
-                        <Inbox className="w-4 h-4" />
-                        <span>Input Surat Masuk</span>
-                      </ProtectedLink>
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4" />
+                          <span>Kelola Surat</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuKelolaSurat ? "rotate-180" : ""}`}
+                        />
+                      </button>
 
-                      <ProtectedLink
-                        href="/dashboard/manajemen-surat/kelola-surat/input-surat-keluar"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-keluar") ? "active" : ""}`}
-                      >
-                        <Send className="w-4 h-4" />
-                        <span>Input Surat Keluar</span>
-                      </ProtectedLink>
+                      {menuKelolaSurat && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewSuratMasuk && (
+                            <ProtectedLink
+                              href="/dashboard/manajemen-surat/kelola-surat/input-surat-masuk"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-masuk") ? "active" : ""}`}
+                            >
+                              <Inbox className="w-4 h-4" />
+                              <span>Input Surat Masuk</span>
+                            </ProtectedLink>
+                          )}
 
-                      <ProtectedLink
-                        href="/dashboard/manajemen-surat/kelola-surat/input-memorandum"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-memorandum") ? "active" : ""}`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>Input Memorandum</span>
-                      </ProtectedLink>
+                          {canViewSuratKeluar && (
+                            <ProtectedLink
+                              href="/dashboard/manajemen-surat/kelola-surat/input-surat-keluar"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-surat-keluar") ? "active" : ""}`}
+                            >
+                              <Send className="w-4 h-4" />
+                              <span>Input Surat Keluar</span>
+                            </ProtectedLink>
+                          )}
+
+                          {canViewInputMemo && (
+                            <ProtectedLink
+                              href="/dashboard/manajemen-surat/kelola-surat/input-memorandum"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/manajemen-surat/kelola-surat/input-memorandum") ? "active" : ""}`}
+                            >
+                              <FileText className="w-4 h-4" />
+                              <span>Input Memorandum</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
+
+                  {canViewSuratLaporan && (
+                    <ProtectedLink
+                      href="/dashboard/manajemen-surat/laporan"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/laporan") ? "active" : ""}`}
+                    >
+                      <List className="w-4 h-4" />
+                      <span>Laporan Persuratan</span>
+                    </ProtectedLink>
+                  )}
+
+                  {canViewSuratCetak && (
+                    <ProtectedLink
+                      href="/dashboard/manajemen-surat/cetak-dokumen"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/cetak-dokumen") ? "active" : ""}`}
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span>Cetak Dokumen</span>
+                    </ProtectedLink>
+                  )}
                 </div>
+              )}
+            </div>
+          )}
 
-                <ProtectedLink
-                  href="/dashboard/manajemen-surat/laporan"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/laporan") ? "active" : ""}`}
-                >
-                  <List className="w-4 h-4" />
-                  <span>Laporan Persuratan</span>
-                </ProtectedLink>
-
-                <ProtectedLink
-                  href="/dashboard/manajemen-surat/cetak-dokumen"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/manajemen-surat/cetak-dokumen") ? "active" : ""}`}
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Cetak Dokumen</span>
-                </ProtectedLink>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              onClick={() => setMenuDebitur(!menuDebitur)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/informasi-debitur"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5" />
+          {showDebiturMenu && (
+            <div>
+              <button
+                onClick={() => setMenuDebitur(!menuDebitur)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/informasi-debitur"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5" />
+                  {sidebarOpen && (
+                    <span className="font-bold">Informasi Debitur</span>
+                  )}
+                </div>
                 {sidebarOpen && (
-                  <span className="font-bold">Informasi Debitur</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuDebitur ? "rotate-180" : ""}`}
+                  />
                 )}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuDebitur ? "rotate-180" : ""}`}
-                />
-              )}
-            </button>
+              </button>
 
-            {sidebarOpen && menuDebitur && (
-              <div className="mt-1 space-y-0.5">
-                <ProtectedLink
-                  href="/dashboard/informasi-debitur"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/informasi-debitur") ? "active" : ""}`}
-                >
-                  <List className="w-4 h-4" />
-                  <span>List Debitur</span>
-                </ProtectedLink>
+              {sidebarOpen && menuDebitur && (
+                <div className="mt-1 space-y-0.5">
+                  {canViewDebiturList && (
+                    <ProtectedLink
+                      href="/dashboard/informasi-debitur"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/informasi-debitur") ? "active" : ""}`}
+                    >
+                      <List className="w-4 h-4" />
+                      <span>List Debitur</span>
+                    </ProtectedLink>
+                  )}
 
-                <div>
-                  <button
-                    onClick={() => setMenuMarketing(!menuMarketing)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/marketing"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ClipboardCheck className="w-4 h-4" />
-                      <span>Input Progress</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuMarketing ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {menuMarketing && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/marketing/action-plan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/action-plan") ? "active" : ""}`}
+                  {showMarketingMenu && (
+                    <div>
+                      <button
+                        onClick={() => setMenuMarketing(!menuMarketing)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/marketing"]) ? "active" : ""}`}
                       >
-                        <ClipboardCheck className="w-4 h-4" />
-                        <span>Input Action Plan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/marketing/hasil-kunjungan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/hasil-kunjungan") ? "active" : ""}`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>Input Hasil Kunjungan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/informasi-debitur/marketing/langkah-penanganan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/langkah-penanganan") ? "active" : ""}`}
-                      >
-                        <ClipboardList className="w-4 h-4" />
-                        <span>Input Langkah Penanganan</span>
-                      </ProtectedLink>
+                        <div className="flex items-center gap-2">
+                          <ClipboardCheck className="w-4 h-4" />
+                          <span>Input Progress</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuMarketing ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                      {menuMarketing && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          {canViewProgressActionPlan && (
+                            <ProtectedLink
+                              href="/dashboard/informasi-debitur/marketing/action-plan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/action-plan") ? "active" : ""}`}
+                            >
+                              <ClipboardCheck className="w-4 h-4" />
+                              <span>Input Action Plan</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewProgressHasilKunjungan && (
+                            <ProtectedLink
+                              href="/dashboard/informasi-debitur/marketing/hasil-kunjungan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/hasil-kunjungan") ? "active" : ""}`}
+                            >
+                              <FileText className="w-4 h-4" />
+                              <span>Input Hasil Kunjungan</span>
+                            </ProtectedLink>
+                          )}
+                          {canViewProgressLangkah && (
+                            <ProtectedLink
+                              href="/dashboard/informasi-debitur/marketing/langkah-penanganan"
+                              className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/marketing/langkah-penanganan") ? "active" : ""}`}
+                            >
+                              <ClipboardList className="w-4 h-4" />
+                              <span>Input Langkah Penanganan</span>
+                            </ProtectedLink>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+          )}
 
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              onClick={() => setMenuLegal(!menuLegal)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/legal"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Scale className="w-5 h-5" aria-hidden="true" />
+          {showLegalMenu && (
+            <div>
+              <button
+                onClick={() => setMenuLegal(!menuLegal)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/legal"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Scale className="w-5 h-5" aria-hidden="true" />
+                  {sidebarOpen && (
+                    <span className="font-bold">Manajemen Legal</span>
+                  )}
+                </div>
                 {sidebarOpen && (
-                  <span className="font-bold">Manajemen Legal</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuLegal ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
                 )}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuLegal ? "rotate-180" : ""}`}
-                  aria-hidden="true"
-                />
+              </button>
+
+              {sidebarOpen && menuLegal && (
+                <div className="mt-1 space-y-0.5">
+                  {canViewLegalCetak && (
+                    <div>
+                      <button
+                        onClick={() => setMenuCetakDokumen(!menuCetakDokumen)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/cetak"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Printer className="w-4 h-4" aria-hidden="true" />
+                          <span>Cetak Dokumen Legal</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuCetakDokumen ? "rotate-180" : ""}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                      {menuCetakDokumen && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/akad"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
+                          >
+                            <FileText className="w-4 h-4" aria-hidden="true" />
+                            <span>Dokumen Akad</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/haftsheet"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
+                          >
+                            <FileCheck className="w-4 h-4" aria-hidden="true" />
+                            <span>Haftsheet</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/surat-peringatan"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
+                          >
+                            <Mail className="w-4 h-4" aria-hidden="true" />
+                            <span>Surat Peringatan</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/formulir-asuransi"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
+                          >
+                            <Shield className="w-4 h-4" aria-hidden="true" />
+                            <span>Formulir Asuransi</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/keterangan-lunas"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
+                          >
+                            <Award className="w-4 h-4" aria-hidden="true" />
+                            <span>Surat Keterangan Lunas</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/cetak/surat-samsat"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
+                          >
+                            <Car className="w-4 h-4" aria-hidden="true" />
+                            <span>Surat Samsat</span>
+                          </ProtectedLink>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {canViewLegalTitipan && (
+                    <div>
+                      <button
+                        onClick={() => setMenuDataTitipan(!menuDataTitipan)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/titipan"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Wallet className="w-4 h-4" aria-hidden="true" />
+                          <span>Dana Titipan</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuDataTitipan ? "rotate-180" : ""}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                      {menuDataTitipan && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          <ProtectedLink
+                            href="/dashboard/legal/titipan/asuransi"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/asuransi") ? "active" : ""}`}
+                          >
+                            <Shield className="w-4 h-4" aria-hidden="true" />
+                            <span>Dana Titipan Asuransi</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/titipan/notaris"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/notaris") ? "active" : ""}`}
+                          >
+                            <Scale className="w-4 h-4" aria-hidden="true" />
+                            <span>Dana Titipan Notaris</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/titipan/angsuran"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/angsuran") ? "active" : ""}`}
+                          >
+                            <Wallet className="w-4 h-4" aria-hidden="true" />
+                            <span>Dana Titipan Angsuran</span>
+                          </ProtectedLink>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {canViewLegalProgress && (
+                    <div>
+                      <button
+                        onClick={() => setMenuInputProgress(!menuInputProgress)}
+                        className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/progress"]) ? "active" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
+                          <span>Input Progres PHK3</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform duration-300 ${menuInputProgress ? "rotate-180" : ""}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                      {menuInputProgress && (
+                        <div className="ml-1 mt-0.5 space-y-0.5">
+                          <ProtectedLink
+                            href="/dashboard/legal/progress/notaris"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/notaris") ? "active" : ""}`}
+                          >
+                            <Scale className="w-4 h-4" aria-hidden="true" />
+                            <span>Progress Notaris</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/progress/asuransi"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/asuransi") ? "active" : ""}`}
+                          >
+                            <Shield className="w-4 h-4" aria-hidden="true" />
+                            <span>Progress Asuransi</span>
+                          </ProtectedLink>
+                          <ProtectedLink
+                            href="/dashboard/legal/progress/klaim"
+                            className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/klaim") ? "active" : ""}`}
+                          >
+                            <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                            <span>Tracking Claim Asuransi</span>
+                          </ProtectedLink>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {canViewLegalUploadIdeb && (
+                    <ProtectedLink
+                      href="/dashboard/legal/upload-ideb"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/legal/upload-ideb") ? "active" : ""}`}
+                    >
+                      <FileUp className="w-4 h-4" aria-hidden="true" />
+                      <span>Upload Ideb</span>
+                    </ProtectedLink>
+                  )}
+                  {canViewLegalLaporan && (
+                    <ProtectedLink
+                      href="/dashboard/legal/laporan"
+                      className={`sidebar-submenu-item ${isActive("/dashboard/legal/laporan") ? "active" : ""}`}
+                    >
+                      <BarChart2 className="w-4 h-4" aria-hidden="true" />
+                      <span>Laporan Legal</span>
+                    </ProtectedLink>
+                  )}
+                </div>
               )}
-            </button>
+            </div>
+          )}
 
-            {sidebarOpen && menuLegal && (
-              <div className="mt-1 space-y-0.5">
-                <div>
-                  <button
-                    onClick={() => setMenuCetakDokumen(!menuCetakDokumen)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/cetak"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Printer className="w-4 h-4" aria-hidden="true" />
-                      <span>Cetak Dokumen Legal</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuCetakDokumen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {menuCetakDokumen && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/akad"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/akad") ? "active" : ""}`}
-                      >
-                        <FileText className="w-4 h-4" aria-hidden="true" />
-                        <span>Dokumen Akad</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/haftsheet"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/haftsheet") ? "active" : ""}`}
-                      >
-                        <FileCheck className="w-4 h-4" aria-hidden="true" />
-                        <span>Haftsheet</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/surat-peringatan"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-peringatan") ? "active" : ""}`}
-                      >
-                        <Mail className="w-4 h-4" aria-hidden="true" />
-                        <span>Surat Peringatan</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/formulir-asuransi"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/formulir-asuransi") ? "active" : ""}`}
-                      >
-                        <Shield className="w-4 h-4" aria-hidden="true" />
-                        <span>Formulir Asuransi</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/keterangan-lunas"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/keterangan-lunas") ? "active" : ""}`}
-                      >
-                        <Award className="w-4 h-4" aria-hidden="true" />
-                        <span>Surat Keterangan Lunas</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/cetak/surat-samsat"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/cetak/surat-samsat") ? "active" : ""}`}
-                      >
-                        <Car className="w-4 h-4" aria-hidden="true" />
-                        <span>Surat Samsat</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuDataTitipan(!menuDataTitipan)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/titipan"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4" aria-hidden="true" />
-                      <span>Dana Titipan</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuDataTitipan ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {menuDataTitipan && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/legal/titipan/asuransi"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/asuransi") ? "active" : ""}`}
-                      >
-                        <Shield className="w-4 h-4" aria-hidden="true" />
-                        <span>Dana Titipan Asuransi</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/titipan/notaris"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/notaris") ? "active" : ""}`}
-                      >
-                        <Scale className="w-4 h-4" aria-hidden="true" />
-                        <span>Dana Titipan Notaris</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/titipan/angsuran"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/titipan/angsuran") ? "active" : ""}`}
-                      >
-                        <Wallet className="w-4 h-4" aria-hidden="true" />
-                        <span>Dana Titipan Angsuran</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => setMenuInputProgress(!menuInputProgress)}
-                    className={`sidebar-submenu-item w-full justify-between ${isActiveGroup(["/legal/progress"]) ? "active" : ""}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
-                      <span>Input Progres PHK3</span>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 transition-transform duration-300 ${menuInputProgress ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {menuInputProgress && (
-                    <div className="ml-1 mt-0.5 space-y-0.5">
-                      <ProtectedLink
-                        href="/dashboard/legal/progress/notaris"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/notaris") ? "active" : ""}`}
-                      >
-                        <Scale className="w-4 h-4" aria-hidden="true" />
-                        <span>Progress Notaris</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/progress/asuransi"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/asuransi") ? "active" : ""}`}
-                      >
-                        <Shield className="w-4 h-4" aria-hidden="true" />
-                        <span>Progress Asuransi</span>
-                      </ProtectedLink>
-                      <ProtectedLink
-                        href="/dashboard/legal/progress/klaim"
-                        className={`sidebar-submenu-item text-xs ${isActive("/dashboard/legal/progress/klaim") ? "active" : ""}`}
-                      >
-                        <AlertCircle className="w-4 h-4" aria-hidden="true" />
-                        <span>Tracking Claim Asuransi</span>
-                      </ProtectedLink>
-                    </div>
-                  )}
-                </div>
-
-                <ProtectedLink
-                  href="/dashboard/legal/upload-ideb"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/upload-ideb") ? "active" : ""}`}
-                >
-                  <FileUp className="w-4 h-4" aria-hidden="true" />
-                  <span>Upload Ideb</span>
-                </ProtectedLink>
-                <ProtectedLink
-                  href="/dashboard/legal/laporan"
-                  className={`sidebar-submenu-item ${isActive("/dashboard/legal/laporan") ? "active" : ""}`}
-                >
-                  <BarChart2 className="w-4 h-4" aria-hidden="true" />
-                  <span>Laporan Legal</span>
-                </ProtectedLink>
-              </div>
-            )}
-          </div>
-
-          {sidebarOpen && (
+          {sidebarOpen && showAdministratorSection && (
             <div className="mx-0 my-2 border-t border-white/10">
               <span className="block px-4 py-2 text-xs text-white/50 uppercase tracking-wider font-semibold">
                 Administrator
@@ -934,84 +1141,90 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <div>
-            <button
-              onClick={() => setMenuAdmin(!menuAdmin)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/admin"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5" />
-                {sidebarOpen && <span className="font-bold">Admin</span>}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuAdmin ? "rotate-180" : ""}`}
-                />
+          {canViewAdminTools && (
+            <div>
+              <button
+                onClick={() => setMenuAdmin(!menuAdmin)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/informasi-debitur/admin"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5" />
+                  {sidebarOpen && <span className="font-bold">Admin</span>}
+                </div>
+                {sidebarOpen && (
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuAdmin ? "rotate-180" : ""}`}
+                  />
+                )}
+              </button>
+
+              {sidebarOpen && menuAdmin && (
+                <div className="mt-1 space-y-0.5">
+                  <ProtectedLink
+                    href="/dashboard/informasi-debitur/admin/upload-slik"
+                    className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Upload Data SLIK</span>
+                  </ProtectedLink>
+                  <ProtectedLink
+                    href="/dashboard/informasi-debitur/admin/upload-restrik"
+                    className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Upload Data Restrik</span>
+                  </ProtectedLink>
+                </div>
               )}
-            </button>
+            </div>
+          )}
 
-            {sidebarOpen && menuAdmin && (
-              <div className="mt-1 space-y-0.5">
-                <ProtectedLink
-                  href="/dashboard/informasi-debitur/admin/upload-slik"
-                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-slik") ? "active" : ""}`}
-                >
-                  <UploadCloud className="w-4 h-4" />
-                  <span>Upload Data SLIK</span>
-                </ProtectedLink>
-                <ProtectedLink
-                  href="/dashboard/informasi-debitur/admin/upload-restrik"
-                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/informasi-debitur/admin/upload-restrik") ? "active" : ""}`}
-                >
-                  <UploadCloud className="w-4 h-4" />
-                  <span>Upload Data Restrik</span>
-                </ProtectedLink>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              onClick={() => setMenuParameter(!menuParameter)}
-              className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/parameter"]) ? "active" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5" aria-hidden="true" />
-                {sidebarOpen && <span className="font-bold">Parameter</span>}
-              </div>
-              {sidebarOpen && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${menuParameter ? "rotate-180" : ""}`}
-                />
+          {canViewParameter && (
+            <div>
+              <button
+                onClick={() => setMenuParameter(!menuParameter)}
+                className={`sidebar-menu-item w-full justify-between ${isActiveGroup(["/parameter"]) ? "active" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5" aria-hidden="true" />
+                  {sidebarOpen && <span className="font-bold">Parameter</span>}
+                </div>
+                {sidebarOpen && (
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${menuParameter ? "rotate-180" : ""}`}
+                  />
+                )}
+              </button>
+              {sidebarOpen && menuParameter && (
+                <div className="mt-1 space-y-0.5">
+                  <ProtectedLink
+                    href="/dashboard/arsip-digital/parameter/tempat-penyimpanan"
+                    className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/tempat-penyimpanan") ? "active" : ""}`}
+                  >
+                    <FolderOpen className="w-4 h-4" aria-hidden="true" />
+                    <span>Setup Tempat Penyimpanan</span>
+                  </ProtectedLink>
+                  <ProtectedLink
+                    href="/dashboard/arsip-digital/parameter/jenis-dokumen"
+                    className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/jenis-dokumen") ? "active" : ""}`}
+                  >
+                    <FileText className="w-4 h-4" aria-hidden="true" />
+                    <span>Setup Jenis Dokumen</span>
+                  </ProtectedLink>
+                </div>
               )}
-            </button>
-            {sidebarOpen && menuParameter && (
-              <div className="mt-1 space-y-0.5">
-                <ProtectedLink
-                  href="/dashboard/arsip-digital/parameter/tempat-penyimpanan"
-                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/tempat-penyimpanan") ? "active" : ""}`}
-                >
-                  <FolderOpen className="w-4 h-4" aria-hidden="true" />
-                  <span>Setup Tempat Penyimpanan</span>
-                </ProtectedLink>
-                <ProtectedLink
-                  href="/dashboard/arsip-digital/parameter/jenis-dokumen"
-                  className={`sidebar-submenu-item text-xs ${isActive("/dashboard/arsip-digital/parameter/jenis-dokumen") ? "active" : ""}`}
-                >
-                  <FileText className="w-4 h-4" aria-hidden="true" />
-                  <span>Setup Jenis Dokumen</span>
-                </ProtectedLink>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <ProtectedLink
-            href="/dashboard/users"
-            className={`sidebar-menu-item ${isActive("/dashboard/users") ? "active" : ""}`}
-          >
-            <Users className="w-5 h-5" />
-            {sidebarOpen && <span className="font-bold">Manajemen User</span>}
-          </ProtectedLink>
+          {canViewUserManagement && (
+            <ProtectedLink
+              href="/dashboard/users"
+              className={`sidebar-menu-item ${isActive("/dashboard/users") ? "active" : ""}`}
+            >
+              <Users className="w-5 h-5" />
+              {sidebarOpen && <span className="font-bold">Manajemen User</span>}
+            </ProtectedLink>
+          )}
         </nav>
 
         <div
@@ -1027,14 +1240,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
               style={{ background: "rgba(255, 255, 255, 0.2)", flexShrink: 0 }}
             >
-              {user.namaLengkap.charAt(0)}
+              {user.name.charAt(0)}
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">
-                  {user.namaLengkap}
+                  {user.name}
                 </p>
-                <p className="text-xs text-white/70">{user.divisi}</p>
+                <p className="text-xs text-white/70">{user.division_id}</p>
               </div>
             )}
             <Link
@@ -1097,6 +1310,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   pathname.includes("ruang-arsip") &&
                   "Laporan Tempat Penyimpanan"}
                 {pathname.includes("list-dokumen") && "List Dokumen Digital"}
+                {pathname.includes("jatuh-tempo") &&
+                  "Dokumen Dipinjam Jatuh Tempo"}
                 {pathname.includes("disposisi/pengajuan") &&
                   "Pengajuan Disposisi"}
                 {pathname.includes("disposisi/permintaan") &&

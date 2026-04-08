@@ -108,7 +108,7 @@ export default function CetakSPPage() {
       noKontrak: selectedNasabah.noKontrak,
       namaNasabah: selectedNasabah.nama,
       detail: jenisSP,
-      user: "Faisal",
+      user: "Dwi",
     };
     setHistory([newHistory, ...history]);
     setCurrentPage(1);

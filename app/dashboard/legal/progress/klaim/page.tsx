@@ -178,7 +178,7 @@ export default function KlaimAsuransiPage() {
       tanggalPengajuan: formTanggalPengajuan,
       status: "Pengajuan",
       catatan: formCatatan,
-      userInput: "Faisal",
+      userInput: "Dwi",
       lampiranFilePath: formFile ? URL.createObjectURL(formFile) : undefined,
       lampiranFileName: formFile?.name,
       lampiranFileType: formFile ? "pdf" : undefined,

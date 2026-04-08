@@ -9,7 +9,7 @@ import type { ToastType } from "@/components/ui/Toast";
 import {
   RBAC_DENIED_MESSAGE,
   type RouteAccessDecision,
-  type UserRole,
+  type Role,
 } from "@/lib/rbac";
 
 export interface DenyBehavior {
@@ -36,7 +36,7 @@ export function useProtectedAction() {
 
   const ensureAllowed = useCallback(
     (
-      isAllowed: (role: UserRole) => boolean,
+      isAllowed: (role: Role) => boolean,
       behavior?: DenyBehavior,
     ): boolean => {
       if (status !== "authenticated" || !role) {
@@ -65,7 +65,7 @@ export function useProtectedAction() {
 
   const wrap = useCallback(
     <Args extends unknown[]>(
-      isAllowed: (role: UserRole) => boolean,
+      isAllowed: (role: Role) => boolean,
       action: (...args: Args) => void,
       behavior?: DenyBehavior,
     ) => {

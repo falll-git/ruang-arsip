@@ -125,7 +125,7 @@ export default function TitipanNotarisPage() {
       nominal,
       tanggalSetor: todayIsoDate(),
       status: "Belum Dibayar",
-      userInput: "Faisal",
+      userInput: "Dwi",
       keterangan: formKeterangan,
     };
     setData([newItem, ...data]);

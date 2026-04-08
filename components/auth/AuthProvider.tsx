@@ -9,8 +9,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { dummyUsers, type User } from "@/lib/data";
-import { USER_ROLES, type UserRole } from "@/lib/rbac";
+import { dummyUsers, type StoredUser, type User } from "@/lib/data";
+import { isRole, type Role } from "@/lib/rbac";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -29,7 +29,7 @@ type SignInResult = SignInResultSuccess | SignInResultFailure;
 interface AuthContextValue {
   status: AuthStatus;
   user: User | null;
-  role: UserRole | null;
+  role: Role | null;
   signIn: (
     username: string,
     password: string,
@@ -44,10 +44,16 @@ const PERSISTENT_STORAGE_KEY = "ruang-arsip.session.persisted.userId";
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function getUserById(id: number): User | null {
+function toPublicUser(user: StoredUser): User {
+  const { password, ...publicUser } = user;
+  void password;
+  return publicUser;
+}
+
+function getStoredUserById(id: string): StoredUser | null {
   const match = dummyUsers.find((u) => u.id === id);
   if (!match) return null;
-  if (match.status !== "Aktif") return null;
+  if (!match.is_active) return null;
   return match;
 }
 
@@ -55,12 +61,8 @@ function normalizeUsername(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function parseRole(role: unknown): UserRole | null {
-  if (role === USER_ROLES.FULL_AKSES) return USER_ROLES.FULL_AKSES;
-  if (role === USER_ROLES.FUNGSI_LEGAL) return USER_ROLES.FUNGSI_LEGAL;
-  if (role === USER_ROLES.AKSES_RESTRICT) return USER_ROLES.AKSES_RESTRICT;
-  if (role === USER_ROLES.MASTER_USER) return USER_ROLES.MASTER_USER;
-  return null;
+function parseRole(role: unknown): Role | null {
+  return isRole(role) ? role : null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -79,8 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.sessionStorage.getItem(SESSION_STORAGE_KEY) ??
         window.localStorage.getItem(PERSISTENT_STORAGE_KEY);
 
-      const id = raw ? Number.parseInt(raw, 10) : NaN;
-      const nextUser = Number.isFinite(id) ? getUserById(id) : null;
+      const nextStoredUser = raw ? getStoredUserById(raw) : null;
+      const nextUser = nextStoredUser ? toPublicUser(nextStoredUser) : null;
 
       if (!nextUser) {
         window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
@@ -108,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (u) => normalizeUsername(u.username) === normalized,
       );
       if (!match) return { ok: false, message: "Username atau password salah" };
-      if (match.status !== "Aktif")
+      if (!match.is_active)
         return { ok: false, message: "Akun tidak aktif" };
       if (!match.password || match.password !== password) {
         return { ok: false, message: "Username atau password salah" };
@@ -126,9 +128,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setUser(match);
+      const publicUser = toPublicUser(match);
+      setUser(publicUser);
       setStatus("authenticated");
-      return { ok: true, user: match };
+      return { ok: true, user: publicUser };
     },
     [],
   );

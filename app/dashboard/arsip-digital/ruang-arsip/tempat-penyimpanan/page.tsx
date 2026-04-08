@@ -19,33 +19,25 @@ import {
 import DokumenListModal from "@/components/arsip/DokumenListModal";
 import LemariGridModal from "@/components/arsip/LemariGridModal";
 import RakGridModal from "@/components/arsip/RakGridModal";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useArsipDigitalMasterData } from "@/components/arsip-digital/ArsipDigitalMasterDataProvider";
+import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
-import {
-  disposisiData,
-  dokumenArsipData,
-  kantorData,
-  lemariData,
-  peminjamanData,
-  rakData,
-} from "@/lib/data";
+import { buildArsipDigitalStorageData } from "@/lib/arsip-digital-storage";
+import { filterDigitalDocuments } from "@/lib/rbac";
 import { exportToExcel } from "@/lib/utils/exportExcel";
 import type { Kantor, Lemari, Rak } from "@/lib/types";
-import { parseDateString } from "@/lib/utils/date";
 
-const ACTIVE_DISPOSISI_STATUS = new Set(["PENDING", "PROSES"]);
 const HOVER_ROW_CLASS = "transition-colors hover:bg-gray-100";
 
 function startOfDay(value: Date) {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
-function isPastDate(value: string, today: Date) {
-  const parsed = parseDateString(value);
-  if (!parsed) return false;
-  return startOfDay(parsed) < today;
-}
-
 export default function TempatPenyimpananPage() {
+  const { role, user } = useAuth();
+  const { tempatPenyimpanan } = useArsipDigitalMasterData();
+  const { dokumen, disposisi, peminjaman } = useArsipDigitalWorkflow();
   const router = useRouter();
   const today = useMemo(() => startOfDay(new Date()), []);
   const [selectedKantor, setSelectedKantor] = useState<Kantor | null>(null);
@@ -53,67 +45,35 @@ export default function TempatPenyimpananPage() {
   const [selectedRak, setSelectedRak] = useState<Rak | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { kantorSummary } = useMemo(() => {
-    const lemariById = new Map(lemariData.map((item) => [item.id, item]));
-    const rakById = new Map(rakData.map((item) => [item.id, item]));
-    const totalDokumenByKantor = new Map<string, number>();
-    const jumlahLemariByKantor = new Map<string, number>();
-    const disposisiByKantor = new Map<string, number>();
-    const peminjamanByKantor = new Map<string, number>();
-    const jatuhTempoByKantor = new Map<string, number>();
+  const accessibleDokumen = useMemo(() => {
+    if (!role) return [];
+    return filterDigitalDocuments(user?.is_restrict ?? false, dokumen);
+  }, [dokumen, role, user?.is_restrict]);
 
-    lemariData.forEach((lemari) => {
-      jumlahLemariByKantor.set(
-        lemari.kantorId,
-        (jumlahLemariByKantor.get(lemari.kantorId) ?? 0) + 1,
-      );
-    });
+  const storageData = useMemo(
+    () =>
+      buildArsipDigitalStorageData({
+        tempatPenyimpanan,
+        dokumen: accessibleDokumen,
+        disposisi,
+        peminjaman,
+        today,
+      }),
+    [accessibleDokumen, disposisi, peminjaman, tempatPenyimpanan, today],
+  );
 
-    dokumenArsipData.forEach((dokumen) => {
-      const rak = rakById.get(dokumen.rakId);
-      const lemari = rak ? lemariById.get(rak.lemariId) : undefined;
-      if (!lemari) return;
-      totalDokumenByKantor.set(
-        lemari.kantorId,
-        (totalDokumenByKantor.get(lemari.kantorId) ?? 0) + 1,
-      );
-    });
-
-    disposisiData.forEach((item) => {
-      if (!ACTIVE_DISPOSISI_STATUS.has(item.status)) return;
-      const kantorId = lemariById.get(item.lemariId)?.kantorId;
-      if (!kantorId) return;
-      disposisiByKantor.set(kantorId, (disposisiByKantor.get(kantorId) ?? 0) + 1);
-    });
-
-    peminjamanData.forEach((item) => {
-      if (item.status !== "Dipinjam") return;
-      const kantorId = lemariById.get(item.lemariId)?.kantorId;
-      if (!kantorId) return;
-      peminjamanByKantor.set(
-        kantorId,
-        (peminjamanByKantor.get(kantorId) ?? 0) + 1,
-      );
-      if (isPastDate(item.tanggalKembali, today)) {
-        jatuhTempoByKantor.set(
-          kantorId,
-          (jatuhTempoByKantor.get(kantorId) ?? 0) + 1,
-        );
-      }
-    });
-
-    return {
-      kantorSummary: kantorData.map((kantor) => ({
-        id: kantor.id,
-        namaKantor: kantor.namaKantor,
-        totalDokumen: totalDokumenByKantor.get(kantor.id) ?? 0,
-        jumlahLemari: jumlahLemariByKantor.get(kantor.id) ?? 0,
-        dokumenDisposisi: disposisiByKantor.get(kantor.id) ?? 0,
-        dokumenDipinjam: peminjamanByKantor.get(kantor.id) ?? 0,
-        dokumenDipinjamJatuhTempo: jatuhTempoByKantor.get(kantor.id) ?? 0,
-      })),
-    };
-  }, [today]);
+  const kantorSummary = useMemo(() => {
+    return storageData.kantorList.map((kantor) => ({
+      id: kantor.id,
+      namaKantor: kantor.namaKantor,
+      totalDokumen: storageData.totalDokumenByKantor.get(kantor.id) ?? 0,
+      jumlahLemari: storageData.jumlahLemariByKantor.get(kantor.id) ?? 0,
+      dokumenDisposisi: storageData.disposisiByKantor.get(kantor.id) ?? 0,
+      dokumenDipinjam: storageData.peminjamanByKantor.get(kantor.id) ?? 0,
+      dokumenDipinjamJatuhTempo:
+        storageData.jatuhTempoByKantor.get(kantor.id) ?? 0,
+    }));
+  }, [storageData]);
 
   const filteredKantorSummary = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -126,25 +86,25 @@ export default function TempatPenyimpananPage() {
   const lemariList = useMemo(
     () =>
       selectedKantor
-        ? lemariData.filter((item) => item.kantorId === selectedKantor.id)
+        ? storageData.lemariList.filter((item) => item.kantorId === selectedKantor.id)
         : [],
-    [selectedKantor],
+    [selectedKantor, storageData.lemariList],
   );
 
   const rakList = useMemo(
     () =>
       selectedLemari
-        ? rakData.filter((item) => item.lemariId === selectedLemari.id)
+        ? storageData.rakList.filter((item) => item.lemariId === selectedLemari.id)
         : [],
-    [selectedLemari],
+    [selectedLemari, storageData.rakList],
   );
 
   const dokumenList = useMemo(
     () =>
       selectedRak
-        ? dokumenArsipData.filter((item) => item.rakId === selectedRak.id)
+        ? storageData.dokumenArsipList.filter((item) => item.rakId === selectedRak.id)
         : [],
-    [selectedRak],
+    [selectedRak, storageData.dokumenArsipList],
   );
 
   const handleExport = async () => {
@@ -367,6 +327,13 @@ export default function TempatPenyimpananPage() {
         <LemariGridModal
           kantor={selectedKantor}
           lemariList={lemariList}
+          rakList={storageData.rakList}
+          dokumenList={storageData.dokumenArsipList}
+          totalDokumenByLemariId={storageData.totalDokumenByLemariId}
+          jumlahRakByLemariId={storageData.jumlahRakByLemariId}
+          disposisiByLemariId={storageData.disposisiByLemariId}
+          dipinjamByLemariId={storageData.dipinjamByLemariId}
+          jatuhTempoByLemariId={storageData.jatuhTempoByLemariId}
           onSelectLemari={(lemari) => setSelectedLemari(lemari)}
           onClose={() => setSelectedKantor(null)}
         />

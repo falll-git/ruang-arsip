@@ -208,7 +208,7 @@ export interface ProgresPHK3Record {
 }
 
 export interface SuratUser {
-  id: number;
+  id: string;
   nama: string;
   divisi: string;
 }

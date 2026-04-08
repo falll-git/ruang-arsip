@@ -38,6 +38,22 @@ const formatPersonName = (value: string) =>
     .toLowerCase()
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
+const PILL_BASE_CLASS =
+  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold";
+
+function getDocumentStatusPillClass(status: string) {
+  switch (status) {
+    case "Tersedia":
+      return `${PILL_BASE_CLASS} border-emerald-200 bg-emerald-50 text-emerald-700`;
+    case "Dipinjam":
+      return `${PILL_BASE_CLASS} border-amber-200 bg-amber-50 text-amber-700`;
+    case "Diajukan":
+      return `${PILL_BASE_CLASS} border-blue-200 bg-blue-50 text-blue-700`;
+    default:
+      return `${PILL_BASE_CLASS} border-gray-200 bg-gray-100 text-gray-700`;
+  }
+}
+
 type DokumenRow = {
   id: number;
   kode: string;
@@ -59,7 +75,7 @@ type DokumenRow = {
 };
 
 export default function ListDokumenPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const { showToast } = useAppToast();
   const { openPreview } = useDocumentPreviewContext();
   const { tempatPenyimpanan, jenisDokumen } = useArsipDigitalMasterData();
@@ -107,8 +123,8 @@ export default function ListDokumenPage() {
 
   const accessibleDokumen = useMemo(() => {
     if (!role) return [] as typeof allDokumen;
-    return filterDigitalDocuments(role, allDokumen);
-  }, [allDokumen, role]);
+    return filterDigitalDocuments(user?.is_restrict ?? false, allDokumen);
+  }, [allDokumen, role, user?.is_restrict]);
 
   const historisPeminjaman = useMemo(() => {
     if (!selectedDoc) return [];
@@ -325,18 +341,7 @@ export default function ListDokumenPage() {
                       {formatPersonName(doc.userInput)}
                     </td>
                     <td className="px-6 py-4 text-sm text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${
-                            doc.statusPinjam === "Tersedia"
-                              ? "bg-green-100 text-green-800"
-                              : doc.statusPinjam === "Dipinjam"
-                                ? "bg-amber-100 text-amber-800"
-                                : doc.statusPinjam === "Diajukan"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
-                          }`}
-                      >
+                      <span className={getDocumentStatusPillClass(doc.statusPinjam)}>
                         {doc.statusPinjam}
                       </span>
                     </td>
@@ -469,15 +474,9 @@ export default function ListDokumenPage() {
                     </label>
                     <div className="mt-2">
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium
-                          ${
-                            selectedDoc.statusPinjam === "Tersedia"
-                              ? "bg-green-100 text-green-700"
-                              : selectedDoc.statusPinjam === "Diajukan"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-amber-100 text-amber-700"
-                          }
-                        `}
+                        className={getDocumentStatusPillClass(
+                          selectedDoc.statusPinjam,
+                        )}
                       >
                         {selectedDoc.statusPinjam}
                       </span>

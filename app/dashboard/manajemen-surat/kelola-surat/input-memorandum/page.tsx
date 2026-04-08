@@ -44,7 +44,7 @@ export default function InputMemorandumPage() {
     keteranganMemo: "",
   });
 
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -61,7 +61,7 @@ export default function InputMemorandumPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUserToggle = (userId: number) => {
+  const handleUserToggle = (userId: string) => {
     setSelectedUsers((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
