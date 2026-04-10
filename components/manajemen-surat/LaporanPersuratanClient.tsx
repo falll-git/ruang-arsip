@@ -26,12 +26,16 @@ import DetailModal, {
   DetailSection,
 } from "@/components/marketing/DetailModal";
 import DocumentViewButton from "@/components/manajemen-surat/DocumentViewButton";
+import SuratMasukDisposisiModal from "@/components/manajemen-surat/SuratMasukDisposisiModal";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useAppToast } from "@/components/ui/AppToastProvider";
 import { Button } from "@/components/ui/button";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import {
   dummyMemorandum,
   dummySuratKeluar,
   dummySuratMasuk,
+  dummySuratUsers,
   dummyUsers,
   type Memorandum,
   type SuratKeluar,
@@ -243,15 +247,58 @@ function summarize(values: string[], limit = 2) {
   return `${values.slice(0, limit).join(", ")} +${values.length - limit}`;
 }
 
-const suratMasukRecords: SuratMasukRecord[] = sortByDate(
-  dummySuratMasuk.map((record) => ({
+function formatSuratMasukStatus(status: SuratMasuk["status"]) {
+  return status === "DIDISPOSISI" ? "Didisposisi" : "Baru";
+}
+
+function normalizeSuratMasukRecord(record: SuratMasuk): SuratMasukRecord {
+  return {
     ...record,
     disposisiKepada: record.disposisiKepada.map((name) => normalizePersonName(name)),
+    disposisi_history: record.disposisi_history.map((item) => ({
+      ...item,
+      dari_user_nama: normalizePersonName(item.dari_user_nama),
+      ke_user_nama: normalizePersonName(item.ke_user_nama),
+    })),
     fileUrl: record.fileUrl ?? DEFAULT_FILE_URL,
-  })),
-  (record) => record.tanggalTerima,
-  "terbaru",
-);
+  };
+}
+
+function buildSuratMasukRecords() {
+  return sortByDate(
+    dummySuratMasuk.map((record) => normalizeSuratMasukRecord(record)),
+    (record) => record.tanggalTerima,
+    "terbaru",
+  );
+}
+
+function applyDisposisiToSuratMasuk(
+  record: SuratMasukRecord,
+  disposisiItem: SuratMasukRecord["disposisi_history"][number],
+): SuratMasukRecord {
+  return {
+    ...record,
+    disposisiKepada: [disposisiItem.ke_user_nama],
+    status: "DIDISPOSISI",
+    statusDisposisi:
+      record.statusDisposisi === "Pending" ? "Dalam Proses" : record.statusDisposisi,
+    disposisi_history: [disposisiItem, ...record.disposisi_history],
+  };
+}
+
+function SuratMasukStatusBadge({ status }: { status: SuratMasuk["status"] }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${
+        status === "DIDISPOSISI"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-blue-200 bg-blue-50 text-blue-700"
+      }`}
+    >
+      {formatSuratMasukStatus(status)}
+    </span>
+  );
+}
 
 const suratKeluarRecords: SuratKeluarRecord[] = sortByDate(
   dummySuratKeluar.map((record) => ({
@@ -331,6 +378,15 @@ function DetailButton({ onClick }: { onClick: () => void }) {
   return (
     <Button type="button" variant="outline" size="sm" onClick={onClick}>
       Detail
+    </Button>
+  );
+}
+
+function DisposisiButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button type="button" variant="outline" size="sm" onClick={onClick}>
+      <Send className="h-4 w-4" aria-hidden="true" />
+      Disposisi
     </Button>
   );
 }
@@ -450,16 +506,42 @@ function ReportSectionShell({
 
 export default function LaporanPersuratanClient() {
   const { openPreview } = useDocumentPreviewContext();
+  const { role, user } = useAuth();
+  const { showToast } = useAppToast();
   const [activeKind, setActiveKind] = useState<ReportKind | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [sortValue, setSortValue] = useState<SortValue>("terbaru");
   const [selectedDetail, setSelectedDetail] = useState<DetailState | null>(null);
+  const [suratMasukRecords, setSuratMasukRecords] = useState<SuratMasukRecord[]>(
+    () => buildSuratMasukRecords(),
+  );
+  const [activeDisposisiSuratId, setActiveDisposisiSuratId] = useState<number | null>(
+    null,
+  );
+  const [selectedDisposisiUserId, setSelectedDisposisiUserId] = useState("");
+  const [disposisiUserSearch, setDisposisiUserSearch] = useState("");
+  const [disposisiCatatan, setDisposisiCatatan] = useState("");
+  const [isDisposisiSubmitting, setIsDisposisiSubmitting] = useState(false);
   const reportRef = useRef<HTMLDivElement | null>(null);
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
+  const canDisposisiSuratMasuk = role !== null;
+  const disposisiUsers = useMemo(
+    () =>
+      dummySuratUsers.map((item) => ({
+        ...item,
+        nama: normalizePersonName(item.nama),
+      })),
+    [],
+  );
+  const activeDisposisiSurat = useMemo(
+    () =>
+      suratMasukRecords.find((record) => record.id === activeDisposisiSuratId) ?? null,
+    [activeDisposisiSuratId, suratMasukRecords],
+  );
   const tenggatStats = useMemo(
     () => ({
       suratMasuk: getTenggatStats(
@@ -478,7 +560,7 @@ export default function LaporanPersuratanClient() {
         today,
       ),
     }),
-    [today],
+    [suratMasukRecords, today],
   );
 
   const summaryCards: SummaryCardConfig[] = useMemo(
@@ -506,7 +588,7 @@ export default function LaporanPersuratanClient() {
             label: "Disposisi",
             value: `${new Set(
               suratMasukRecords
-                .filter((record) => record.statusDisposisi !== "Selesai")
+                .filter((record) => record.status === "DIDISPOSISI")
                 .flatMap((record) => record.disposisiKepada),
             ).size} User`,
           },
@@ -599,7 +681,7 @@ export default function LaporanPersuratanClient() {
         ],
       },
     ],
-    [tenggatStats],
+    [suratMasukRecords, tenggatStats],
   );
 
   useEffect(() => {
@@ -610,6 +692,17 @@ export default function LaporanPersuratanClient() {
       block: "start",
     });
   }, [activeKind]);
+
+  useEffect(() => {
+    if (typeof document === "undefined" || activeDisposisiSuratId === null) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [activeDisposisiSuratId]);
 
   const filteredSuratMasuk = useMemo(() => {
     const keyword = searchValue.trim().toLowerCase();
@@ -623,6 +716,7 @@ export default function LaporanPersuratanClient() {
           record.alamatPengirim,
           record.perihal,
           record.sifat,
+          formatSuratMasukStatus(record.status),
           record.disposisiKepada.join(" "),
         ]
           .join(" ")
@@ -633,7 +727,7 @@ export default function LaporanPersuratanClient() {
       (record) => record.tenggatWaktu,
       sortValue,
     );
-  }, [searchValue, sortValue]);
+  }, [searchValue, sortValue, suratMasukRecords]);
 
   const filteredSuratKeluar = useMemo(() => {
     const keyword = searchValue.trim().toLowerCase();
@@ -692,10 +786,95 @@ export default function LaporanPersuratanClient() {
     setSortValue("terbaru");
   };
 
+  const handleOpenDisposisiSidebar = (suratId: number) => {
+    if (!canDisposisiSuratMasuk) return;
+
+    setActiveDisposisiSuratId(suratId);
+    setSelectedDisposisiUserId("");
+    setDisposisiUserSearch("");
+    setDisposisiCatatan("");
+  };
+
+  const handleCloseDisposisiSidebar = () => {
+    if (isDisposisiSubmitting) return;
+    setActiveDisposisiSuratId(null);
+    setSelectedDisposisiUserId("");
+    setDisposisiUserSearch("");
+    setDisposisiCatatan("");
+  };
+
+  const handleSubmitDisposisi = () => {
+    if (!activeDisposisiSurat) return;
+
+    if (!selectedDisposisiUserId) {
+      showToast("Tujuan disposisi wajib dipilih!", "error");
+      return;
+    }
+
+    const recipient = disposisiUsers.find((item) => item.id === selectedDisposisiUserId);
+    if (!recipient) {
+      showToast("Tujuan disposisi tidak ditemukan!", "error");
+      return;
+    }
+
+    setIsDisposisiSubmitting(true);
+
+    window.setTimeout(() => {
+      const nextDisposisiItem: SuratMasukRecord["disposisi_history"][number] = {
+        id: `disp-surat-${activeDisposisiSurat.id}-${Date.now()}`,
+        surat_masuk_id: String(activeDisposisiSurat.id),
+        dari_user_id: user?.id ?? "system",
+        dari_user_nama: user?.name ?? "System",
+        ke_user_id: recipient.id,
+        ke_user_nama: recipient.nama,
+        catatan: disposisiCatatan.trim() ? disposisiCatatan.trim() : null,
+        created_at: new Date().toISOString(),
+        is_disposisi_ulang: activeDisposisiSurat.disposisi_history.length > 0,
+      };
+
+      let updatedRecord: SuratMasukRecord | null = null;
+
+      setSuratMasukRecords((prev) =>
+        prev.map((record) => {
+          if (record.id !== activeDisposisiSurat.id) return record;
+
+          const nextRecord = applyDisposisiToSuratMasuk(record, nextDisposisiItem);
+          updatedRecord = nextRecord;
+          return nextRecord;
+        }),
+      );
+
+      setSelectedDetail((prev) => {
+        if (
+          !prev ||
+          prev.kind !== "surat-masuk" ||
+          prev.record.id !== activeDisposisiSurat.id ||
+          !updatedRecord
+        ) {
+          return prev;
+        }
+
+        return {
+          kind: "surat-masuk",
+          record: updatedRecord,
+        };
+      });
+
+      setIsDisposisiSubmitting(false);
+      showToast(
+        nextDisposisiItem.is_disposisi_ulang
+          ? "Disposisi ulang berhasil dikirim!"
+          : "Disposisi berhasil dikirim!",
+        "success",
+      );
+      handleCloseDisposisiSidebar();
+    }, 450);
+  };
+
   return (
     <div className="mt-6 space-y-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {summaryCards.map((card) => {
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {summaryCards.map((card, index) => {
           const Icon = card.icon;
           const isActive = activeKind === card.kind;
 
@@ -704,30 +883,33 @@ export default function LaporanPersuratanClient() {
               key={card.kind}
               type="button"
               onClick={() => handleSelectCard(card.kind)}
-              className={`group rounded-2xl border bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+              className={`group animate-slide-up rounded-2xl border bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 isActive
                   ? "border-blue-200 ring-2 ring-blue-100"
                   : "border-gray-100 hover:border-blue-200"
               }`}
+              style={{ animationDelay: `${index * 0.08}s` }}
             >
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1d8fe1] to-[#0d5a8f] text-white shadow-md transition-transform duration-300 group-hover:scale-105">
-                  <Icon className="h-6 w-6" aria-hidden="true" />
+              <div className="mb-6 flex items-start gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1d8fe1] to-[#0d5a8f] text-white shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-110">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-gray-900">
+                      {card.title}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                    {card.totalLabel}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-800 tabular-nums">
-                    {card.totalValue}
-                  </p>
-                </div>
-              </div>
 
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {card.title}
-                </h3>
+                <div className="flex w-29.5 shrink-0 flex-col items-end text-right">
+                  <span className="mb-1 text-xs font-semibold uppercase leading-tight tracking-wider text-gray-400">
+                    {card.totalLabel}
+                  </span>
+                  <span className="text-2xl font-bold tabular-nums text-gray-800">
+                    {card.totalValue}
+                  </span>
+                </div>
               </div>
 
               <div className="rounded-xl bg-gray-50 p-4">
@@ -740,7 +922,7 @@ export default function LaporanPersuratanClient() {
                       className={index === 0 ? "" : "pt-3"}
                     >
                       {index > 0 ? <div className="mb-3 h-px w-full bg-gray-200" /> : null}
-                      <div className="flex items-center justify-between gap-3 text-sm">
+                      <div className="flex items-center justify-between gap-4 text-sm">
                         <span className="flex items-center gap-2 text-gray-500">
                           <RowIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
                           {row.label}
@@ -754,10 +936,10 @@ export default function LaporanPersuratanClient() {
                 })}
               </div>
 
-              <div className="mt-6 flex items-center justify-between text-sm font-medium text-primary-600">
+              <div className="mt-6 flex items-center justify-between text-sm font-medium text-primary-600 transition-transform group-hover:translate-x-1">
                 <span>{card.ctaLabel}</span>
                 <ChevronRight
-                  className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1"
+                  className="h-5 w-5"
                   aria-hidden="true"
                 />
               </div>
@@ -804,11 +986,14 @@ export default function LaporanPersuratanClient() {
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Disposisi
                       </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
+                        Status Surat
+                      </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-36">
                         Tenggat Waktu
                       </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-28">
-                        Status
+                        Status Tenggat
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
                         Keterangan
@@ -847,7 +1032,12 @@ export default function LaporanPersuratanClient() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-700">
-                          {record.disposisiKepada.join(", ")}
+                          {record.disposisiKepada.length > 0
+                            ? record.disposisiKepada.join(", ")
+                            : "—"}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <SuratMasukStatusBadge status={record.status} />
                         </td>
                         <td className="px-6 py-4 text-center">
                           {record.tenggatWaktu ? (
@@ -893,11 +1083,18 @@ export default function LaporanPersuratanClient() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <DetailButton
-                            onClick={() =>
-                              setSelectedDetail({ kind: "surat-masuk", record })
-                            }
-                          />
+                          <div className="flex items-center justify-center gap-2">
+                            <DetailButton
+                              onClick={() =>
+                                setSelectedDetail({ kind: "surat-masuk", record })
+                              }
+                            />
+                            {canDisposisiSuratMasuk ? (
+                              <DisposisiButton
+                                onClick={() => handleOpenDisposisiSidebar(record.id)}
+                              />
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1187,11 +1384,19 @@ export default function LaporanPersuratanClient() {
               <DetailRow label="Sifat Surat" value={selectedDetail.record.sifat} />
               <DetailRow
                 label="Disposisi Kepada"
-                value={selectedDetail.record.disposisiKepada.join(", ")}
+                value={
+                  selectedDetail.record.disposisiKepada.length > 0
+                    ? selectedDetail.record.disposisiKepada.join(", ")
+                    : "-"
+                }
               />
               <DetailRow
-                label="Status Disposisi"
-                value={selectedDetail.record.statusDisposisi}
+                label="Status Surat"
+                value={formatSuratMasukStatus(selectedDetail.record.status)}
+              />
+              <DetailRow
+                label="Keterangan"
+                value={selectedDetail.record.keteranganTenggat ?? "-"}
               />
             </DetailSection>
 
@@ -1294,6 +1499,21 @@ export default function LaporanPersuratanClient() {
           </div>
         ) : null}
       </DetailModal>
+
+      <SuratMasukDisposisiModal
+        surat={activeDisposisiSurat}
+        isOpen={activeDisposisiSurat !== null}
+        users={disposisiUsers}
+        selectedUserId={selectedDisposisiUserId}
+        userSearch={disposisiUserSearch}
+        catatan={disposisiCatatan}
+        isSubmitting={isDisposisiSubmitting}
+        onChangeSelectedUser={setSelectedDisposisiUserId}
+        onChangeUserSearch={setDisposisiUserSearch}
+        onChangeCatatan={setDisposisiCatatan}
+        onClose={handleCloseDisposisiSidebar}
+        onSubmit={handleSubmitDisposisi}
+      />
     </div>
   );
 }

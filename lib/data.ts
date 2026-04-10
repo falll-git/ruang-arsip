@@ -1321,6 +1321,20 @@ export interface SuratUser {
   divisi: string;
 }
 
+export type SuratMasukStatus = "BARU" | "DIDISPOSISI";
+
+export interface SuratDisposisi {
+  id: string;
+  surat_masuk_id: string;
+  dari_user_id: string;
+  dari_user_nama: string;
+  ke_user_id: string;
+  ke_user_nama: string;
+  catatan: string | null;
+  created_at: string;
+  is_disposisi_ulang: boolean;
+}
+
 export interface SuratMasuk {
   id: number;
   namaSurat: string;
@@ -1331,6 +1345,8 @@ export interface SuratMasuk {
   sifat: "Biasa" | "Rahasia";
   disposisiKepada: string[];
   statusDisposisi: "Pending" | "Dalam Proses" | "Selesai";
+  status: SuratMasukStatus;
+  disposisi_history: SuratDisposisi[];
   fileName: string;
   fileUrl?: string;
   tenggatWaktu?: string;
@@ -1380,10 +1396,12 @@ export const dummyDivisiList: string[] = [
   "Finance",
 ];
 
+// TODO: replace with real API /users
 export const dummySuratUsers: SuratUser[] = dummyUsers
   .filter((u) => u.is_active)
   .map((u) => ({ id: u.id, nama: u.name, divisi: u.division_id }));
 
+// TODO: replace with real API /letter-dispositions
 export const dummySuratMasuk: SuratMasuk[] = [
   {
     id: 1,
@@ -1393,8 +1411,22 @@ export const dummySuratMasuk: SuratMasuk[] = [
     perihal: "Penawaran Kerjasama IT",
     tanggalTerima: "22-01-2026",
     sifat: "Biasa",
-    disposisiKepada: ["ARYA", "DWI"],
+    disposisiKepada: ["Raka Legal"],
     statusDisposisi: "Dalam Proses",
+    status: "DIDISPOSISI",
+    disposisi_history: [
+      {
+        id: "disp-surat-001",
+        surat_masuk_id: "1",
+        dari_user_id: "user-admin",
+        dari_user_nama: "Sinta Admin",
+        ke_user_id: "user-legal",
+        ke_user_nama: "Raka Legal",
+        catatan: "Mohon review aspek legal kerja sama ini.",
+        created_at: "2026-01-22T09:15:00+07:00",
+        is_disposisi_ulang: false,
+      },
+    ],
     fileName: "surat_penawaran.pdf",
     tenggatWaktu: "2026-03-20",
     keteranganTenggat: "Segera tindak lanjuti surat ini",
@@ -1407,8 +1439,33 @@ export const dummySuratMasuk: SuratMasuk[] = [
     perihal: "Somasi Terkait Aset",
     tanggalTerima: "23-01-2026",
     sifat: "Rahasia",
-    disposisiKepada: ["DWI"],
+    disposisiKepada: ["Budi Manajer"],
     statusDisposisi: "Selesai",
+    status: "DIDISPOSISI",
+    disposisi_history: [
+      {
+        id: "disp-surat-002",
+        surat_masuk_id: "2",
+        dari_user_id: "user-admin",
+        dari_user_nama: "Sinta Admin",
+        ke_user_id: "user-legal",
+        ke_user_nama: "Raka Legal",
+        catatan: "Pelajari dokumen somasi dan siapkan tanggapan awal.",
+        created_at: "2026-01-23T10:00:00+07:00",
+        is_disposisi_ulang: false,
+      },
+      {
+        id: "disp-surat-003",
+        surat_masuk_id: "2",
+        dari_user_id: "user-legal",
+        dari_user_nama: "Raka Legal",
+        ke_user_id: "user-viewer",
+        ke_user_nama: "Budi Manajer",
+        catatan: "Mohon arahan manajemen untuk tindak lanjut somasi ini.",
+        created_at: "2026-01-23T13:20:00+07:00",
+        is_disposisi_ulang: true,
+      },
+    ],
     fileName: "surat_somasi.pdf",
     tenggatWaktu: "2026-02-28",
     keteranganTenggat: "Pastikan tindak lanjut sesuai arahan pimpinan",
@@ -1421,8 +1478,10 @@ export const dummySuratMasuk: SuratMasuk[] = [
     perihal: "Undangan Rapat Koordinasi",
     tanggalTerima: "25-01-2026",
     sifat: "Biasa",
-    disposisiKepada: ["RANI"],
+    disposisiKepada: [],
     statusDisposisi: "Pending",
+    status: "BARU",
+    disposisi_history: [],
     fileName: "surat_undangan.pdf",
   },
 ];

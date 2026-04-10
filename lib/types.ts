@@ -213,6 +213,20 @@ export interface SuratUser {
   divisi: string;
 }
 
+export type SuratMasukStatus = "BARU" | "DIDISPOSISI";
+
+export interface SuratDisposisi {
+  id: string;
+  surat_masuk_id: string;
+  dari_user_id: string;
+  dari_user_nama: string;
+  ke_user_id: string;
+  ke_user_nama: string;
+  catatan: string | null;
+  created_at: string;
+  is_disposisi_ulang: boolean;
+}
+
 export interface SuratMasuk {
   id: number;
   namaSurat: string;
@@ -223,6 +237,8 @@ export interface SuratMasuk {
   sifat: "Biasa" | "Rahasia";
   disposisiKepada: string[];
   statusDisposisi: "Pending" | "Dalam Proses" | "Selesai";
+  status: SuratMasukStatus;
+  disposisi_history: SuratDisposisi[];
   fileName: string;
   fileUrl?: string;
   tenggatWaktu?: string;
