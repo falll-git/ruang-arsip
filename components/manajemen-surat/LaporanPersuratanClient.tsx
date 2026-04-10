@@ -248,7 +248,24 @@ function summarize(values: string[], limit = 2) {
 }
 
 function formatSuratMasukStatus(status: SuratMasuk["status"]) {
-  return status === "DIDISPOSISI" ? "Didisposisi" : "Baru";
+  return status === "DIDISPOSISI" ? "Disposisi" : "Baru";
+}
+
+function formatSuratMasukBadgeStatus(status: SuratMasuk["status"]) {
+  return status === "DIDISPOSISI" ? "Disposisi" : "Baru";
+}
+
+function formatDetailTenggatValue(value: string | undefined) {
+  return value ? formatTenggatDate(value) : "-";
+}
+
+function formatDetailTenggatStatus(value: string | undefined, today: Date) {
+  const status = getTenggatStatus(value, today);
+  return status.variant === "none" ? "-" : status.label;
+}
+
+function formatJoinedNames(values: string[]) {
+  return values.length > 0 ? values.join(", ") : "-";
 }
 
 function normalizeSuratMasukRecord(record: SuratMasuk): SuratMasukRecord {
@@ -295,7 +312,7 @@ function SuratMasukStatusBadge({ status }: { status: SuratMasuk["status"] }) {
           : "border-blue-200 bg-blue-50 text-blue-700"
       }`}
     >
-      {formatSuratMasukStatus(status)}
+      {formatSuratMasukBadgeStatus(status)}
     </span>
   );
 }
@@ -341,7 +358,7 @@ const activeSectionConfig: Record<ReportKind, ActiveSectionConfig> = {
     title: "Daftar Memorandum",
     subtitle: "Klik dua kali pada baris untuk membuka detail memorandum.",
     icon: FileText,
-    searchPlaceholder: "Cari nomor memo, perihal, divisi, atau pembuat",
+    searchPlaceholder: "Cari nomor memo, perihal, divisi, pembuat, atau penerima",
   },
 };
 
@@ -742,7 +759,6 @@ export default function LaporanPersuratanClient() {
           record.perihal,
           record.media,
           record.sifat,
-          record.disposisiKepada.join(" "),
         ]
           .join(" ")
           .toLowerCase()
@@ -766,6 +782,7 @@ export default function LaporanPersuratanClient() {
           record.divisiPengirim,
           record.pembuatMemo,
           record.keterangan,
+          record.keteranganTenggat ?? "",
           record.penerima.join(" "),
         ]
           .join(" ")
@@ -975,6 +992,12 @@ export default function LaporanPersuratanClient() {
                         Nama Pengirim
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Alamat Pengirim
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Nama / Nomor Surat
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Perihal
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -1015,6 +1038,14 @@ export default function LaporanPersuratanClient() {
                         <td className="px-6 py-4 text-gray-500">{index + 1}</td>
                         <td className="px-6 py-4 font-semibold text-gray-900">
                           {record.pengirim}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          <p className="line-clamp-2 text-sm text-gray-600">
+                            {record.alamatPengirim}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          {record.namaSurat}
                         </td>
                         <td className="px-6 py-4 text-gray-700">{record.perihal}</td>
                         <td className="px-6 py-4 text-gray-600">
@@ -1117,6 +1148,12 @@ export default function LaporanPersuratanClient() {
                         Nama Penerima
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Alamat Penerima
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Nama / Nomor Surat
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Perihal
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -1154,6 +1191,14 @@ export default function LaporanPersuratanClient() {
                         <td className="px-6 py-4 text-gray-500">{index + 1}</td>
                         <td className="px-6 py-4 font-semibold text-gray-900">
                           {record.penerima}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          <p className="line-clamp-2 text-sm text-gray-600">
+                            {record.alamatPenerima}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-900">
+                          {record.namaSurat}
                         </td>
                         <td className="px-6 py-4 text-gray-700">{record.perihal}</td>
                         <td className="px-6 py-4 text-gray-600">
@@ -1251,6 +1296,9 @@ export default function LaporanPersuratanClient() {
                         Pembuat
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        Penerima
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Tanggal
                       </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap w-36">
@@ -1260,7 +1308,10 @@ export default function LaporanPersuratanClient() {
                         Status
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
-                        Keterangan
+                        Keterangan Memo
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-72">
+                        Keterangan Tenggat
                       </th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
                         Aksi
@@ -1288,6 +1339,11 @@ export default function LaporanPersuratanClient() {
                         </td>
                         <td className="px-6 py-4 font-semibold text-gray-900">
                           {record.pembuatMemo}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          <p className="line-clamp-2 text-sm text-gray-700">
+                            {formatJoinedNames(record.penerima)}
+                          </p>
                         </td>
                         <td className="px-6 py-4 text-gray-600">
                           {formatDisplayDate(record.tanggal)}
@@ -1325,6 +1381,11 @@ export default function LaporanPersuratanClient() {
                               </span>
                             );
                           })()}
+                        </td>
+                        <td className="px-6 py-4 align-top">
+                          <p className="line-clamp-2 text-sm text-gray-600">
+                            {record.keterangan}
+                          </p>
                         </td>
                         <td className="px-6 py-4 align-top">
                           {record.keteranganTenggat ? (
@@ -1376,14 +1437,14 @@ export default function LaporanPersuratanClient() {
                 label="Nama / Nomor Surat"
                 value={selectedDetail.record.namaSurat}
               />
-              <DetailRow label="Perihal Surat" value={selectedDetail.record.perihal} />
+              <DetailRow label="Perihal" value={selectedDetail.record.perihal} />
               <DetailRow
                 label="Tanggal Penerimaan"
                 value={formatDisplayDate(selectedDetail.record.tanggalTerima)}
               />
-              <DetailRow label="Sifat Surat" value={selectedDetail.record.sifat} />
+              <DetailRow label="Sifat" value={selectedDetail.record.sifat} />
               <DetailRow
-                label="Disposisi Kepada"
+                label="Disposisi"
                 value={
                   selectedDetail.record.disposisiKepada.length > 0
                     ? selectedDetail.record.disposisiKepada.join(", ")
@@ -1391,8 +1452,19 @@ export default function LaporanPersuratanClient() {
                 }
               />
               <DetailRow
+                label="Tenggat Waktu"
+                value={formatDetailTenggatValue(selectedDetail.record.tenggatWaktu)}
+              />
+              <DetailRow
                 label="Status Surat"
                 value={formatSuratMasukStatus(selectedDetail.record.status)}
+              />
+              <DetailRow
+                label="Status Tenggat"
+                value={formatDetailTenggatStatus(
+                  selectedDetail.record.tenggatWaktu,
+                  today,
+                )}
               />
               <DetailRow
                 label="Keterangan"
@@ -1424,19 +1496,27 @@ export default function LaporanPersuratanClient() {
                 label="Nama / Nomor Surat"
                 value={selectedDetail.record.namaSurat}
               />
-              <DetailRow label="Perihal Surat" value={selectedDetail.record.perihal} />
+              <DetailRow label="Perihal" value={selectedDetail.record.perihal} />
               <DetailRow
                 label="Tanggal Pengiriman"
                 value={formatDisplayDate(selectedDetail.record.tanggalKirim)}
               />
+              <DetailRow label="Media" value={selectedDetail.record.media} />
+              <DetailRow label="Sifat" value={selectedDetail.record.sifat} />
               <DetailRow
-                label="Media Pengiriman"
-                value={selectedDetail.record.media}
+                label="Tenggat Waktu"
+                value={formatDetailTenggatValue(selectedDetail.record.tenggatWaktu)}
               />
-              <DetailRow label="Sifat Surat" value={selectedDetail.record.sifat} />
               <DetailRow
-                label="Disposisi Kepada"
-                value={selectedDetail.record.disposisiKepada.join(", ")}
+                label="Status"
+                value={formatDetailTenggatStatus(
+                  selectedDetail.record.tenggatWaktu,
+                  today,
+                )}
+              />
+              <DetailRow
+                label="Keterangan"
+                value={selectedDetail.record.keteranganTenggat ?? "-"}
               />
             </DetailSection>
 
@@ -1456,22 +1536,12 @@ export default function LaporanPersuratanClient() {
           <div className="space-y-6">
             <DetailSection title="Informasi Memorandum">
               <DetailRow label="No Memo" value={selectedDetail.record.noMemo} />
+              <DetailRow label="Perihal" value={selectedDetail.record.perihal} />
+              <DetailRow label="Divisi" value={selectedDetail.record.divisiPengirim} />
+              <DetailRow label="Pembuat" value={selectedDetail.record.pembuatMemo} />
               <DetailRow
-                label="Divisi Pengirim"
-                value={selectedDetail.record.divisiPengirim}
-              />
-              <DetailRow
-                label="Pembuat Memo"
-                value={selectedDetail.record.pembuatMemo}
-              />
-              <DetailRow
-                label="Tanggal Memo"
-                value={formatDisplayDate(selectedDetail.record.tanggal)}
-              />
-              <DetailRow label="Perihal Memo" value={selectedDetail.record.perihal} />
-              <DetailRow
-                label="Keterangan Memo"
-                value={selectedDetail.record.keterangan}
+                label="Penerima"
+                value={formatJoinedNames(selectedDetail.record.penerima)}
               />
               <DetailRow
                 label="Tipe Penerima"
@@ -1482,8 +1552,24 @@ export default function LaporanPersuratanClient() {
                 }
               />
               <DetailRow
-                label="Penerima Memo"
-                value={selectedDetail.record.penerima.join(", ")}
+                label="Tanggal"
+                value={formatDisplayDate(selectedDetail.record.tanggal)}
+              />
+              <DetailRow
+                label="Tenggat Waktu"
+                value={formatDetailTenggatValue(selectedDetail.record.tenggatWaktu)}
+              />
+              <DetailRow
+                label="Status"
+                value={formatDetailTenggatStatus(
+                  selectedDetail.record.tenggatWaktu,
+                  today,
+                )}
+              />
+              <DetailRow label="Keterangan Memo" value={selectedDetail.record.keterangan} />
+              <DetailRow
+                label="Keterangan Tenggat"
+                value={selectedDetail.record.keteranganTenggat ?? "-"}
               />
             </DetailSection>
 

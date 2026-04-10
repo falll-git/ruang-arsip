@@ -33,16 +33,6 @@ function formatDateTimeDisplay(value: string) {
   }).format(parsed);
 }
 
-function getInitials(value: string) {
-  const parts = value.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "NA";
-
-  return parts
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 function ReadonlyField({
   label,
   value,
@@ -262,28 +252,23 @@ export default function SuratMasukDisposisiModal({
                       className="rounded-xl border border-gray-200 bg-white px-4 py-4"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold shrink-0">
-                            {getInitials(item.dari_user_nama)}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-900">
+                            <span className="truncate">{item.dari_user_nama}</span>
+                            <ArrowRight
+                              className="w-4 h-4 text-gray-400 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="truncate">{item.ke_user_nama}</span>
                           </div>
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-900">
-                              <span className="truncate">{item.dari_user_nama}</span>
-                              <ArrowRight
-                                className="w-4 h-4 text-gray-400 shrink-0"
-                                aria-hidden="true"
-                              />
-                              <span className="truncate">{item.ke_user_nama}</span>
-                            </div>
-                            {item.catatan ? (
-                              <p className="text-sm text-gray-600 mt-2">
-                                {item.catatan}
-                              </p>
-                            ) : null}
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-                              <UserRound className="w-3.5 h-3.5" aria-hidden="true" />
-                              <span>{formatDateTimeDisplay(item.created_at)}</span>
-                            </div>
+                          {item.catatan ? (
+                            <p className="mt-2 text-sm text-gray-600">
+                              {item.catatan}
+                            </p>
+                          ) : null}
+                          <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                            <UserRound className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span>{formatDateTimeDisplay(item.created_at)}</span>
                           </div>
                         </div>
                         <HistoryBadge isRedisposisi={item.is_disposisi_ulang} />
