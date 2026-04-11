@@ -13,10 +13,11 @@ import {
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
 import { formatDateDisplay } from "@/lib/utils/date";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
-import { filterDigitalDocuments } from "@/lib/rbac";
+import { filterDigitalDocuments, getDashboardRouteDecision } from "@/lib/rbac";
 
 const formatPersonName = (value: string) =>
   value
@@ -26,7 +27,12 @@ const formatPersonName = (value: string) =>
 export default function AcceptPeminjamanPage() {
   const { role, user } = useAuth();
   const { showToast } = useAppToast();
+  const { ensureRouteAllowed } = useProtectedAction();
   const { dokumen, peminjaman, processPeminjaman } = useArsipDigitalWorkflow();
+  const acceptPeminjamanDecision = getDashboardRouteDecision(
+    "/dashboard/arsip-digital/peminjaman/accept",
+    role,
+  );
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<
     {
@@ -91,12 +97,14 @@ export default function AcceptPeminjamanPage() {
     item: (typeof data)[0],
     type: "approve" | "reject",
   ) => {
+    if (!ensureRouteAllowed(acceptPeminjamanDecision)) return;
     setSelectedItem(item);
     setActionType(type);
     setShowModal(true);
   };
 
   const handleSubmit = () => {
+    if (!ensureRouteAllowed(acceptPeminjamanDecision)) return;
     if (!selectedItem || !actionType) return;
 
     const updated = processPeminjaman({

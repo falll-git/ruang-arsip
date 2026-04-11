@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, FileText, UserX } from "lucide-react";
 import {
   dummyDokumen,
@@ -15,10 +16,17 @@ import {
   getHasilKunjunganByDebiturId,
   getSuratPeringatanByDebiturId,
 } from "@/lib/data";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import KolBadge from "@/components/marketing/KolBadge";
+import {
+  RBAC_DENIED_MESSAGE,
+  filterDigitalDocuments,
+  getDashboardRouteDecision,
+} from "@/lib/rbac";
 import {
   formatInformasiDebiturDate,
   normalizeDebiturDocumentUrl,
@@ -78,11 +86,14 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function DetailFiturDebiturPage() {
+  const router = useRouter();
   const params = useParams<{
     id: string;
     feature: string;
     itemId: string;
   }>();
+  const { role, status, user } = useAuth();
+  const { showToast } = useAppToast();
   const { openPreview } = useDocumentPreviewContext();
 
   const debiturId = params.id;
@@ -90,6 +101,60 @@ export default function DetailFiturDebiturPage() {
   const itemId = params.itemId;
 
   const debitur = getDebiturById(debiturId);
+  const debiturNoKontrak = debitur?.noKontrak ?? "";
+  const featureAccessDecision = useMemo(() => {
+    if (!isFeatureType(feature)) {
+      return { allowed: false, reason: "UNKNOWN_ROUTE_DENIED" as const };
+    }
+
+    switch (feature) {
+      case "actionplan":
+        return getDashboardRouteDecision(
+          "/dashboard/informasi-debitur/marketing/action-plan",
+          role,
+        );
+      case "kunjungan":
+        return getDashboardRouteDecision(
+          "/dashboard/informasi-debitur/marketing/hasil-kunjungan",
+          role,
+        );
+      case "penanganan":
+        return getDashboardRouteDecision(
+          "/dashboard/informasi-debitur/marketing/langkah-penanganan",
+          role,
+        );
+      case "sp":
+        return getDashboardRouteDecision("/dashboard/legal/laporan", role);
+      case "historis":
+      default:
+        return { allowed: true, reason: "ALLOWED" as const };
+    }
+  }, [feature, role]);
+  const arsipDigitalTerkait =
+    status !== "authenticated" || !role || !debiturNoKontrak
+      ? []
+      : filterDigitalDocuments(
+          user?.is_restrict ?? false,
+          dummyDokumen.filter((doc) =>
+            doc.detail.toLowerCase().includes(debiturNoKontrak.toLowerCase()),
+          ),
+        );
+
+  useEffect(() => {
+    if (status !== "authenticated" || !debitur || !isFeatureType(feature)) return;
+    if (featureAccessDecision.allowed) return;
+
+    showToast(RBAC_DENIED_MESSAGE, "warning");
+    router.replace(`/dashboard/informasi-debitur/${debiturId}`);
+  }, [
+    debitur,
+    debiturId,
+    feature,
+    featureAccessDecision.allowed,
+    router,
+    showToast,
+    status,
+  ]);
 
   const normalizeFileUrl = (filePath: string) => {
     if (/^https?:\/\//i.test(filePath)) return filePath;
@@ -138,10 +203,6 @@ export default function DetailFiturDebiturPage() {
     (item) => item.id === itemId,
   );
 
-  const arsipDigitalTerkait = dummyDokumen.filter((doc) =>
-    doc.detail.toLowerCase().includes(debitur.noKontrak.toLowerCase()),
-  );
-
   const selectedItem =
     feature === "historis"
       ? historisItem
@@ -175,6 +236,10 @@ export default function DetailFiturDebiturPage() {
   }
 
   const headerKolColor = getKolektibilitasColor(debitur.kolektibilitas);
+
+  if (status !== "authenticated" || !featureAccessDecision.allowed) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">

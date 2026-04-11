@@ -17,6 +17,9 @@ import {
   getDebiturDocumentPreviewType,
   normalizeDebiturDocumentUrl,
 } from "@/lib/utils/informasi-debitur";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { getDashboardRouteDecision } from "@/lib/rbac";
 import { Button } from "@/components/ui/button";
 import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import TambahDokumenModal, {
@@ -293,7 +296,14 @@ export default function DokumenDebiturSection({
   debiturId: string;
   initialDocuments: DokumenDebitur[];
 }) {
+  const { role } = useAuth();
+  const { ensureRouteAllowed } = useProtectedAction();
   const { showToast } = useAppToast();
+  const manageDebiturDocumentsDecision = getDashboardRouteDecision(
+    "/dashboard/informasi-debitur/marketing/action-plan",
+    role,
+  );
+  const canManageDebiturDocuments = manageDebiturDocumentsDecision.allowed;
   const [documentsByDebitur, setDocumentsByDebitur] = useState<
     Record<string, DokumenDebitur[]>
   >({});
@@ -390,6 +400,8 @@ export default function DokumenDebiturSection({
     file,
     kategori,
   }: TambahDokumenPayload) => {
+    if (!ensureRouteAllowed(manageDebiturDocumentsDecision)) return;
+
     const extension = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
     const fileType =
       extension === "png" ? "png" : extension === "pdf" ? "pdf" : "jpg";
@@ -417,6 +429,8 @@ export default function DokumenDebiturSection({
   };
 
   const handleDeleteDocument = (document: DokumenDebitur) => {
+    if (!ensureRouteAllowed(manageDebiturDocumentsDecision)) return;
+
     const matchedStandard = findMatchingStandard(document);
 
     setDocuments((current) =>
@@ -515,31 +529,39 @@ export default function DokumenDebiturSection({
                               onClick={() => handlePreview(document, source)}
                               title={`View ${standard.namaDokumen}`}
                             />
-                            <button
-                              type="button"
-                              onClick={() => setDeleteTarget(document)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100"
-                              title="Hapus dokumen"
-                              aria-label="Hapus dokumen"
-                            >
-                              <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            </button>
+                            {canManageDebiturDocuments ? (
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTarget(document)}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100"
+                                title="Hapus dokumen"
+                                aria-label="Hapus dokumen"
+                              >
+                                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                              </button>
+                            ) : null}
                           </>
                         ) : (
-                          <Button
-                            type="button"
-                            variant="upload"
-                            onClick={() =>
-                              setUploadConfig({
-                                kategori: "AWAL",
-                                namaDokumen: standard.namaDokumen,
-                                lockName: true,
-                              })
-                            }
-                          >
-                            <Plus className="h-4 w-4" aria-hidden="true" />
-                            Upload
-                          </Button>
+                          <>
+                            {canManageDebiturDocuments ? (
+                              <Button
+                                type="button"
+                                variant="upload"
+                                onClick={() =>
+                                  setUploadConfig({
+                                    kategori: "AWAL",
+                                    namaDokumen: standard.namaDokumen,
+                                    lockName: true,
+                                  })
+                                }
+                              >
+                                <Plus className="h-4 w-4" aria-hidden="true" />
+                                Upload
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -561,14 +583,16 @@ export default function DokumenDebiturSection({
               Dokumen pendukung tambahan di luar daftar standar debitur.
             </p>
           </div>
-          <Button
-            type="button"
-            onClick={() => setUploadConfig({ kategori: "LAINNYA" })}
-            variant="upload"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Tambah Dokumen
-          </Button>
+          {canManageDebiturDocuments ? (
+            <Button
+              type="button"
+              onClick={() => setUploadConfig({ kategori: "LAINNYA" })}
+              variant="upload"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Tambah Dokumen
+            </Button>
+          ) : null}
         </div>
 
         {additionalDocuments.length === 0 ? (
@@ -584,16 +608,18 @@ export default function DokumenDebiturSection({
               Tambahkan dokumen pendukung bila diperlukan untuk monitoring
               debitur.
             </p>
-            <div className="mt-5">
-              <Button
-                type="button"
-                onClick={() => setUploadConfig({ kategori: "LAINNYA" })}
-                variant="upload"
-              >
-                <Plus className="h-4 w-4" aria-hidden="true" />
-                Tambah Dokumen
-              </Button>
-            </div>
+            {canManageDebiturDocuments ? (
+              <div className="mt-5">
+                <Button
+                  type="button"
+                  onClick={() => setUploadConfig({ kategori: "LAINNYA" })}
+                  variant="upload"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Tambah Dokumen
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
@@ -640,15 +666,17 @@ export default function DokumenDebiturSection({
                             onClick={() => handlePreview(document)}
                             title={`View ${document.namaDokumen}`}
                           />
-                          <button
-                            type="button"
-                            onClick={() => setDeleteTarget(document)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100"
-                            title="Hapus dokumen"
-                            aria-label="Hapus dokumen"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
+                          {canManageDebiturDocuments ? (
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget(document)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition-colors hover:bg-red-100"
+                              title="Hapus dokumen"
+                              aria-label="Hapus dokumen"
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

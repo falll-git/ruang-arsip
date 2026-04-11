@@ -10,10 +10,12 @@ import {
 } from "@/lib/data";
 import type { IdebRecord } from "@/lib/types";
 import { todayIsoDate } from "@/lib/utils/date";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import HasilIdebDetailModal from "@/components/debitur/HasilIdebDetailModal";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
 import IdebHistoryTable from "@/components/legal/IdebHistoryTable";
 import RingkasanIdebCard from "@/components/legal/RingkasanIdebCard";
 import UploadIdebForm, {
@@ -24,10 +26,17 @@ import {
   persistIdebRecord,
   removeIdebRecord,
 } from "@/components/legal/ideb-storage";
+import { getDashboardRouteDecision } from "@/lib/rbac";
 
 export default function UploadIdebPage() {
+  const { role } = useAuth();
   const { showToast } = useAppToast();
+  const { ensureRouteAllowed } = useProtectedAction();
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const uploadIdebDecision = getDashboardRouteDecision(
+    "/dashboard/legal/upload-ideb",
+    role,
+  );
   const [records, setRecords] = useState<IdebRecord[]>([]);
   const [currentResult, setCurrentResult] = useState<IdebRecord | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<IdebRecord | null>(null);
@@ -58,6 +67,8 @@ export default function UploadIdebPage() {
   );
 
   const handleProcessed = (payload: UploadIdebFormPayload) => {
+    if (!ensureRouteAllowed(uploadIdebDecision)) return;
+
     const debitur = getDebiturById(payload.debiturId);
     if (!debitur) {
       showToast("Data nasabah tidak ditemukan", "error");
@@ -82,6 +93,7 @@ export default function UploadIdebPage() {
   };
 
   const handleSaveResult = () => {
+    if (!ensureRouteAllowed(uploadIdebDecision)) return;
     if (!currentResult) return;
 
     persistIdebRecord(currentResult);
@@ -97,6 +109,7 @@ export default function UploadIdebPage() {
   };
 
   const handleDeleteRecord = (recordId: string) => {
+    if (!ensureRouteAllowed(uploadIdebDecision)) return;
     removeIdebRecord(recordId);
     const nextRecords = getMergedIdebRecords();
     setRecords(nextRecords);

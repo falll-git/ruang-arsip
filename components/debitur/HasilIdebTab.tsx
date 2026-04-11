@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { FileSearch } from "lucide-react";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import type { IdebRecord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { formatInformasiDebiturDate } from "@/lib/utils/informasi-debitur";
@@ -13,10 +14,16 @@ import {
   renderIdebStatusBadge,
 } from "@/components/legal/RingkasanIdebCard";
 import { getMergedIdebRecords } from "@/components/legal/ideb-storage";
+import { getDashboardRouteDecision } from "@/lib/rbac";
 
 export default function HasilIdebTab({ debiturId }: { debiturId: string }) {
+  const { role, status } = useAuth();
   const [records, setRecords] = useState<IdebRecord[]>(() => getMergedIdebRecords());
   const [selectedRecord, setSelectedRecord] = useState<IdebRecord | null>(null);
+  const canUploadIdeb =
+    status === "authenticated" &&
+    role !== null &&
+    getDashboardRouteDecision("/dashboard/legal/upload-ideb", role).allowed;
 
   useEffect(() => {
     const refreshRecords = () => {
@@ -57,11 +64,13 @@ export default function HasilIdebTab({ debiturId }: { debiturId: string }) {
             <p className="mt-2 text-sm text-gray-500">
               Upload data IDEB untuk melihat ringkasan hasil pengecekan nasabah.
             </p>
-            <div className="mt-5">
-              <Button asChild variant="upload">
-                <Link href="/dashboard/legal/upload-ideb">Upload Ideb</Link>
-              </Button>
-            </div>
+            {canUploadIdeb ? (
+              <div className="mt-5">
+                <Button asChild variant="upload">
+                  <Link href="/dashboard/legal/upload-ideb">Upload Ideb</Link>
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">

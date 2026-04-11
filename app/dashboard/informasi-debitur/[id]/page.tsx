@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User, UserX, Wallet } from "lucide-react";
@@ -21,12 +21,14 @@ import {
   getKolektibilitasLabel,
   getKolektibilitasColor,
 } from "@/lib/data";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useDocumentPreviewContext } from "@/components/ui/DocumentPreviewContext";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import DebiturViewButton from "@/components/debitur/DebiturViewButton";
 import DokumenDebiturSection from "@/components/debitur/DokumenDebiturSection";
 import HasilIdebTab from "@/components/debitur/HasilIdebTab";
 import LaporanSummaryTimeline from "@/components/debitur/LaporanSummaryTimeline";
+import { filterDigitalDocuments, getDashboardRouteDecision } from "@/lib/rbac";
 import {
   formatInformasiDebiturDate,
   normalizeDebiturDocumentUrl,
@@ -43,7 +45,7 @@ type TabType =
   | "klaim"
   | "titipan";
 
-const tabs: { id: TabType; label: string }[] = [
+const ALL_TABS: { id: TabType; label: string }[] = [
   { id: "info", label: "Data Utama" },
   { id: "summary", label: "Laporan Summary" },
   { id: "bprs", label: "Hasil Ideb" },
@@ -71,6 +73,7 @@ const InfoRow = ({
 export default function DetailDebiturPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { role, status, user } = useAuth();
   const { openPreview } = useDocumentPreviewContext();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +98,43 @@ export default function DetailDebiturPage() {
   const historisTitipan = debitur
     ? getHistorisTitipanByNoKontrak(debitur.noKontrak)
     : [];
+  const debiturNoKontrak = debitur?.noKontrak ?? "";
+  const canViewLegalData =
+    status === "authenticated" &&
+    role !== null &&
+    getDashboardRouteDecision("/dashboard/legal/laporan", role).allowed;
+  const canViewDanaTitipan =
+    status === "authenticated" &&
+    role !== null &&
+    getDashboardRouteDecision("/dashboard/legal/titipan/asuransi", role).allowed;
+  const visibleTabs = useMemo(
+    () =>
+      ALL_TABS.filter((tab) => {
+        if (tab.id === "titipan") return canViewDanaTitipan;
+        if (
+          tab.id === "bprs" ||
+          tab.id === "notaris" ||
+          tab.id === "sp" ||
+          tab.id === "klaim"
+        ) {
+          return canViewLegalData;
+        }
+        return true;
+      }),
+    [canViewDanaTitipan, canViewLegalData],
+  );
+  const resolvedActiveTab = visibleTabs.some((tab) => tab.id === activeTab)
+    ? activeTab
+    : (visibleTabs[0]?.id ?? "info");
+  const arsipDigitalTerkait =
+    status !== "authenticated" || !role || !debiturNoKontrak
+      ? []
+      : filterDigitalDocuments(
+          user?.is_restrict ?? false,
+          dummyDokumen.filter((d) =>
+            d.detail.toLowerCase().includes(debiturNoKontrak.toLowerCase()),
+          ),
+        ).sort((a, b) => a.namaDokumen.localeCompare(b.namaDokumen));
 
   const selectedTitipanDetail =
     historisTitipan.find((item) => item.id === selectedTitipanId) ??
@@ -145,12 +185,6 @@ export default function DetailDebiturPage() {
       </div>
     );
   }
-
-  const arsipDigitalTerkait = dummyDokumen
-    .filter((d) =>
-      d.detail.toLowerCase().includes(debitur.noKontrak.toLowerCase()),
-    )
-    .sort((a, b) => a.namaDokumen.localeCompare(b.namaDokumen));
 
   const StatusBadge = ({ status }: { status: string }) => {
     const colors: Record<string, string> = {
@@ -208,12 +242,12 @@ export default function DetailDebiturPage() {
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
       >
         <div className="flex border-b border-gray-100 overflow-x-auto">
-          {tabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
+                resolvedActiveTab === tab.id
                   ? "border-[#157ec3] text-[#157ec3] bg-[#157ec3]/10"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
@@ -224,7 +258,7 @@ export default function DetailDebiturPage() {
         </div>
 
         <div className="p-6">
-          {activeTab === "info" && (
+          {resolvedActiveTab === "info" && (
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
@@ -285,7 +319,7 @@ export default function DetailDebiturPage() {
             </div>
           )}
 
-          {activeTab === "summary" && (
+          {resolvedActiveTab === "summary" && (
             <LaporanSummaryTimeline
               actionPlans={actionPlan}
               hasilKunjungans={hasilKunjungan}
@@ -293,11 +327,11 @@ export default function DetailDebiturPage() {
             />
           )}
 
-          {activeTab === "bprs" && (
+          {resolvedActiveTab === "bprs" && (
             <HasilIdebTab debiturId={debitur.id} />
           )}
 
-          {activeTab === "historis" && (
+          {resolvedActiveTab === "historis" && (
             <div>
               {historisKol.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -369,14 +403,14 @@ export default function DetailDebiturPage() {
             </div>
           )}
 
-          {activeTab === "dokumen" && (
+          {resolvedActiveTab === "dokumen" && (
             <DokumenDebiturSection
               debiturId={debitur.id}
               initialDocuments={dokumen}
             />
           )}
 
-          {activeTab === "notaris" && (
+          {resolvedActiveTab === "notaris" && (
             <div>
               {notaris.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -452,7 +486,7 @@ export default function DetailDebiturPage() {
             </div>
           )}
 
-          {activeTab === "sp" && (
+          {resolvedActiveTab === "sp" && (
             <div>
               {suratPeringatan.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -543,7 +577,7 @@ export default function DetailDebiturPage() {
             </div>
           )}
 
-          {activeTab === "klaim" && (
+          {resolvedActiveTab === "klaim" && (
             <div>
               {progressClaimAsuransi.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -630,7 +664,7 @@ export default function DetailDebiturPage() {
             </div>
           )}
 
-          {activeTab === "titipan" && (
+          {resolvedActiveTab === "titipan" && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">

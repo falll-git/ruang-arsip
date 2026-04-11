@@ -6,7 +6,8 @@ import UiverseCheckbox from "@/components/ui/UiverseCheckbox";
 import { useAppToast } from "@/components/ui/AppToastProvider";
 import FeatureHeader from "@/components/ui/FeatureHeader";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { filterDigitalDocuments } from "@/lib/rbac";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { filterDigitalDocuments, getDashboardRouteDecision } from "@/lib/rbac";
 import { useArsipDigitalWorkflow } from "@/components/arsip-digital/ArsipDigitalWorkflowProvider";
 
 const formatPersonName = (value: string) =>
@@ -17,7 +18,12 @@ const formatPersonName = (value: string) =>
 export default function PengajuanDisposisiPage() {
   const { role, user } = useAuth();
   const { showToast } = useAppToast();
+  const { ensureRouteAllowed } = useProtectedAction();
   const { dokumen, submitDisposisi } = useArsipDigitalWorkflow();
+  const pengajuanDisposisiDecision = getDashboardRouteDecision(
+    "/dashboard/arsip-digital/disposisi/pengajuan",
+    role,
+  );
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -57,6 +63,7 @@ export default function PengajuanDisposisiPage() {
   };
 
   const handleSubmit = () => {
+    if (!ensureRouteAllowed(pengajuanDisposisiDecision)) return;
     if (!alasan.trim()) {
       showToast("Alasan pengajuan wajib diisi", "warning");
       return;

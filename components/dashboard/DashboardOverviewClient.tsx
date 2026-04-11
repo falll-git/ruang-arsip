@@ -18,6 +18,7 @@ import {
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import ProtectedLink from "@/components/rbac/ProtectedLink";
+import { getDashboardRouteDecision } from "@/lib/rbac";
 
 type ModuleCard = {
   title: string;
@@ -151,7 +152,7 @@ function DashboardSkeletonBanner() {
 }
 
 export default function DashboardOverviewClient() {
-  const { user } = useAuth();
+  const { user, role, status } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   const moduleCards = useMemo(() => {
@@ -190,8 +191,9 @@ export default function DashboardOverviewClient() {
       },
     ];
 
-    return list;
-  }, []);
+    if (status !== "authenticated" || !role) return [];
+    return list.filter((item) => getDashboardRouteDecision(item.href, role).allowed);
+  }, [role, status]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1200);

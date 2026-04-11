@@ -41,6 +41,7 @@ import {
   type SuratKeluar,
   type SuratMasuk,
 } from "@/lib/data";
+import { canManageDisposisi } from "@/lib/rbac";
 import { formatDateDisplay, parseDateString } from "@/lib/utils/date";
 
 type ReportKind = "surat-masuk" | "surat-keluar" | "memorandum";
@@ -545,7 +546,7 @@ export default function LaporanPersuratanClient() {
     date.setHours(0, 0, 0, 0);
     return date;
   }, []);
-  const canDisposisiSuratMasuk = role !== null;
+  const canDisposisiSuratMasuk = role ? canManageDisposisi(role) : false;
   const disposisiUsers = useMemo(
     () =>
       dummySuratUsers.map((item) => ({
